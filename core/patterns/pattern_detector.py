@@ -1,156 +1,77 @@
-
 """
-Advanced pattern detection for trading signals
+Pattern Detection for Trading
 """
 
-import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple, Optional
-import talib
-
+import numpy as np
+from typing import Dict, Any
 
 class PatternDetector:
-    """
-    Advanced pattern recognition for financial markets
-    """
+    """Detects trading patterns in market data"""
     
     def __init__(self):
-        self.patterns = {}
-        self.initialize_patterns()
+        pass
     
-    def initialize_patterns(self):
-        """Initialize pattern detection algorithms"""
-        self.patterns = {
-            'candlestick': self._detect_candlestick_patterns,
-            'chart': self._detect_chart_patterns,
-            'volume': self._detect_volume_patterns,
-            'momentum': self._detect_momentum_patterns
-        }
-    
-    def detect_patterns(self, data: pd.DataFrame) -> Dict[str, List]:
-        """
-        Detect all patterns in the given data
+    def detect_patterns(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """Detect various patterns in market data"""
         
-        Args:
-            data: DataFrame with OHLCV data
-            
-        Returns:
-            Dictionary of detected patterns
-        """
-        results = {}
+        patterns = {}
         
-        for pattern_type, detector in self.patterns.items():
-            try:
-                results[pattern_type] = detector(data)
-            except Exception as e:
-                print(f"Error detecting {pattern_type} patterns: {e}")
-                results[pattern_type] = []
+        # Detect bullish engulfing pattern
+        patterns['bullish_engulfing'] = self._detect_bullish_engulfing(data)
         
-        return results
-    
-    def _detect_candlestick_patterns(self, data: pd.DataFrame) -> List[Dict]:
-        """Detect candlestick patterns using TA-Lib"""
-        patterns = []
+        # Detect bearish engulfing pattern
+        patterns['bearish_engulfing'] = self._detect_bearish_engulfing(data)
         
-        # Common candlestick patterns
-        pattern_functions = {
-            'doji': talib.CDLDOJI,
-            'hammer': talib.CDLHAMMER,
-            'shooting_star': talib.CDLSHOOTINGSTAR,
-            'engulfing': talib.CDLENGULFING,
-            'morning_star': talib.CDLMORNINGSTAR,
-            'evening_star': talib.CDLEVENINGSTAR
-        }
-        
-        for pattern_name, pattern_func in pattern_functions.items():
-            try:
-                result = pattern_func(data['open'], data['high'], data['low'], data['close'])
-                signals = np.where(result != 0)[0]
-                
-                for signal_idx in signals:
-                    patterns.append({
-                        'type': pattern_name,
-                        'timestamp': data.index[signal_idx],
-                        'strength': abs(result[signal_idx]),
-                        'direction': 'bullish' if result[signal_idx] > 0 else 'bearish'
-                    })
-            except Exception as e:
-                print(f"Error detecting {pattern_name}: {e}")
+        # Detect doji pattern
+        patterns['doji'] = self._detect_doji(data)
         
         return patterns
     
-    def _detect_chart_patterns(self, data: pd.DataFrame) -> List[Dict]:
-        """Detect chart patterns like support/resistance, trends"""
-        patterns = []
+    def _detect_bullish_engulfing(self, data: pd.DataFrame) -> pd.Series:
+        """Detect bullish engulfing pattern"""
         
-        # Simple trend detection
-        close_prices = data['close'].values
-        if len(close_prices) >= 20:
-            short_ma = talib.SMA(close_prices, timeperiod=10)
-            long_ma = talib.SMA(close_prices, timeperiod=20)
-            
-            # Trend detection
-            if short_ma[-1] > long_ma[-1] and short_ma[-2] <= long_ma[-2]:
-                patterns.append({
-                    'type': 'bullish_crossover',
-                    'timestamp': data.index[-1],
-                    'strength': 1,
-                    'direction': 'bullish'
-                })
-            elif short_ma[-1] < long_ma[-1] and short_ma[-2] >= long_ma[-2]:
-                patterns.append({
-                    'type': 'bearish_crossover',
-                    'timestamp': data.index[-1],
-                    'strength': 1,
-                    'direction': 'bearish'
-                })
+        if len(data) < 2:
+            return pd.Series(0, index=data.index)
         
-        return patterns
+        # Previous candle is red (bearish)
+        prev_bearish = data['close'].shift(1) < data['open'].shift(1)
+        
+        # Current candle is green (bullish)
+        curr_bullish = data['close'] > data['open']
+        
+        # Current candle engulfs previous candle
+        engulfs = (data['open'] < data['close'].shift(1)) & (data['close'] > data['open'].shift(1))
+        
+        pattern = prev_bearish & curr_bullish & engulfs
+        return pattern.astype(int)
     
-    def _detect_volume_patterns(self, data: pd.DataFrame) -> List[Dict]:
-        """Detect volume-based patterns"""
-        patterns = []
+    def _detect_bearish_engulfing(self, data: pd.DataFrame) -> pd.Series:
+        """Detect bearish engulfing pattern"""
         
-        if 'volume' in data.columns:
-            volume = data['volume'].values
-            volume_ma = talib.SMA(volume, timeperiod=20)
-            
-            # Volume spike detection
-            for i in range(len(volume) - 1):
-                if volume[i] > 2 * volume_ma[i]:
-                    patterns.append({
-                        'type': 'volume_spike',
-                        'timestamp': data.index[i],
-                        'strength': volume[i] / volume_ma[i],
-                        'direction': 'neutral'
-                    })
+        if len(data) < 2:
+            return pd.Series(0, index=data.index)
         
-        return patterns
+        # Previous candle is green (bullish)
+        prev_bullish = data['close'].shift(1) > data['open'].shift(1)
+        
+        # Current candle is red (bearish)
+        curr_bearish = data['close'] < data['open']
+        
+        # Current candle engulfs previous candle
+        engulfs = (data['open'] > data['close'].shift(1)) & (data['close'] < data['open'].shift(1))
+        
+        pattern = prev_bullish & curr_bearish & engulfs
+        return pattern.astype(int)
     
-    def _detect_momentum_patterns(self, data: pd.DataFrame) -> List[Dict]:
-        """Detect momentum-based patterns"""
-        patterns = []
+    def _detect_doji(self, data: pd.DataFrame) -> pd.Series:
+        """Detect doji pattern"""
         
-        close_prices = data['close'].values
+        # Doji occurs when open and close are very close
+        body_size = abs(data['close'] - data['open'])
+        candle_range = data['high'] - data['low']
         
-        # RSI divergence
-        rsi = talib.RSI(close_prices, timeperiod=14)
+        # Body size should be less than 10% of the total range
+        doji = body_size < (candle_range * 0.1)
         
-        # Oversold/Overbought conditions
-        for i in range(len(rsi)):
-            if rsi[i] < 30:
-                patterns.append({
-                    'type': 'oversold',
-                    'timestamp': data.index[i],
-                    'strength': 30 - rsi[i],
-                    'direction': 'bullish'
-                })
-            elif rsi[i] > 70:
-                patterns.append({
-                    'type': 'overbought',
-                    'timestamp': data.index[i],
-                    'strength': rsi[i] - 70,
-                    'direction': 'bearish'
-                })
-        
-        return patterns
+        return doji.astype(int)
