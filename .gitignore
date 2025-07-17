@@ -61,3 +61,6 @@ coverage.xml
 # Temporary files
 *.tmp
 *.temp
+
+# Gitpod CLI
+gitpod
