@@ -1,0 +1,31 @@
+# GitPod configuration for GenZ Trading Platform
+image: gitpod/workspace-python-3.11
+
+tasks:
+  - name: Setup Python Environment
+    init: |
+      pip install -r requirements.txt
+    command: |
+      echo "Python environment ready"
+  
+  - name: Setup Client Environment
+    init: |
+      cd client && npm install
+    command: |
+      cd client && npm run dev
+
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-toolsai.jupyter
+    - esbenp.prettier-vscode
+    - dbaeumer.vscode-eslint
+    - bradlc.vscode-tailwindcss
+    - ms-azuretools.vscode-docker
+
+ports:
+  - port: 5173
+    onOpen: open-preview
+  - port: 8000
+    onOpen: notify
