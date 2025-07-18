@@ -340,6 +340,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## CLI
+
+This project includes a command-line interface (CLI) to help with development and automation. For more information, please see the [GenX CLI README](genx-cli/README.md).
+
+---
+
 **⚡ GenX Trading Platform - Where AI meets Trading Excellence**
 
 *Built with ❤️ by the GenX Trading Team*
