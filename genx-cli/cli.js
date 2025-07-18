@@ -2,10 +2,20 @@
 
 import { loadPlugins } from './plugins/utils/pluginLoader.js';
 import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 async function main() {
   const args = process.argv.slice(2);
-  const plugins = await loadPlugins();
+
+  const julenrcPath = path.join(process.cwd(), '.julenrc');
+  let config = {};
+  if (fs.existsSync(julenrcPath)) {
+    const julenrcContent = fs.readFileSync(julenrcPath, 'utf-8');
+    config = JSON.parse(julenrcContent);
+  }
+
+  const plugins = await loadPlugins(config);
 
   if (args.length === 0 || args[0] === '--help') {
     console.log('Usage: genx-cli <command>');
@@ -53,9 +63,30 @@ async function main() {
       return;
     }
 
-    const config = {}; // In the future, we can load config from a file
     plugin.run(config);
     return;
+  }
+
+  if (args[0] === 'run' && args[1]) {
+    const commandName = args[1];
+    const command = config.commands[commandName];
+
+    if (command) {
+      const commandProcess = spawn(command, { shell: true });
+
+      commandProcess.stdout.on('data', (data) => {
+        console.log(data.toString());
+      });
+
+      commandProcess.stderr.on('data', (data) => {
+        console.error(data.toString());
+      });
+
+      return;
+    } else {
+      console.error(`Error: Command "${commandName}" not found in .julenrc`);
+      return;
+    }
   }
 
   console.error(`Error: Unknown command "${args[0]}"`);
