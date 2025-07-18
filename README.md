@@ -1,146 +1,345 @@
-# GenX-EA Script: AI-Powered Trading Bot
+# 🚀 GenX Trading Platform - Advanced AI-Powered Trading System
 
-This project is a comprehensive framework for a trading bot that leverages machine learning to predict market movements and execute trades on the Bybit cryptocurrency exchange. It is containerized using Docker for easy setup and deployment.
+[![GitHub License](https://img.shields.io/github/license/Mouy-leng/GenX-EA_Script)](https://github.com/Mouy-leng/GenX-EA_Script/blob/main/LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-green)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-red)](https://fastapi.tiangolo.com/)
+[![AI](https://img.shields.io/badge/AI-Gemini%20Powered-orange)](https://ai.google.dev/)
 
-## ✨ Features
+A comprehensive AI-powered trading platform that leverages machine learning, social sentiment analysis, multi-source news aggregation, and real-time market data to generate intelligent trading signals and execute trades across multiple exchanges.
 
-- **AI-Powered Predictions**: Uses a pre-trained `scikit-learn` model to predict market trends.
-- **Pattern Recognition**: Detects classic candlestick patterns from market data.
-- **Signal Analysis**: Combines AI predictions and technical patterns to generate trading signals.
-- **Bybit Integration**: Connects directly to the Bybit V5 API for real-time data and order execution.
-- **Containerized**: Fully containerized with Docker and Docker Compose for a consistent development and production environment.
-- **Backend Focused**: Includes a backend API (`server`), and the core Python trading logic (`python`).
+## ✨ Key Features
 
-## 🛠️ Tech Stack
+### 🤖 **AI-Powered Analysis**
+- **Gemini AI Integration**: Advanced market sentiment analysis and signal generation
+- **Ensemble ML Models**: Multiple machine learning algorithms for robust predictions
+- **Pattern Recognition**: Advanced candlestick and harmonic pattern detection
+- **Real-time Training**: Continuous model improvement with live market data
 
-- **Python Service**:
-  - **Python 3.10+**
-  - **Pandas**: For data manipulation and analysis.
-  - **Scikit-learn**: For machine learning predictions.
-  - **Pybit**: For Bybit API communication.
-  - **Docker**: For containerization.
-- **Server**: Node.js (Setup for a backend API, e.g., Express).
+### 📱 **Social Sentiment Analysis**
+- **Reddit Integration**: Monitor 12+ trading subreddits including WSB, r/investing, r/cryptocurrency
+- **Trending Tickers**: Real-time extraction of trending stocks and crypto mentions
+- **Sentiment Scoring**: Advanced sentiment analysis with emoji tracking (🚀, 💎, 📈)
+- **Social Signals**: Convert social media buzz into actionable trading signals
 
-## 📂 Project Structure
+### 📰 **Multi-Source News Aggregation**
+- **5+ News Sources**: NewsAPI, Alpha Vantage, Finnhub, NewsData.io, FMP
+- **Real-time Monitoring**: Continuous financial news monitoring and filtering
+- **Sentiment Analysis**: AI-powered news sentiment scoring
+- **Market Impact**: Correlate news events with market movements
+
+### 📡 **Real-Time Market Data**
+- **WebSocket Streams**: Live data from Bybit, Binance, Coinbase
+- **Multi-Exchange**: Unified data interface across multiple exchanges
+- **Auto-Reconnection**: Robust connection handling with retry logic
+- **Data Normalization**: Consistent data format across all sources
+
+### 🔧 **Professional Infrastructure**
+- **FastAPI Backend**: High-performance async API with comprehensive endpoints
+- **Production Docker**: Multi-service containerized deployment
+- **CI/CD Pipeline**: Automated testing and deployment
+- **DigitalOcean Ready**: One-click VPS deployment scripts
+
+## 🏗️ Architecture
 
 ```
 GenX-EA_Script/
-├── ai_models/            # Stores trained machine learning models
-├── api/                  # FastAPI server logic
-├── core/                 # Core Python logic (execution, patterns, strategies)
-├── data/                 # Sample or historical data
-├── server/               # Backend server code (Node.js)
-├── services/             # Service-specific code (e.g., Python main script)
-├── .env                  # (Local) Environment variables (ignored by Git)
-├── .env.example          # Example environment variables
-├── docker-compose.yml    # Defines and runs the multi-container application
-├── Dockerfile            # Builds the Docker images for all services
-└── README.md             # This file
+├── 🤖 ai_models/               # AI models and ensemble learning
+│   ├── ensemble_model.py       # Multi-algorithm ensemble model
+│   ├── market_predictor.py     # Market prediction models
+│   └── *.joblib               # Trained model files
+├── 🌐 api/                    # FastAPI backend
+│   ├── routers/               # API endpoints
+│   ├── services/              # Business logic services
+│   │   ├── gemini_service.py  # Gemini AI integration
+│   │   ├── reddit_service.py  # Reddit social signals
+│   │   ├── news_service.py    # Multi-source news
+│   │   └── websocket_service.py # Real-time market data
+│   ├── models/                # Pydantic models
+│   └── middleware/            # Auth and security
+├── 🧠 core/                   # Trading logic
+│   ├── indicators/            # Technical indicators
+│   ├── patterns/              # Pattern recognition
+│   ├── strategies/            # Trading strategies
+│   └── risk_management.py     # Risk management
+├── 📊 expert-advisors/        # MT5 Expert Advisors
+│   └── mt5_ea/               # Professional MT5 EAs
+├── 🔧 services/               # Background services
+│   ├── ai_trainer.py         # Continuous model training
+│   ├── discord_bot.py        # Discord notifications
+│   └── telegram_bot.py       # Telegram notifications
+├── 🚀 deploy/                 # Deployment scripts
+│   ├── digitalocean.yml      # DigitalOcean App Platform
+│   └── setup-vps.sh          # VPS setup script
+└── 📋 amp-plugins/            # AMP plugin definitions
+    ├── gemini-integration.md  # Gemini AI plugin
+    ├── reddit-signals.md     # Reddit plugin
+    ├── news-aggregator.md    # News plugin
+    └── websocket-streams.md  # WebSocket plugin
 ```
 
-## 🚀 Getting Started
-
-Follow these instructions to get the project up and running on your local machine.
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Docker and Docker Compose
+- Python 3.11+
+- Docker & Docker Compose
 - Git
 
-### 1. Clone the Repository
-
+### 1. Clone & Setup
 ```bash
-git clone https://github.com/your-username/GenX-EA_Script.git
+git clone https://github.com/Mouy-leng/GenX-EA_Script.git
 cd GenX-EA_Script
 ```
 
-### 2. Configure Environment Variables
-
-The Python service requires Bybit API keys to function.
-
-1.  Copy the example `.env.example` file to a new `.env` file:
-    ```bash
-    cp .env.example .env
-    ```
-2.  Open the `.env` file and add your Bybit API Key and Secret. You can generate these from your Bybit API Management page.
-
-    ```ini
-    # .env
-    BYBIT_API_KEY="YOUR_API_KEY_HERE"
-    BYBIT_API_SECRET="YOUR_SECRET_KEY_HERE"
-    ```
-
-### 3. Build and Run the Application
-
-Use Docker Compose to build the images and start all the services.
-
+### 2. Environment Configuration
 ```bash
-# Build the images for all services
-docker-compose build
+cp .env.example .env
+# Edit .env with your API keys (see configuration section below)
+```
 
-# Start all services in detached mode
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run Development Server
+```bash
+# Local development
+python -m uvicorn api.main:app --reload
+
+# Or with Docker
 docker-compose up -d
 ```
 
-### 4. Accessing the Services
+### 5. Access Services
+- **API**: http://localhost:8000
+- **Interactive Docs**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
 
-- **Python Service**: The trading logic runs in the background. You can view its logs with `docker-compose logs -f python`.
-- **Backend Server**: Accessible at `http://localhost:3000`.
-- **API Server**: Accessible at `http://localhost:8000` with interactive docs at `http://localhost:8000/docs`.
+## 🔑 Configuration
 
-## Deployment
+### Required API Keys
 
-This project is designed to be deployed using Docker and Docker Compose.
+#### AI & Analysis
+```bash
+# Gemini AI (Primary)
+GEMINI_API_KEY=your-gemini-api-key
 
-### Prerequisites
+# News Sources
+NEWSDATA_API_KEY=your-newsdata-key
+ALPHAVANTAGE_API_KEY=your-alphavantage-key
+NEWSAPI_ORG_KEY=your-newsapi-key
+FINNHUB_API_KEY=your-finnhub-key
+FMP_API_KEY=your-fmp-key
 
-- Docker
-- Docker Compose
+# Reddit Integration
+REDDIT_CLIENT_ID=your-reddit-client-id
+REDDIT_CLIENT_SECRET=your-reddit-client-secret
+REDDIT_USERNAME=your-reddit-username
+REDDIT_PASSWORD=your-reddit-password
+```
 
-### Setup
+#### Trading & Notifications
+```bash
+# Exchange APIs
+BYBIT_API_KEY=your-bybit-api-key
+BYBIT_API_SECRET=your-bybit-api-secret
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Mouy-leng/GenX-EA_Script.git
-   cd GenX-EA_Script
-   ```
-2. Create a `.env` file from the example:
-   ```bash
-   cp .env.example .env
-   ```
-3. Edit the `.env` file with your credentials and domain information.
-4. Build and run the services:
-   ```bash
-   docker-compose up -d --build
-   ```
+# Notifications
+DISCORD_TOKEN=your-discord-token
+TELEGRAM_TOKEN=your-telegram-token
+```
 
-The application will be available at your domain. The API will be at `api.yourdomain.com`.
+### Feature Flags
+```bash
+# Enable/Disable Features
+ENABLE_NEWS_ANALYSIS=true
+ENABLE_REDDIT_ANALYSIS=true
+ENABLE_WEBSOCKET_FEED=true
+API_PROVIDER=gemini
+```
 
-### Systemd Service
+## 📡 API Endpoints
 
-A systemd service file is provided to ensure the application starts on boot. To use it:
+### AI & Analysis
+- `POST /api/v1/predictions/` - Generate AI predictions
+- `GET /api/v1/predictions/model/metrics` - Model performance metrics
+- `POST /api/v1/predictions/model/retrain` - Trigger model retraining
 
-1. Copy the `genx-ea.service` file to `/etc/systemd/system/`:
-   ```bash
-   sudo cp genx-ea.service /etc/systemd/system/
-   ```
-2. Reload the systemd daemon:
-   ```bash
-   sudo systemctl daemon-reload
-   ```
-3. Enable the service:
-   ```bash
-   sudo systemctl enable genx-ea.service
-   ```
-4. Start the service:
-   ```bash
-   sudo systemctl start genx-ea.service
-   ```
+### Social Sentiment
+- `GET /api/v1/reddit/crypto-sentiment` - Crypto sentiment from Reddit
+- `GET /api/v1/reddit/stock-sentiment` - Stock sentiment analysis
+- `GET /api/v1/reddit/wsb-sentiment` - WSB-specific sentiment & tickers
 
-### CI/CD
+### News & Market Data
+- `GET /api/v1/news/crypto` - Cryptocurrency news
+- `GET /api/v1/news/stocks/{symbol}` - Stock-specific news
+- `GET /api/v1/news/sentiment` - News sentiment analysis
 
-This project uses GitHub Actions for CI/CD. Pushes to the `main` branch will automatically trigger a deployment to the DigitalOcean Droplet. You will need to configure the following secrets in your GitHub repository:
+### Trading
+- `GET /api/v1/trading/signals` - Active trading signals
+- `POST /api/v1/trading/orders` - Place trading orders
+- `GET /api/v1/trading/portfolio` - Portfolio status
 
-- `DROPLET_IP`: The IP address of your DigitalOcean Droplet.
-- `DROPLET_USERNAME`: The username to use for SSH access.
-- `DROPLET_SSH_KEY`: The private SSH key for password-less login.
+### WebSocket
+- `GET /api/v1/websocket/status` - Connection status
+- `POST /api/v1/websocket/subscribe` - Subscribe to symbol
+- `DELETE /api/v1/websocket/unsubscribe` - Unsubscribe from symbol
+
+## 🎯 AMP Integration Commands
+
+### Complete Update Command
+```bash
+amp update \
+  --env .env \
+  --set api_provider=gemini \
+  --add-dependency google-generativeai \
+  --add-dependency praw \
+  --add-dependency newsapi-python \
+  --add-dependency alpha-vantage \
+  --add-dependency finnhub-python \
+  --add-env GEMINI_API_KEY=$GEMINI_API_KEY \
+  --add-env NEWSDATA_API_KEY=$NEWSDATA_API_KEY \
+  --add-env ALPHAVANTAGE_API_KEY=$ALPHAVANTAGE_API_KEY \
+  --add-env REDDIT_CLIENT_ID=$REDDIT_CLIENT_ID \
+  --add-env REDDIT_CLIENT_SECRET=$REDDIT_CLIENT_SECRET \
+  --add-env REDDIT_USERNAME=$REDDIT_USERNAME \
+  --add-env REDDIT_PASSWORD=$REDDIT_PASSWORD \
+  --description "Complete AI & data integration with Gemini, Reddit, News & WebSocket"
+```
+
+### Individual Plugin Commands
+```bash
+# Gemini AI Integration
+amp plugin install gemini-integration --source genx-trading --enable-service gemini_service
+
+# Reddit Social Signals
+amp plugin install reddit-signals --source genx-trading --enable-service reddit_service
+
+# Multi-Source News
+amp plugin install news-aggregator --source genx-trading --enable-service news_service
+
+# WebSocket Market Streams
+amp plugin install websocket-streams --source genx-trading --enable-service websocket_service
+```
+
+## 🚢 Production Deployment
+
+### DigitalOcean VPS (Recommended)
+```bash
+# On your DigitalOcean droplet
+git clone https://github.com/Mouy-leng/GenX-EA_Script.git
+cd GenX-EA_Script
+sudo bash deploy/setup-vps.sh
+```
+
+### Docker Compose
+```bash
+# Production deployment
+docker-compose -f docker-compose.production.yml up -d
+```
+
+### DigitalOcean App Platform
+```bash
+# Deploy using App Platform spec
+doctl apps create --spec deploy/digitalocean.yml
+```
+
+## 📊 Monitoring & Health
+
+### Health Checks
+```bash
+# API Health
+curl http://localhost:8000/health
+
+# Service Status
+curl http://localhost:8000/api/v1/system/status
+
+# Metrics
+curl http://localhost:8000/api/v1/system/metrics
+```
+
+### Monitoring Stack
+- **Prometheus**: Metrics collection
+- **Grafana**: Visualization dashboards
+- **Nginx**: Load balancing & SSL termination
+- **Logging**: Structured logging with rotation
+
+## 🧪 Testing
+
+### Run Tests
+```bash
+# All tests
+python run_tests.py
+
+# Specific test categories
+pytest tests/test_api.py -v
+pytest tests/test_services.py -v
+
+# Integration tests
+pytest tests/test_integration.py -v
+```
+
+### Test Coverage
+- API endpoints testing
+- Service integration testing
+- AI model validation
+- WebSocket connection testing
+- Error handling validation
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure API access
+- **API Rate Limiting**: Prevent abuse
+- **Input Validation**: Pydantic models
+- **HTTPS/SSL**: Secure communication
+- **Secret Management**: Environment-based secrets
+- **Security Headers**: CORS, CSP, etc.
+
+## 📈 Performance
+
+- **Async Architecture**: High-performance async operations
+- **Connection Pooling**: Efficient database connections
+- **Caching**: Redis-based caching layer
+- **Load Balancing**: Nginx load balancer
+- **Auto-scaling**: Kubernetes/Docker Swarm ready
+
+## 📚 Documentation
+
+- **API Documentation**: Available at `/docs` endpoint
+- **Integration Guide**: See `INTEGRATION_GUIDE.md`
+- **AMP Plugins**: Individual plugin documentation in `amp-plugins/`
+- **Deployment Guide**: See `DEPLOYMENT.md`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/Mouy-leng/GenX-EA_Script/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Mouy-leng/GenX-EA_Script/discussions)
+- **Documentation**: [Full Documentation](https://github.com/Mouy-leng/GenX-EA_Script/wiki)
+
+## 🎉 What's New in v2.0
+
+✅ **Gemini AI Integration** - Advanced market analysis with Google's AI  
+✅ **Reddit Social Signals** - WSB sentiment & trending ticker extraction  
+✅ **Multi-Source News** - 5+ financial news APIs integrated  
+✅ **WebSocket Streams** - Real-time data from multiple exchanges  
+✅ **Production Ready** - Complete Docker deployment with monitoring  
+✅ **AMP Integration** - Plugin-based architecture with AMP commands  
+
+---
+
+**⚡ GenX Trading Platform - Where AI meets Trading Excellence**
+
+*Built with ❤️ by the GenX Trading Team*
