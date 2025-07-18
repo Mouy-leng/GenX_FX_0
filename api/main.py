@@ -6,12 +6,17 @@ import logging
 import uvicorn
 from contextlib import asynccontextmanager
 import asyncio
+import os
 
 from .config import settings
 from .routers import predictions, trading, market_data, system
 from .middleware.auth import auth_middleware
 from .services.ml_service import MLService
 from .services.data_service import DataService
+from .services.gemini_service import GeminiService
+from .services.reddit_service import RedditService
+from .services.news_service import NewsService
+from .services.websocket_service import WebSocketService
 from .utils.logging_config import setup_logging
 
 # Setup logging
@@ -21,6 +26,10 @@ logger = logging.getLogger(__name__)
 # Initialize services
 ml_service = MLService()
 data_service = DataService()
+gemini_service = GeminiService() if os.getenv("GEMINI_API_KEY") else None
+reddit_service = RedditService() if os.getenv("REDDIT_CLIENT_ID") else None
+news_service = NewsService() if os.getenv("NEWSDATA_API_KEY") or os.getenv("NEWSAPI_ORG_KEY") else None
+websocket_service = WebSocketService() if os.getenv("ENABLE_WEBSOCKET_FEED", "false").lower() == "true" else None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +40,16 @@ async def lifespan(app: FastAPI):
     # Initialize services
     await ml_service.initialize()
     await data_service.initialize()
+    
+    # Initialize optional services
+    if gemini_service:
+        await gemini_service.initialize()
+    if reddit_service:
+        await reddit_service.initialize()
+    if news_service:
+        await news_service.initialize()
+    if websocket_service:
+        await websocket_service.initialize()
     
     # Start background tasks
     asyncio.create_task(ml_service.start_model_monitoring())
@@ -44,6 +63,17 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down GenX-EA Trading Platform API...")
     await ml_service.shutdown()
     await data_service.shutdown()
+    
+    # Shutdown optional services
+    if gemini_service:
+        await gemini_service.shutdown()
+    if reddit_service:
+        await reddit_service.shutdown()
+    if news_service:
+        await news_service.shutdown()
+    if websocket_service:
+        await websocket_service.shutdown()
+    
     logger.info("API shutdown complete")
 
 # Create FastAPI app
