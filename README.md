@@ -1,19 +1,12 @@
 # 🚀 GenX Trading Platform - Advanced AI-Powered Trading System
 
 <div align="left">
-
   <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.remote-server" target="_blank" rel="noopener noreferrer">
-
     <img src="https://img.shields.io/badge/VS%20Code-Install%20Server-blue?style=flat" alt="VS Code Install Server">
-
   </a>
-
   <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.remote-server-insiders" target="_blank" rel="noopener noreferrer">
-
     <img src="https://img.shields.io/badge/VS%20Code%20Insiders-Install%20Server-green?style=flat" alt="VS Code Insiders Install Server">
-
   </a>
-
 </div>
 
 [![Open in VS Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mouy-leng/GenX-EA_Script)
