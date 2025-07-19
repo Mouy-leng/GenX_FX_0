@@ -1,13 +1,24 @@
 # 🚀 GenX Trading Platform - Advanced AI-Powered Trading System
 
 <div align="left">
+
   <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.remote-server" target="_blank" rel="noopener noreferrer">
+
     <img src="https://img.shields.io/badge/VS%20Code-Install%20Server-blue?style=flat" alt="VS Code Install Server">
+
   </a>
+
   <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.remote-server-insiders" target="_blank" rel="noopener noreferrer">
+
     <img src="https://img.shields.io/badge/VS%20Code%20Insiders-Install%20Server-green?style=flat" alt="VS Code Insiders Install Server">
+
   </a>
+
 </div>
+
+[![Open in VS Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mouy-leng/GenX-EA_Script)
+
+[![Open in VS Code Insiders](https://open.vscode.dev/badges/open-in-vscode-insiders.svg)](https://open.vscode.dev/Mouy-leng/GenX-EA_Script)
 
 [![GitHub License](https://img.shields.io/github/license/Mouy-leng/GenX-EA_Script)](https://github.com/Mouy-leng/GenX-EA_Script/blob/main/LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
@@ -346,6 +357,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ✅ **WebSocket Streams** - Real-time data from multiple exchanges  
 ✅ **Production Ready** - Complete Docker deployment with monitoring  
 ✅ **AMP Integration** - Plugin-based architecture with AMP commands  
+
+---
+
+## CLI
+
+This project includes a command-line interface (CLI) to help with development and automation. For more information, please see the [GenX CLI README](genx-cli/README.md).
 
 ---
 
