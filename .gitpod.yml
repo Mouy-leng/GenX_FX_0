@@ -1,18 +1,25 @@
-# GitPod configuration for GenZ Trading Platform
-image: gitpod/workspace-python-3.11
+# GitPod configuration for GenX Trading Platform
+
+image:
+  file: .gitpod.Dockerfile
 
 tasks:
-  - name: Setup Python Environment
+  - name: Setup Environment
     init: |
-      pip install -r requirements.txt
+      echo "Setting up environment..."
+      # Copy the example environment file
+      cp .env.example .env
+      echo "Environment setup complete. Please configure your API keys in .env"
     command: |
-      echo "Python environment ready"
-  
-  - name: Setup Client Environment
-    init: |
-      cd client && npm install
+      echo "Workspace is ready!"
+
+  - name: Run Backend Server
     command: |
-      cd client && npm run dev
+      uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  - name: Run Frontend Server
+    command: |
+      npm run dev
 
 vscode:
   extensions:
@@ -25,7 +32,18 @@ vscode:
     - ms-azuretools.vscode-docker
 
 ports:
-  - port: 5173
-    onOpen: open-preview
   - port: 8000
-    onOpen: notify
+    onOpen: open-preview
+    name: "Backend API"
+  - port: 5173
+    onOpen: open-browser
+    name: "Frontend App"
+  - port: 5432
+    onOpen: ignore
+    name: "PostgreSQL"
+  - port: 6379
+    onOpen: ignore
+    name: "Redis"
+  - port: 27017
+    onOpen: ignore
+    name: "MongoDB"
