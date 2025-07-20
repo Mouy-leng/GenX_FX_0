@@ -355,6 +355,36 @@ This project includes a command-line interface (CLI) to help with development an
 
 ---
 
+## Technical Stack
+
+### Python Dependencies
+
+- **Web Framework**: FastAPI, Uvicorn
+- **Data Science/ML**: Pandas, NumPy, joblib (for scikit-learn models), Google Generative AI
+- **Financial Data APIS**: `alpha_vantage`, `finnhub-python`, `pybit`
+- **News APIS**: `newsapi-python`
+- **Social Media APIS**: `praw` (Reddit)
+- **Async**: `aiohttp`, `asyncio`
+- **Testing**: `pytest`, `pytest-asyncio`
+
+### JavaScript Dependencies
+
+- **Framework**: React
+- **Server**: Express, tsx
+- **Database**: Drizzle ORM, Neon serverless
+- **Real-time**: Socket.IO
+- **UI**: Tailwind CSS, Radix UI (via `class-variance-authority`, `lucide-react`, etc.)
+- **Testing**: Vitest
+
+### Summary
+
+This project is a full-stack trading platform with a Python backend and a JavaScript frontend.
+
+- The backend is built with **FastAPI** and uses a variety of libraries for data science, machine learning, and financial data analysis. It also includes integrations with various APIs for news and social media.
+- The frontend is a **React** application that uses **Vite** for building and **Tailwind CSS** for styling.
+- The application is containerized using **Docker** and is ready for deployment on **DigitalOcean**.
+- The project also includes **Expert Advisors** for **MetaTrader 4 and 5**.
+
 **⚡ GenX Trading Platform - Where AI meets Trading Excellence**
 
 *Built with ❤️ by the GenX Trading Team*
