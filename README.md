@@ -1,5 +1,14 @@
 # 🚀 GenX Trading Platform - Advanced AI-Powered Trading System
 
+<div align="left">
+  <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.remote-server" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/VS%20Code-Install%20Server-blue?style=flat" alt="VS Code Install Server">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.remote-server-insiders" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/VS%20Code%20Insiders-Install%20Server-green?style=flat" alt="VS Code Insiders Install Server">
+  </a>
+</div>
+
 [![GitHub License](https://img.shields.io/github/license/Mouy-leng/GenX-EA_Script)](https://github.com/Mouy-leng/GenX-EA_Script/blob/main/LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-green)](https://www.python.org/)
@@ -339,6 +348,42 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ✅ **AMP Integration** - Plugin-based architecture with AMP commands  
 
 ---
+
+## CLI
+
+This project includes a command-line interface (CLI) to help with development and automation. For more information, please see the [GenX CLI README](genx-cli/README.md).
+
+---
+
+## Technical Stack
+
+### Python Dependencies
+
+- **Web Framework**: FastAPI, Uvicorn
+- **Data Science/ML**: Pandas, NumPy, joblib (for scikit-learn models), Google Generative AI
+- **Financial Data APIS**: `alpha_vantage`, `finnhub-python`, `pybit`
+- **News APIS**: `newsapi-python`
+- **Social Media APIS**: `praw` (Reddit)
+- **Async**: `aiohttp`, `asyncio`
+- **Testing**: `pytest`, `pytest-asyncio`
+
+### JavaScript Dependencies
+
+- **Framework**: React
+- **Server**: Express, tsx
+- **Database**: Drizzle ORM, Neon serverless
+- **Real-time**: Socket.IO
+- **UI**: Tailwind CSS, Radix UI (via `class-variance-authority`, `lucide-react`, etc.)
+- **Testing**: Vitest
+
+### Summary
+
+This project is a full-stack trading platform with a Python backend and a JavaScript frontend.
+
+- The backend is built with **FastAPI** and uses a variety of libraries for data science, machine learning, and financial data analysis. It also includes integrations with various APIs for news and social media.
+- The frontend is a **React** application that uses **Vite** for building and **Tailwind CSS** for styling.
+- The application is containerized using **Docker** and is ready for deployment on **DigitalOcean**.
+- The project also includes **Expert Advisors** for **MetaTrader 4 and 5**.
 
 **⚡ GenX Trading Platform - Where AI meets Trading Excellence**
 

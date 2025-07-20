@@ -1,4 +1,5 @@
 import pytest
+import os
 from core.execution.bybit import BybitAPI
 
 @pytest.fixture
@@ -7,6 +8,9 @@ def bybit_api(mocker):
     Pytest fixture to mock the pybit HTTP session.
     This prevents real API calls during tests.
     """
+    # Mock environment variables
+    mocker.patch.dict(os.environ, {"BYBIT_API_KEY": "test_key", "BYBIT_API_SECRET": "test_secret"})
+
     # Mock the HTTP class from pybit.unified_trading
     mock_session = mocker.patch('pybit.unified_trading.HTTP', autospec=True)
 
