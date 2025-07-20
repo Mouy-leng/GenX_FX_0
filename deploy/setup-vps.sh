@@ -279,6 +279,50 @@ EOF
 systemctl daemon-reload
 systemctl enable genx-trading.service
 
+# --- Gitpod Self-Hosted Runner Setup ---
+echo -e "${YELLOW}Setting up Gitpod Self-Hosted Runner...${NC}"
+
+# 1. Create a dedicated user for the runner for security
+echo -e "${YELLOW}Creating 'gitpod' user...${NC}"
+if ! id "gitpod" &>/dev/null; then
+    useradd -m -s /bin/bash gitpod
+    usermod -aG docker gitpod
+    echo -e "${GREEN}'gitpod' user created and added to docker group.${NC}"
+else
+    echo -e "${GREEN}'gitpod' user already exists.${NC}"
+fi
+
+# 2. Install Gitpod CLI
+echo -e "${YELLOW}Installing Gitpod CLI...${NC}"
+wget -O /tmp/gitpod "https://releases.gitpod.io/cli/stable/gitpod-linux-amd64"
+chmod +x /tmp/gitpod
+mv /tmp/gitpod /usr/local/bin/gitpod
+
+# 3. Create systemd service for the Gitpod runner
+echo -e "${YELLOW}Creating systemd service for Gitpod runner...${NC}"
+cat > /etc/systemd/system/gitpod-runner.service << 'EOF'
+[Unit]
+Description=Gitpod Self-Hosted Runner
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+User=gitpod
+Group=gitpod
+ExecStart=/usr/local/bin/gitpod runner run
+Restart=always
+RestartSec=10
+Environment="HOME=/home/gitpod"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable the service (but don't start it yet, requires setup)
+systemctl daemon-reload
+systemctl enable gitpod-runner.service
+echo -e "${GREEN}Gitpod runner service created and enabled. Manual setup is required to start.${NC}"
+
 # Create backup script
 echo -e "${YELLOW}Creating backup script...${NC}"
 cat > /usr/local/bin/backup-genx.sh << 'EOF'
