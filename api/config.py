@@ -16,49 +16,49 @@ class Settings(BaseSettings):
     DESCRIPTION: str = "Advanced AI-powered trading platform with real-time market analysis"
     
     # Database
-    DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/trading_db")
-    MONGODB_URL: Optional[str] = os.getenv("MONGODB_URL", "mongodb://localhost:27017/trading_db")
+    DATABASE_URL: str = "postgresql://user:password@localhost/trading_db"
+    MONGODB_URL: str = "mongodb://localhost:27017/trading_db"
     
     # Redis for caching
-    REDIS_URL: Optional[str] = os.getenv("REDIS_URL", "redis://localhost:6379")
+    REDIS_URL: str = "redis://localhost:6379"
     
     # AI Model Configuration
     MODEL_PATH: str = "ai_models/market_predictor.joblib"
     ENSEMBLE_MODEL_PATH: str = "ai_models/ensemble_model.joblib"
     
     # Trading Configuration
-    DEFAULT_SYMBOL: str = "BTCUSDT"
+    DEFAULT_SYMBOL: str = "BTCUSDT" # Pydantic will automatically use the env var if present
     MAX_POSITION_SIZE: float = 0.1
     RISK_PERCENTAGE: float = 0.02
     
     # External APIs
-    BYBIT_API_KEY: Optional[str] = os.getenv("BYBIT_API_KEY")
-    BYBIT_API_SECRET: Optional[str] = os.getenv("BYBIT_API_SECRET")
-    GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
-    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
-    NEWS_API_KEY: Optional[str] = os.getenv("NEWS_API_KEY")
-    NEWSDATA_API_KEY: Optional[str] = os.getenv("NEWSDATA_API_KEY")
-    ALPHAVANTAGE_API_KEY: Optional[str] = os.getenv("ALPHAVANTAGE_API_KEY")
-    FINNHUB_API_KEY: Optional[str] = os.getenv("FINNHUB_API_KEY")
+    BYBIT_API_KEY: Optional[str] = None
+    BYBIT_API_SECRET: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    NEWS_API_KEY: Optional[str] = None
+    NEWSDATA_API_KEY: Optional[str] = None
+    ALPHAVANTAGE_API_KEY: Optional[str] = None
+    FINNHUB_API_KEY: Optional[str] = None
     
     # Social Media APIs
-    REDDIT_CLIENT_ID: Optional[str] = os.getenv("REDDIT_CLIENT_ID")
-    REDDIT_CLIENT_SECRET: Optional[str] = os.getenv("REDDIT_CLIENT_SECRET")
-    REDDIT_USERNAME: Optional[str] = os.getenv("REDDIT_USERNAME")
-    REDDIT_PASSWORD: Optional[str] = os.getenv("REDDIT_PASSWORD")
-    REDDIT_USER_AGENT: Optional[str] = os.getenv("REDDIT_USER_AGENT")
+    REDDIT_CLIENT_ID: Optional[str] = None
+    REDDIT_CLIENT_SECRET: Optional[str] = None
+    REDDIT_USERNAME: Optional[str] = None
+    REDDIT_PASSWORD: Optional[str] = None
+    REDDIT_USER_AGENT: Optional[str] = None
     
     # Notification Services
-    TELEGRAM_BOT_TOKEN: Optional[str] = os.getenv("TELEGRAM_BOT_TOKEN")
-    TELEGRAM_USER_ID: Optional[str] = os.getenv("TELEGRAM_USER_ID")
-    GMAIL_USER: Optional[str] = os.getenv("GMAIL_USER")
-    GMAIL_PASSWORD: Optional[str] = os.getenv("GMAIL_PASSWORD")
-    GMAIL_APP_API_KEY: Optional[str] = os.getenv("GMAIL_APP_API_KEY")
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
+    TELEGRAM_USER_ID: Optional[str] = None
+    GMAIL_USER: Optional[str] = None
+    GMAIL_PASSWORD: Optional[str] = None
+    GMAIL_APP_API_KEY: Optional[str] = None
     
     # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
-    JWT_SECRET_KEY: Optional[str] = os.getenv("JWT_SECRET_KEY")
-    CRYPTION_KEY: Optional[str] = os.getenv("CRYPTION_KEY")
+    SECRET_KEY: str = "your-secret-key-here"
+    JWT_SECRET_KEY: Optional[str] = None
+    CRYPTION_KEY: Optional[str] = None
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
