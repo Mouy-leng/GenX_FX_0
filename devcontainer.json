@@ -24,7 +24,7 @@
     }
   },
   "forwardPorts": [3000, 5173, 8000],
-  "postCreateCommand": "npm --prefix client install && npm --prefix server install && pip install -r python/requirements.txt",
+  "postCreateCommand": "npm install && pip install -r python/requirements.txt",
   "remoteEnv": {
     "PYTHONPATH": "/workspaces/GenX_FX/python"
   },
