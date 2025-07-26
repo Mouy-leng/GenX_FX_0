@@ -3,7 +3,7 @@
 **Advanced AI-Powered Forex Signal Generator for MT4/5 Expert Advisors**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://hub.docker.com/r/mouyleng/mouy-leng)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://hub.docker.com/r/keamouyleng/genx-fx)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Build%20%26%20Push-green.svg)](https://github.com/Mouy-leng/GenX_FX/actions)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![AMP CLI](https://img.shields.io/badge/AMP%20CLI-Available-orange.svg)](https://github.com/Mouy-leng/GenX_FX)
@@ -194,14 +194,13 @@ graph TB
         end
         
         subgraph "External APIs"
-            DOCKER_HUB[Docker Hub<br/>mouyleng/mouy-leng]
+            DOCKER_HUB[Docker Hub<br/>keamouyleng/genx-fx]
             GITHUB[GitHub Actions<br/>Auto Build & Push]
         end
     end
     
     subgraph "External Services"
         FXCM_API[FXCM API]
-        BYBIT_API[Bybit API]
         GEMINI_API[Gemini AI API]
         REDDIT_API[Reddit API]
         NEWS_API[News APIs]
@@ -223,7 +222,6 @@ graph TB
     AMP --> GRAFANA
     
     AMP --> FXCM_API
-    AMP --> BYBIT_API
     AMP --> GEMINI_API
     AMP --> REDDIT_API
     AMP --> NEWS_API
@@ -241,7 +239,7 @@ graph TB
     
     class AMP container
     class REDIS,POSTGRES,GRAFANA,DOCKER_HUB,GITHUB service
-    class FXCM_API,BYBIT_API,GEMINI_API,REDDIT_API,NEWS_API external
+    class FXCM_API,GEMINI_API,REDDIT_API,NEWS_API external
     class EXCEL,CSV,JSON,LOGS output
 ```
 
@@ -249,7 +247,7 @@ graph TB
 
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/Mouy-leng/GenX_FX/actions)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A%2B-brightgreen.svg)](https://github.com/Mouy-leng/GenX_FX)
-[![Docker Pulls](https://img.shields.io/docker/pulls/mouyleng/mouy-leng.svg)](https://hub.docker.com/r/mouyleng/mouy-leng)
+[![Docker Pulls](https://img.shields.io/docker/pulls/keamouyleng/genx-fx.svg)](https://hub.docker.com/r/keamouyleng/genx-fx)
 [![GitHub Stars](https://img.shields.io/github/stars/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/network)
 [![GitHub Issues](https://img.shields.io/github/issues/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/issues)
@@ -288,7 +286,7 @@ graph TB
 
 ### 🐳 **Deploy with Docker (Recommended)**
 
-[![Deploy to Docker](https://img.shields.io/badge/Deploy%20to-Docker-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/mouyleng/mouy-leng)
+[![Deploy to Docker](https://img.shields.io/badge/Deploy%20to-Docker-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/keamouyleng/genx-fx)
 [![Deploy with Docker Compose](https://img.shields.io/badge/Deploy%20with-Docker%20Compose-green?style=for-the-badge&logo=docker)](https://github.com/Mouy-leng/GenX_FX/blob/main/docker-compose.amp.yml)
 
 ```bash

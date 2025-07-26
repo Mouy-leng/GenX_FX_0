@@ -11,7 +11,7 @@ env:
   
   # Docker Configuration
   DOCKER_USERNAME: lengkundee01@gmail.com
-  DOCKER_IMAGE: mouyleng/mouy-leng
+  DOCKER_IMAGE: keamouyleng/genx-fx
   DOCKER_TAG: latest
   
   # Python Configuration

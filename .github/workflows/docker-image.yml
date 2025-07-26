@@ -30,6 +30,6 @@ jobs:
           context: .
           push: true
           tags: |
-            mouyleng/mouy-leng:latest
-            mouyleng/mouy-leng:${{ github.sha }}
-            mouyleng/mouy-leng:${{ github.ref_name }}
+            keamouyleng/genx-fx:latest
+            keamouyleng/genx-fx:${{ github.sha }}
+            keamouyleng/genx-fx:${{ github.ref_name }}
