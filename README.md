@@ -2,6 +2,12 @@
 
 **Advanced AI-Powered Forex Signal Generator for MT4/5 Expert Advisors**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://hub.docker.com/r/mouyleng/mouy-leng)
+[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Build%20%26%20Push-green.svg)](https://github.com/Mouy-leng/GenX_FX/actions)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![AMP CLI](https://img.shields.io/badge/AMP%20CLI-Available-orange.svg)](https://github.com/Mouy-leng/GenX_FX)
+
 GenX FX is a sophisticated trading system that uses ensemble machine learning models to generate high-quality forex trading signals. Designed specifically to feed signals to MetaTrader 4/5 Expert Advisors through Excel/CSV files.
 
 ## 🏗️ System Architecture
@@ -239,6 +245,16 @@ graph TB
     class EXCEL,CSV,JSON,LOGS output
 ```
 
+## 📊 **Project Status**
+
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/Mouy-leng/GenX_FX/actions)
+[![Code Quality](https://img.shields.io/badge/Code%20Quality-A%2B-brightgreen.svg)](https://github.com/Mouy-leng/GenX_FX)
+[![Docker Pulls](https://img.shields.io/docker/pulls/mouyleng/mouy-leng.svg)](https://hub.docker.com/r/mouyleng/mouy-leng)
+[![GitHub Stars](https://img.shields.io/github/stars/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/network)
+[![GitHub Issues](https://img.shields.io/github/issues/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Mouy-leng/GenX_FX.svg)](https://github.com/Mouy-leng/GenX_FX/pulls)
+
 ## ✨ Key Features
 
 ### 🤖 **Advanced AI Engine**
@@ -270,15 +286,28 @@ graph TB
 
 ## 🚀 Quick Start
 
-### 1. Installation
+### 🐳 **Deploy with Docker (Recommended)**
+
+[![Deploy to Docker](https://img.shields.io/badge/Deploy%20to-Docker-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/mouyleng/mouy-leng)
+[![Deploy with Docker Compose](https://img.shields.io/badge/Deploy%20with-Docker%20Compose-green?style=for-the-badge&logo=docker)](https://github.com/Mouy-leng/GenX_FX/blob/main/docker-compose.amp.yml)
+
+```bash
+# Quick deployment with Docker Compose
+git clone https://github.com/Mouy-leng/GenX_FX.git
+cd GenX_FX
+docker-compose -f docker-compose.amp.yml up -d
+```
+
+### 📦 **Manual Installation**
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/genx-fx-trading.git
-cd genx-fx-trading
+git clone https://github.com/Mouy-leng/GenX_FX.git
+cd GenX_FX
 
 # Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-amp.txt
 
 # Create necessary directories
 mkdir -p config logs signal_output ai_models
@@ -550,7 +579,56 @@ genx-fx-trading/
 └── requirements.txt           # Python dependencies
 ```
 
-## 🚀 Next Steps
+## 🚀 Deployment Options
+
+### 🐳 **Docker Deployment (Recommended)**
+
+[![Deploy to DigitalOcean](https://img.shields.io/badge/Deploy%20to-DigitalOcean-blue?style=for-the-badge&logo=digitalocean)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/Mouy-leng/GenX_FX)
+[![Deploy to Heroku](https://img.shields.io/badge/Deploy%20to-Heroku-purple?style=for-the-badge&logo=heroku)](https://heroku.com/deploy?template=https://github.com/Mouy-leng/GenX_FX)
+[![Deploy to Railway](https://img.shields.io/badge/Deploy%20to-Railway-blue?style=for-the-badge&logo=railway)](https://railway.app/template/new?template=https://github.com/Mouy-leng/GenX_FX)
+
+### ☁️ **Cloud Deployment**
+
+#### **AWS Deployment**
+```bash
+# Deploy to AWS ECS
+aws ecs create-cluster --cluster-name genx-trading
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+aws ecs create-service --cluster genx-trading --service-name genx-service --task-definition genx-trading:1
+```
+
+#### **Google Cloud Platform**
+```bash
+# Deploy to GCP Cloud Run
+gcloud run deploy genx-trading --image gcr.io/PROJECT_ID/mouyleng/mouy-leng:latest --platform managed
+```
+
+#### **Azure Container Instances**
+```bash
+# Deploy to Azure
+az container create --resource-group myResourceGroup --name genx-trading --image mouyleng/mouy-leng:latest --dns-name-label genx-trading
+```
+
+### 🏠 **Local Development**
+
+```bash
+# Clone and setup
+git clone https://github.com/Mouy-leng/GenX_FX.git
+cd GenX_FX
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-amp.txt
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# Run locally
+python -m amp_cli
+```
+
+## 🎯 Next Steps
 
 1. **Setup & Test**: Install and run sample signal generation
 2. **MT4/5 Integration**: Create EA to read CSV signals
