@@ -4,6 +4,241 @@
 
 GenX FX is a sophisticated trading system that uses ensemble machine learning models to generate high-quality forex trading signals. Designed specifically to feed signals to MetaTrader 4/5 Expert Advisors through Excel/CSV files.
 
+## 🏗️ System Architecture
+
+```mermaid
+graph TB
+    %% User Interface Layer
+    subgraph "User Interface"
+        CLI[AMP CLI]
+        WEB[Web Dashboard]
+        API[REST API]
+    end
+
+    %% Authentication Layer
+    subgraph "Authentication"
+        AUTH[Token Auth]
+        SESSION[Session Mgmt]
+        USER[User Context]
+    end
+
+    %% Core Services Layer
+    subgraph "Core Services"
+        JOB_RUNNER[Job Runner]
+        SCHEDULER[Scheduler]
+        MONITOR[Monitor]
+    end
+
+    %% Integration Layer
+    subgraph "Integrations"
+        GEMINI[Gemini AI]
+        REDDIT[Reddit Signals]
+        NEWS[News Aggregator]
+        WEBSOCKET[WebSocket Streams]
+    end
+
+    %% Data Layer
+    subgraph "Data Sources"
+        FXCM[FXCM API]
+        BYBIT[Bybit API]
+        NEWS_API[News APIs]
+        REDDIT_API[Reddit API]
+    end
+
+    %% Processing Layer
+    subgraph "Processing"
+        AI_ENGINE[AI Engine]
+        SIGNAL_GEN[Signal Generator]
+        RISK_MGMT[Risk Management]
+        VALIDATION[Signal Validation]
+    end
+
+    %% Output Layer
+    subgraph "Output"
+        EXCEL[Excel Dashboard]
+        CSV_MT4[MT4 CSV]
+        CSV_MT5[MT5 CSV]
+        JSON_API[JSON API]
+    end
+
+    %% Infrastructure Layer
+    subgraph "Infrastructure"
+        DOCKER[Docker Container]
+        DB[(Database)]
+        REDIS[(Redis Cache)]
+        LOGS[Logs]
+    end
+
+    %% Connections
+    CLI --> AUTH
+    WEB --> AUTH
+    API --> AUTH
+    
+    AUTH --> USER
+    USER --> JOB_RUNNER
+    USER --> SCHEDULER
+    USER --> MONITOR
+    
+    JOB_RUNNER --> GEMINI
+    JOB_RUNNER --> REDDIT
+    JOB_RUNNER --> NEWS
+    JOB_RUNNER --> WEBSOCKET
+    
+    GEMINI --> AI_ENGINE
+    REDDIT --> SIGNAL_GEN
+    NEWS --> SIGNAL_GEN
+    WEBSOCKET --> SIGNAL_GEN
+    
+    FXCM --> SIGNAL_GEN
+    BYBIT --> SIGNAL_GEN
+    NEWS_API --> NEWS
+    REDDIT_API --> REDDIT
+    
+    SIGNAL_GEN --> AI_ENGINE
+    AI_ENGINE --> RISK_MGMT
+    RISK_MGMT --> VALIDATION
+    VALIDATION --> EXCEL
+    VALIDATION --> CSV_MT4
+    VALIDATION --> CSV_MT5
+    VALIDATION --> JSON_API
+    
+    DOCKER --> DB
+    DOCKER --> REDIS
+    DOCKER --> LOGS
+    
+    %% Styling
+    classDef userInterface fill:#e1f5fe
+    classDef auth fill:#fff3e0
+    classDef core fill:#f3e5f5
+    classDef integration fill:#e8f5e8
+    classDef data fill:#fff8e1
+    classDef processing fill:#fce4ec
+    classDef output fill:#e0f2f1
+    classDef infrastructure fill:#f1f8e9
+    
+    class CLI,WEB,API userInterface
+    class AUTH,SESSION,USER auth
+    class JOB_RUNNER,SCHEDULER,MONITOR core
+    class GEMINI,REDDIT,NEWS,WEBSOCKET integration
+    class FXCM,BYBIT,NEWS_API,REDDIT_API data
+    class AI_ENGINE,SIGNAL_GEN,RISK_MGMT,VALIDATION processing
+    class EXCEL,CSV_MT4,CSV_MT5,JSON_API output
+    class DOCKER,DB,REDIS,LOGS infrastructure
+```
+
+## 🔄 Workflow Diagram
+
+```mermaid
+flowchart TD
+    START([Start AMP System]) --> AUTH{Authenticated?}
+    AUTH -->|No| LOGIN[Login with Token]
+    AUTH -->|Yes| INIT[Initialize Services]
+    LOGIN --> INIT
+    
+    INIT --> SCHEDULE{Start Scheduler?}
+    SCHEDULE -->|Yes| SCHEDULER[Start Job Scheduler]
+    SCHEDULE -->|No| MANUAL[Manual Job Execution]
+    
+    SCHEDULER --> WAIT[Wait for Next Job]
+    MANUAL --> RUN_JOB[Run Next Job]
+    WAIT --> RUN_JOB
+    
+    RUN_JOB --> COLLECT[Collect Market Data]
+    COLLECT --> GATHER[Gather News & Sentiment]
+    GATHER --> AI_PREDICT[Generate AI Predictions]
+    AI_PREDICT --> SIGNALS[Generate Trading Signals]
+    SIGNALS --> VALIDATE[Validate Signals]
+    
+    VALIDATE --> EXECUTE{Execute Trades?}
+    EXECUTE -->|Yes| TRADE[Execute Trades]
+    EXECUTE -->|No| REPORT[Generate Reports]
+    TRADE --> REPORT
+    
+    REPORT --> LOG[Log Results]
+    LOG --> MONITOR[Update Monitoring]
+    MONITOR --> NEXT{Continue?}
+    NEXT -->|Yes| WAIT
+    NEXT -->|No| STOP([Stop System])
+    
+    %% Styling
+    classDef startEnd fill:#ff9999
+    classDef process fill:#99ccff
+    classDef decision fill:#ffcc99
+    classDef data fill:#99ff99
+    
+    class START,STOP startEnd
+    class LOGIN,INIT,SCHEDULER,MANUAL,RUN_JOB,COLLECT,GATHER,AI_PREDICT,SIGNALS,TRADE,REPORT,LOG,MONITOR process
+    class AUTH,SCHEDULE,EXECUTE,NEXT decision
+    class WAIT data
+```
+
+## 🐳 Docker Deployment Architecture
+
+```mermaid
+graph TB
+    subgraph "Docker Host"
+        subgraph "AMP Trading System"
+            AMP[AMP Container<br/>mouyleng/mouy-leng:latest]
+        end
+        
+        subgraph "Supporting Services"
+            REDIS[Redis Cache]
+            POSTGRES[PostgreSQL DB]
+            GRAFANA[Grafana Dashboard]
+        end
+        
+        subgraph "External APIs"
+            DOCKER_HUB[Docker Hub<br/>mouyleng/mouy-leng]
+            GITHUB[GitHub Actions<br/>Auto Build & Push]
+        end
+    end
+    
+    subgraph "External Services"
+        FXCM_API[FXCM API]
+        BYBIT_API[Bybit API]
+        GEMINI_API[Gemini AI API]
+        REDDIT_API[Reddit API]
+        NEWS_API[News APIs]
+    end
+    
+    subgraph "Output Files"
+        EXCEL[Excel Dashboard]
+        CSV[CSV Signals]
+        JSON[JSON API]
+        LOGS[System Logs]
+    end
+    
+    %% Connections
+    GITHUB --> DOCKER_HUB
+    DOCKER_HUB --> AMP
+    
+    AMP --> REDIS
+    AMP --> POSTGRES
+    AMP --> GRAFANA
+    
+    AMP --> FXCM_API
+    AMP --> BYBIT_API
+    AMP --> GEMINI_API
+    AMP --> REDDIT_API
+    AMP --> NEWS_API
+    
+    AMP --> EXCEL
+    AMP --> CSV
+    AMP --> JSON
+    AMP --> LOGS
+    
+    %% Styling
+    classDef container fill:#e3f2fd
+    classDef service fill:#f3e5f5
+    classDef external fill:#e8f5e8
+    classDef output fill:#fff3e0
+    
+    class AMP container
+    class REDIS,POSTGRES,GRAFANA,DOCKER_HUB,GITHUB service
+    class FXCM_API,BYBIT_API,GEMINI_API,REDDIT_API,NEWS_API external
+    class EXCEL,CSV,JSON,LOGS output
+```
+
 ## ✨ Key Features
 
 ### 🤖 **Advanced AI Engine**
