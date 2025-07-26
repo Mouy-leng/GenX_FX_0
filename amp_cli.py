@@ -428,6 +428,35 @@ def run():
     except ImportError:
         console.print("❌ [bold red]AMP Job Runner not found. Please ensure amp_job_runner.py exists.")
 
+@app.command()
+def auth(
+    token: Optional[str] = typer.Option(None, "--token", help="Authentication token"),
+    logout: bool = typer.Option(False, "--logout", help="Logout current user"),
+    status: bool = typer.Option(False, "--status", help="Show authentication status")
+):
+    """Manage authentication"""
+    try:
+        from amp_auth import authenticate_user, check_auth, logout_user, get_user_info
+        
+        if logout:
+            logout_user()
+        elif status:
+            if check_auth():
+                user_info = get_user_info()
+                console.print(f"✅ [bold green]Authenticated as: {user_info['user_id']}")
+            else:
+                console.print("❌ [bold red]Not authenticated")
+        elif token:
+            if authenticate_user(token):
+                console.print("✅ [bold green]Authentication successful!")
+            else:
+                console.print("❌ [bold red]Authentication failed!")
+        else:
+            console.print("Please provide a token with --token or use --status to check current auth")
+            
+    except ImportError:
+        console.print("❌ [bold red]Authentication module not found")
+
 def main():
     """Main function"""
     app()
