@@ -37,18 +37,18 @@ Once the build completes, you can verify the image was pushed:
 
 ```bash
 # Check if the image exists in Docker Hub
-docker pull mouyleng/mouy-leng:latest
+docker pull keamouyleng/genx-fx:latest
 
 # Or check via Docker Hub website
-# https://hub.docker.com/r/mouyleng/mouy-leng
+# https://hub.docker.com/r/keamouyleng/genx-fx
 ```
 
 ## 🏷️ **Docker Image Tags**
 
 The workflow will create the following tags:
-- `mouyleng/mouy-leng:latest` - Latest version
-- `mouyleng/mouy-leng:{commit-sha}` - Specific commit
-- `mouyleng/mouy-leng:{branch-name}` - Branch-specific
+- `keamouyleng/genx-fx:latest` - Latest version
+- `keamouyleng/genx-fx:{commit-sha}` - Specific commit
+- `keamouyleng/genx-fx:{branch-name}` - Branch-specific
 
 ## 🔧 **What's Included in the Docker Image**
 
@@ -67,7 +67,7 @@ Once the image is built, you can use it:
 
 ```bash
 # Pull the image
-docker pull mouyleng/mouy-leng:latest
+docker pull keamouyleng/genx-fx:latest
 
 # Run the container
 docker run -d \
@@ -76,7 +76,7 @@ docker run -d \
   -v $(pwd)/logs:/app/logs \
   -v $(pwd)/data:/app/data \
   --env-file .env \
-  mouyleng/mouy-leng:latest
+  keamouyleng/genx-fx:latest
 
 # Access AMP CLI inside container
 docker exec -it amp-system amp --help

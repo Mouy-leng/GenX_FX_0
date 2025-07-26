@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   amp-system:
-    image: mouyleng/mouy-leng:latest
+    image: keamouyleng/genx-fx:latest
     container_name: amp-trading-system
     restart: unless-stopped
     ports:

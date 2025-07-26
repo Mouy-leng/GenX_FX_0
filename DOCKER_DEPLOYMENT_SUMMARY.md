@@ -14,7 +14,7 @@
 - ✅ **Docker Compose** - Created for easy deployment
 
 ### **3. Docker Repository Setup**
-- ✅ **Repository**: `mouyleng/mouy-leng`
+- ✅ **Repository**: `keamouyleng/genx-fx`
 - ✅ **Tags**: `latest`, `{commit-sha}`, `{branch-name}`
 - ✅ **Credentials**: Configured for automated push
 
@@ -69,7 +69,7 @@ docker exec -it amp-trading-system amp status
 
 ## 📊 **Docker Image Details**
 
-### **Image Name**: `mouyleng/mouy-leng:latest`
+### **Image Name**: `keamouyleng/genx-fx:latest`
 ### **Base**: Python 3.11-slim
 ### **Size**: ~500MB (estimated)
 ### **Ports**: 8000 (API), 3000 (Grafana), 5432 (PostgreSQL), 6379 (Redis)
@@ -120,7 +120,7 @@ python -m amp_scheduler      # Run scheduler directly
 
 ```bash
 # 1. Pull the image
-docker pull mouyleng/mouy-leng:latest
+docker pull keamouyleng/genx-fx:latest
 
 # 2. Create .env file with your API keys
 cp .env.example .env

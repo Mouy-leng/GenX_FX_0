@@ -218,11 +218,11 @@ docker_ops() {
     case "$1" in
         "build")
             print_header "Building Docker Image"
-            docker build -f Dockerfile.production -t mouyleng/mouy-leng:latest .
+            docker build -f Dockerfile.production -t keamouyleng/genx-fx:latest .
             ;;
         "run")
             print_header "Running Docker Container"
-            docker run -d --name amp-system -p 8000:8000 mouyleng/mouy-leng:latest
+            docker run -d --name amp-system -p 8000:8000 keamouyleng/genx-fx:latest
             ;;
         "compose")
             print_header "Running with Docker Compose"
