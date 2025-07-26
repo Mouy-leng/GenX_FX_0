@@ -1,8 +1,89 @@
 # 🚀 GenX FX Trading System
 
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-id)
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/your-username/genx-fx-trading)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/your-username/genx-fx-trading)
+[![Deploy with Docker](https://img.shields.io/badge/Deploy%20with-Docker-2496ED?style=flat&logo=docker)](https://github.com/your-username/genx-fx-trading#docker-deployment)
+
 **Advanced AI-Powered Forex Signal Generator for MT4/5 Expert Advisors**
 
 GenX FX is a sophisticated trading system that uses ensemble machine learning models to generate high-quality forex trading signals. Designed specifically to feed signals to MetaTrader 4/5 Expert Advisors through Excel/CSV files.
+
+## 🛠️ Technology Stack
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        A[React 18] --> B[TypeScript]
+        B --> C[Tailwind CSS]
+        C --> D[Vite]
+        A --> E[React Query]
+        A --> F[React Router]
+        A --> G[Recharts]
+    end
+    
+    subgraph "Backend Services"
+        H[FastAPI Python] --> I[Express.js]
+        I --> J[Socket.IO]
+        H --> K[Uvicorn]
+    end
+    
+    subgraph "AI/ML Engine"
+        L[scikit-learn] --> M[XGBoost]
+        M --> N[LightGBM]
+        N --> O[Neural Networks]
+        O --> P[Ensemble Models]
+        L --> Q[TA-Lib]
+    end
+    
+    subgraph "Data Layer"
+        R[PostgreSQL] --> S[MongoDB]
+        S --> T[Redis Cache]
+        T --> U[Drizzle ORM]
+    end
+    
+    subgraph "External APIs"
+        V[FXCM API] --> W[ForexConnect]
+        W --> X[Economic Calendar]
+    end
+    
+    subgraph "DevOps & Deployment"
+        Y[Docker] --> Z[Docker Compose]
+        Z --> AA[DigitalOcean]
+        AA --> BB[Railway]
+        BB --> CC[Heroku]
+    end
+    
+    subgraph "Signal Output"
+        DD[Excel Files] --> EE[CSV for MT4]
+        EE --> FF[CSV for MT5]
+        FF --> GG[JSON API]
+    end
+    
+    A --> H
+    H --> L
+    H --> R
+    H --> V
+    L --> DD
+    Y --> H
+    
+    classDef frontend fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
+    classDef backend fill:#68d391,stroke:#333,stroke-width:2px,color:#000
+    classDef ai fill:#fbb6ce,stroke:#333,stroke-width:2px,color:#000
+    classDef data fill:#a78bfa,stroke:#333,stroke-width:2px,color:#000
+    classDef external fill:#fed7a1,stroke:#333,stroke-width:2px,color:#000
+    classDef devops fill:#92c5f8,stroke:#333,stroke-width:2px,color:#000
+    classDef output fill:#c6f6d5,stroke:#333,stroke-width:2px,color:#000
+    
+    class A,B,C,D,E,F,G frontend
+    class H,I,J,K backend
+    class L,M,N,O,P,Q ai
+    class R,S,T,U data
+    class V,W,X external
+    class Y,Z,AA,BB,CC devops
+    class DD,EE,FF,GG output
+```
 
 ## ✨ Key Features
 
@@ -220,6 +301,87 @@ The system tracks comprehensive performance metrics:
     "multi_timeframe_validation": true
   }
 }
+```
+
+## 🚀 Deployment Options
+
+### 🐳 Docker Deployment
+
+Quick deployment with Docker Compose:
+
+```bash
+# Clone and setup
+git clone https://github.com/your-username/genx-fx-trading.git
+cd genx-fx-trading
+
+# Production deployment
+docker-compose -f docker-compose.production.yml up -d
+
+# Development deployment
+docker-compose up -d
+```
+
+### ☁️ Cloud Deployment
+
+#### **Railway (Recommended)**
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-id)
+
+1. Click the deploy button above
+2. Connect your GitHub repository
+3. Set environment variables (FXCM API keys, database credentials)
+4. Deploy automatically
+
+#### **DigitalOcean App Platform**
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/your-username/genx-fx-trading)
+
+1. Click the deploy button above
+2. Connect your GitHub account
+3. Configure environment variables
+4. Choose your plan and deploy
+
+#### **Heroku**
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/your-username/genx-fx-trading)
+
+1. Click the deploy button above
+2. Set app name and region
+3. Configure environment variables
+4. Deploy to Heroku
+
+### 🛠️ Manual VPS Deployment
+
+For advanced users with VPS:
+
+```bash
+# Setup script for Ubuntu/Debian
+chmod +x deploy/setup-vps.sh
+./deploy/setup-vps.sh
+
+# Or follow the detailed guide
+cat deploy/dual-vps-deployment.md
+```
+
+### 📋 Environment Variables
+
+Required environment variables for deployment:
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:password@host:5432/genx_trading
+MONGODB_URL=mongodb://host:27017/genx_trading
+REDIS_URL=redis://host:6379
+
+# API Keys
+FXCM_ACCESS_TOKEN=your_fxcm_token
+BYBIT_API_KEY=your_bybit_key
+BYBIT_API_SECRET=your_bybit_secret
+
+# Security
+SECRET_KEY=your_secret_key_here
+JWT_SECRET=your_jwt_secret
+
+# Application
+LOG_LEVEL=INFO
+ENVIRONMENT=production
 ```
 
 ## 🔌 FXCM Integration
