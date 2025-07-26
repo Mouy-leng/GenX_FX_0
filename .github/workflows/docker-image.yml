@@ -3,8 +3,8 @@ name: Build & Push Docker Image
 on:
   push:
     branches:
-      - main
       - cursor/check-docker-and-container-registration-status-5116
+      - feature/fxcm-integration-with-spreadsheet
   workflow_dispatch:
 
 jobs:
@@ -33,3 +33,4 @@ jobs:
             keamouyleng/genx-fx:latest
             keamouyleng/genx-fx:${{ github.sha }}
             keamouyleng/genx-fx:${{ github.ref_name }}
+            mouyleng/genx-ea-script:latest

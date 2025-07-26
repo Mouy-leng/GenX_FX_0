@@ -21,16 +21,22 @@ env:
 ports:
   - port: 8000
     onOpen: open-preview
-    name: AMP API
+    name: "Backend API"
+  - port: 5173
+    onOpen: open-browser
+    name: "Frontend App"
   - port: 3000
     onOpen: open-preview
     name: Grafana Dashboard
   - port: 5432
     onOpen: ignore
-    name: PostgreSQL
+    name: "PostgreSQL"
   - port: 6379
     onOpen: ignore
-    name: Redis
+    name: "Redis"
+  - port: 27017
+    onOpen: ignore
+    name: "MongoDB"
 
 # Tasks to run when workspace starts
 tasks:
@@ -70,6 +76,14 @@ tasks:
       fi
       echo "✅ AMP system initialized!"
 
+  - name: Run Backend Server
+    command: |
+      uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  - name: Run Frontend Server
+    command: |
+      npm run dev
+
 # VS Code extensions to install
 vscode:
   extensions:
@@ -81,6 +95,8 @@ vscode:
     - bradlc.vscode-tailwindcss
     - esbenp.prettier-vscode
     - ms-vscode.vscode-typescript-next
+    - ms-toolsai.jupyter
+    - dbaeumer.vscode-eslint
 
 # Workspace settings
 workspaceLocation: .
