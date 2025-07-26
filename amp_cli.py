@@ -457,6 +457,114 @@ def auth(
     except ImportError:
         console.print("❌ [bold red]Authentication module not found")
 
+@app.command()
+def schedule(
+    start: bool = typer.Option(False, "--start", help="Start the scheduler"),
+    stop: bool = typer.Option(False, "--stop", help="Stop the scheduler"),
+    status: bool = typer.Option(False, "--status", help="Show scheduler status"),
+    interval: Optional[int] = typer.Option(None, "--interval", help="Set job interval in minutes"),
+    enable: bool = typer.Option(False, "--enable", help="Enable scheduler"),
+    disable: bool = typer.Option(False, "--disable", help="Disable scheduler")
+):
+    """Manage automated job scheduling"""
+    try:
+        from amp_scheduler import start_scheduler, stop_scheduler, get_scheduler_status, update_scheduler_config
+        
+        if start:
+            console.print("🚀 [bold blue]Starting AMP Scheduler...")
+            start_scheduler()
+        elif stop:
+            console.print("⏹️ [bold yellow]Stopping AMP Scheduler...")
+            stop_scheduler()
+        elif status:
+            status_info = get_scheduler_status()
+            console.print(f"📊 [bold blue]Scheduler Status:")
+            console.print(f"   Running: {'✅' if status_info['is_running'] else '❌'}")
+            console.print(f"   Enabled: {'✅' if status_info['config']['enabled'] else '❌'}")
+            console.print(f"   Interval: {status_info['config']['interval_minutes']} minutes")
+            if status_info['last_run']:
+                console.print(f"   Last Run: {status_info['last_run']}")
+        elif interval:
+            update_scheduler_config(interval_minutes=interval)
+            console.print(f"✅ [bold green]Scheduler interval updated to {interval} minutes")
+        elif enable:
+            update_scheduler_config(enabled=True)
+            console.print("✅ [bold green]Scheduler enabled")
+        elif disable:
+            update_scheduler_config(enabled=False)
+            console.print("❌ [bold red]Scheduler disabled")
+        else:
+            console.print("Please specify an action: --start, --stop, --status, --interval, --enable, or --disable")
+            
+    except ImportError:
+        console.print("❌ [bold red]Scheduler module not found")
+
+@app.command()
+def monitor(
+    dashboard: bool = typer.Option(False, "--dashboard", help="Show real-time dashboard"),
+    status: bool = typer.Option(False, "--status", help="Show system status"),
+    report: bool = typer.Option(False, "--report", help="Generate monitoring report"),
+    alerts: bool = typer.Option(False, "--alerts", help="Show active alerts")
+):
+    """Monitor system performance and status"""
+    try:
+        from amp_monitor import get_system_status, generate_report, display_dashboard
+        
+        if dashboard:
+            console.print("📊 [bold blue]Starting AMP Monitoring Dashboard...")
+            display_dashboard()
+        elif status:
+            status_info = get_system_status()
+            console.print(f"📊 [bold blue]System Status:")
+            
+            # Authentication
+            auth = status_info["authentication"]
+            console.print(f"   🔐 Auth: {'✅' if auth['status'] == 'authenticated' else '❌'}")
+            if auth.get("user_id"):
+                console.print(f"   👤 User: {auth['user_id']}")
+            
+            # Scheduler
+            scheduler = status_info["scheduler"]
+            console.print(f"   ⏰ Scheduler: {'✅' if scheduler.get('is_running') else '❌'}")
+            
+            # Jobs
+            jobs = status_info["jobs"]
+            console.print(f"   📊 Jobs: {jobs.get('total_jobs', 0)} (Success: {jobs.get('success_rate', 0.0):.1f}%)")
+            
+            # Performance
+            perf = status_info["performance"]
+            uptime_hours = perf.get('uptime_seconds', 0) / 3600
+            console.print(f"   ⚡ Uptime: {uptime_hours:.1f}h, Logs: {perf.get('logs_size_mb', 0)}MB")
+            
+            # Alerts
+            alerts_list = status_info["alerts"]
+            if alerts_list:
+                console.print(f"   🚨 Alerts: {len(alerts_list)} active")
+            else:
+                console.print(f"   ✅ No alerts")
+                
+        elif report:
+            report_file = generate_report()
+            if report_file:
+                console.print(f"✅ [bold green]Report generated: {report_file}")
+            else:
+                console.print("❌ [bold red]Failed to generate report")
+        elif alerts:
+            status_info = get_system_status()
+            alerts_list = status_info["alerts"]
+            if alerts_list:
+                console.print(f"🚨 [bold red]Active Alerts:")
+                for alert in alerts_list:
+                    level_icon = "🔴" if alert["level"] == "critical" else "🟡" if alert["level"] == "warning" else "🔵"
+                    console.print(f"   {level_icon} {alert['message']}")
+            else:
+                console.print("✅ [bold green]No active alerts")
+        else:
+            console.print("Please specify an action: --dashboard, --status, --report, or --alerts")
+            
+    except ImportError:
+        console.print("❌ [bold red]Monitor module not found")
+
 def main():
     """Main function"""
     app()
