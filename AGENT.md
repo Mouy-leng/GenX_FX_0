@@ -16,6 +16,12 @@
 - **Frontend**: React + TypeScript + Tailwind, uses `/api` endpoints and WebSocket
 - **Database**: PostgreSQL (Neon) with Drizzle ORM, Redis for caching
 
+## Deployment
+- **Google Cloud VM**: Use `deploy/gcp-vm-setup.sh` for VM deployment
+- **Terraform**: Use `deploy/gcp-terraform.tf` for infrastructure as code
+- **Manual setup**: Follow `deploy/gcp-deployment-guide.md`
+- **DigitalOcean VPS**: Use `deploy/setup-vps.sh` (legacy)
+
 ## Code Style (from Copilot instructions)
 - **Python**: Follow PEP 8, use Pydantic models, FastAPI patterns
 - **TypeScript**: Strict typing, React hooks, functional components
