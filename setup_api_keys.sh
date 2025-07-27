@@ -169,6 +169,13 @@ SENTIMENT_THRESHOLD=0.6
 NODE_ENV=development  # or "production"
 DOMAIN=your-domain.com
 EMAIL=your-email@domain.com
+
+# ========================================
+# DOCKER & CONTAINER REGISTRY
+# ========================================
+# Use your Docker Hub username and a Personal Access Token for security.
+DOCKER_USERNAME=keamouyleng
+DOCKER_TOKEN=your-docker-hub-access-token-here
 EOF
 
 print_status ".env file created successfully!"

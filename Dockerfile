@@ -1,5 +1,10 @@
+# GenX FX Trading Platform
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3-slim
+FROM python:3.11-slim
+
+LABEL maintainer="keamouyleng"
+LABEL version="1.0"
+LABEL description="GenX FX Trading Platform with AI Integration"
 
 EXPOSE 8000
 
@@ -9,9 +14,15 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install pip requirements
-COPY requirements-minimal.txt .
-RUN python -m pip install -r requirements-minimal.txt
+COPY requirements.txt .
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app
 COPY . /app
