@@ -15,7 +15,8 @@ import os
 
 class ForexSignalGenerator:
     def __init__(self):
-        self.pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD']
+        self.pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD',
+                      'XAUUSD', 'XAUEUR', 'XAUGBP', 'XAUAUD', 'XAUCAD', 'XAUCHF']
         self.timeframes = ['M15', 'H1', 'H4', 'D1']
         self.signal_output_dir = 'signal_output'
         
@@ -26,7 +27,9 @@ class ForexSignalGenerator:
         """Generate realistic price data for a symbol"""
         base_prices = {
             'EURUSD': 1.10500, 'GBPUSD': 1.27000, 'USDJPY': 149.50,
-            'USDCHF': 0.88200, 'AUDUSD': 0.65800, 'USDCAD': 1.36500, 'NZDUSD': 0.58900
+            'USDCHF': 0.88200, 'AUDUSD': 0.65800, 'USDCAD': 1.36500, 'NZDUSD': 0.58900,
+            'XAUUSD': 2650.00, 'XAUEUR': 2420.00, 'XAUGBP': 2100.00, 
+            'XAUAUD': 4050.00, 'XAUCAD': 3620.00, 'XAUCHF': 2340.00
         }
         
         base_price = base_prices.get(symbol, 1.0000)
