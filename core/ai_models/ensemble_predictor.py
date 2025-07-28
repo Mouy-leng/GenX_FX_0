@@ -619,5 +619,5 @@ class EnsemblePredictor:
             'model_weights': self.model_weights.get(symbol, {}),
             'last_retrain_time': self.last_retrain_time.get(symbol),
             'feature_importance': self.feature_importance.get(symbol, {}),
-            'should_retrain': await self.should_retrain(symbol)
+            'should_retrain': self.should_retrain(symbol)
         }
