@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-07-28 10:51:33",
+  "total_signals": 5,
+  "active_signals": 0,
+  "signals": [
+    {
+      "Timestamp": "2025-07-28 10:32:33",
+      "Symbol": "GBPUSD",
+      "Signal": "BUY",
+      "Entry_Price": 1.27661,
+      "Stop_Loss": 1.27237,
+      "Take_Profit": 1.28173,
+      "Lot_Size": 0.05,
+      "Confidence": 0.71,
+      "Risk_Reward": 1.21,
+      "Magic_Number": 123450,
+      "Timeframe": "H1",
+      "Status": "Filled",
+      "Comment": "GenX_BUY_GBPUSD"
+    },
+    {
+      "Timestamp": "2025-07-28 10:56:33",
+      "Symbol": "GBPUSD",
+      "Signal": "BUY",
+      "Entry_Price": 1.2702,
+      "Stop_Loss": 1.26633,
+      "Take_Profit": 1.27522,
+      "Lot_Size": 0.03,
+      "Confidence": 0.66,
+      "Risk_Reward": 1.3,
+      "Magic_Number": 123451,
+      "Timeframe": "M15",
+      "Status": "Filled",
+      "Comment": "GenX_BUY_GBPUSD"
+    },
+    {
+      "Timestamp": "2025-07-28 10:50:33",
+      "Symbol": "AUDUSD",
+      "Signal": "BUY",
+      "Entry_Price": 0.65705,
+      "Stop_Loss": 0.6548,
+      "Take_Profit": 0.66181,
+      "Lot_Size": 0.08,
+      "Confidence": 0.67,
+      "Risk_Reward": 2.11,
+      "Magic_Number": 123452,
+      "Timeframe": "H4",
+      "Status": "Filled",
+      "Comment": "GenX_BUY_AUDUSD"
+    },
+    {
+      "Timestamp": "2025-07-28 10:34:33",
+      "Symbol": "USDCHF",
+      "Signal": "SELL",
+      "Entry_Price": 0.88397,
+      "Stop_Loss": 0.88711,
+      "Take_Profit": 0.87596,
+      "Lot_Size": 0.08,
+      "Confidence": 0.71,
+      "Risk_Reward": 2.55,
+      "Magic_Number": 123453,
+      "Timeframe": "D1",
+      "Status": "Filled",
+      "Comment": "GenX_SELL_USDCHF"
+    },
+    {
+      "Timestamp": "2025-07-28 10:38:33",
+      "Symbol": "EURUSD",
+      "Signal": "BUY",
+      "Entry_Price": 1.10708,
+      "Stop_Loss": 1.10387,
+      "Take_Profit": 1.11662,
+      "Lot_Size": 0.08,
+      "Confidence": 0.94,
+      "Risk_Reward": 2.97,
+      "Magic_Number": 123454,
+      "Timeframe": "D1",
+      "Status": "Filled",
+      "Comment": "GenX_BUY_EURUSD"
+    }
+  ]
+}
