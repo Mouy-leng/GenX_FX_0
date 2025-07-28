@@ -66,7 +66,7 @@ class ForexSignalGenerator:
             # Calculate lot size (risk-based)
             risk_reward = abs(take_profit - entry_price) / abs(entry_price - stop_loss)
             lot_size = round(random.uniform(0.01, 0.10), 2)
-            confidence = round(random.uniform(0.65, 0.95), 2)
+            confidence = round(random.uniform(0.75, 0.95), 2)
             
             signal = {
                 'Timestamp': datetime.now() + timedelta(minutes=random.randint(-30, 30)),
