@@ -1,0 +1,19 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.production', '-t', 'keamouyleng/genx_docker:$TAG_NAME', '.']
+    
+  # Push the container image to Docker Hub
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'keamouyleng/genx_docker:$TAG_NAME']
+    
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', 'keamouyleng/genx_docker:$TAG_NAME', 'gcr.io/$PROJECT_ID/genx_docker:$TAG_NAME']
+    
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/genx_docker:$TAG_NAME']
+
+images:
+  - 'gcr.io/$PROJECT_ID/genx_docker:$TAG_NAME'
+  - 'keamouyleng/genx_docker:$TAG_NAME' 
