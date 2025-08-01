@@ -1,68 +1,111 @@
 from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
-from typing import Optional
+from pydantic import ConfigDict, validator, Field
+from typing import Optional, Literal
 import os
+from pathlib import Path
 
 class Settings(BaseSettings):
     model_config = ConfigDict(
         env_file=".env",
-        extra="ignore"  # Allow extra fields in .env file
+        env_file_encoding="utf-8",
+        extra="ignore",  # Allow extra fields in .env file
+        case_sensitive=False  # Allow case-insensitive env var matching
     )
-    
+
     # API Configuration
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "GenX-EA Trading Platform"
-    VERSION: str = "2.0.0"
-    DESCRIPTION: str = "Advanced AI-powered trading platform with real-time market analysis"
+    API_HOST: str = "0.0.0.0"
+    API_PORT: int = 8000
+    DEBUG: bool = False
     
-    # Database
-    DATABASE_URL: str = "postgresql://user:password@localhost/trading_db"
-    MONGODB_URL: str = "mongodb://localhost:27017/trading_db"
-    
-    # Redis for caching
-    REDIS_URL: str = "redis://localhost:6379"
-    
-    # AI Model Configuration
-    MODEL_PATH: str = "ai_models/market_predictor.joblib"
-    ENSEMBLE_MODEL_PATH: str = "ai_models/ensemble_model.joblib"
+    # Exness Broker Configuration
+    EXNESS_LOGIN: str = Field(..., description="Exness account login")
+    EXNESS_PASSWORD: str = Field(..., description="Exness account password")
+    EXNESS_SERVER: str = Field(..., description="Exness server (e.g., Exness-MT5Trial8)")
+    EXNESS_ACCOUNT_TYPE: Literal["demo", "live"] = "demo"
+    EXNESS_TERMINAL: Literal["MT4", "MT5"] = "MT5"
     
     # Trading Configuration
-    DEFAULT_SYMBOL: str = "BTCUSDT" # Pydantic will automatically use the env var if present
-    MAX_POSITION_SIZE: float = 0.1
-    RISK_PERCENTAGE: float = 0.02
+    MT5_SYMBOL: str = "XAUUSD"
+    MT5_TIMEFRAME: str = "TIMEFRAME_M15"
+    EA_MAGIC_NUMBER: int = 12345
+    EA_DEFAULT_LOT_SIZE: float = 0.01
+    EA_MAX_RISK_PER_TRADE: float = 0.02  # 2% risk per trade
     
-    # External APIs
-    BYBIT_API_KEY: Optional[str] = None
-    BYBIT_API_SECRET: Optional[str] = None
-    GEMINI_API_KEY: Optional[str] = None
-    OPENAI_API_KEY: Optional[str] = None
-    NEWS_API_KEY: Optional[str] = None
-    NEWSDATA_API_KEY: Optional[str] = None
-    ALPHAVANTAGE_API_KEY: Optional[str] = None
-    FINNHUB_API_KEY: Optional[str] = None
+    # EA Communication
+    EA_SERVER_HOST: str = "localhost"
+    EA_SERVER_PORT: int = 5000
     
-    # Social Media APIs
-    REDDIT_CLIENT_ID: Optional[str] = None
-    REDDIT_CLIENT_SECRET: Optional[str] = None
-    REDDIT_USERNAME: Optional[str] = None
-    REDDIT_PASSWORD: Optional[str] = None
-    REDDIT_USER_AGENT: Optional[str] = None
-    
-    # Notification Services
-    TELEGRAM_BOT_TOKEN: Optional[str] = None
-    TELEGRAM_USER_ID: Optional[str] = None
-    GMAIL_USER: Optional[str] = None
-    GMAIL_PASSWORD: Optional[str] = None
-    GMAIL_APP_API_KEY: Optional[str] = None
+    # Database Configuration
+    DATABASE_URL: str = "postgresql://genx:password@localhost:5432/genx_trading"
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # Security
-    SECRET_KEY: str = "your-secret-key-here"
-    JWT_SECRET_KEY: Optional[str] = None
-    CRYPTION_KEY: Optional[str] = None
-    ALGORITHM: str = "HS256"
+    SECRET_KEY: str = Field(..., description="Secret key for JWT tokens")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Logging
     LOG_LEVEL: str = "INFO"
+    LOG_FILE: str = "/var/log/genx-trading/app.log"
+    
+    # VPS Configuration
+    VPS_PUBLIC_IP: Optional[str] = None
+    
+    @validator('EXNESS_LOGIN')
+    def validate_login(cls, v):
+        if not v or len(v) < 6:
+            raise ValueError('Login must be at least 6 characters')
+        return v
+    
+    @validator('EXNESS_PASSWORD')
+    def validate_password(cls, v):
+        if not v or len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
+        return v
+    
+    @validator('EA_DEFAULT_LOT_SIZE')
+    def validate_lot_size(cls, v):
+        if v <= 0 or v > 100:
+            raise ValueError('Lot size must be between 0.01 and 100')
+        return v
+    
+    @validator('EA_MAX_RISK_PER_TRADE')
+    def validate_risk_percentage(cls, v):
+        if v <= 0 or v > 0.1:  # Max 10% risk per trade
+            raise ValueError('Risk per trade must be between 0.01 and 0.1 (1-10%)')
+        return v
+    
+    def get_database_url(self) -> str:
+        """Get database URL with proper formatting"""
+        return self.DATABASE_URL
+    
+    def get_redis_url(self) -> str:
+        """Get Redis URL with proper formatting"""
+        return self.REDIS_URL
+    
+    def is_demo_account(self) -> bool:
+        """Check if using demo account"""
+        return self.EXNESS_ACCOUNT_TYPE.lower() == "demo"
+    
+    def get_ea_connection_string(self) -> str:
+        """Get EA connection string for socket communication"""
+        return f"{self.EA_SERVER_HOST}:{self.EA_SERVER_PORT}"
 
+# Create global settings instance
 settings = Settings()
+
+# Optional: Environment-specific settings
+class DevelopmentSettings(Settings):
+    DEBUG: bool = True
+    LOG_LEVEL: str = "DEBUG"
+
+class ProductionSettings(Settings):
+    DEBUG: bool = False
+    LOG_LEVEL: str = "WARNING"
+
+# Factory function to get appropriate settings
+def get_settings() -> Settings:
+    env = os.getenv("ENVIRONMENT", "development").lower()
+    if env == "production":
+        return ProductionSettings()
+    return DevelopmentSettings()
