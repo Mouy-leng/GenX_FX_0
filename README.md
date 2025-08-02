@@ -8,6 +8,49 @@
 
 ---
 
+## 🚀 **One-Click AWS Deployment**
+
+<div align="center">
+
+### **Deploy Your AMP Trading System to AWS Free Tier**
+
+[![Deploy to AWS](https://img.shields.io/badge/Deploy_to_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://console.aws.amazon.com/iam/home#/security_credentials)
+
+**Get AWS Credentials → Deploy → Start Trading in Minutes!**
+
+</div>
+
+### **Quick Deployment Steps:**
+
+1. **🔑 Get AWS Credentials**
+   - Click the "Deploy to AWS" button above
+   - Login: `genxapitrading@gmail.com` / `Leng12345@#$01`
+   - Click "keamouyleng" → "Security credentials"
+   - Create access key for CLI
+
+2. **⚙️ Configure GitHub Secrets**
+   - Go to: https://github.com/Mouy-leng/GenX_FX/settings/secrets/actions
+   - Add your AWS credentials and other secrets
+   - See [FINAL_SECRETS_SUMMARY.md](FINAL_SECRETS_SUMMARY.md) for complete setup
+
+3. **🚀 Deploy to AWS**
+   ```bash
+   # Trigger AWS deployment
+   gh workflow run "Deploy to AWS"
+   
+   # Monitor deployment
+   python3 aws_deploy_status.py
+   ```
+
+4. **🎯 Start Trading**
+   - Access your AMP system at: `http://<YOUR_EC2_IP>:8000`
+   - Monitor with Grafana at: `http://<YOUR_EC2_IP>:3000`
+   - Cost: **$0 for 12 months** (AWS Free Tier)
+
+**📋 Complete Setup Guide**: [FINAL_SECRETS_SUMMARY.md](FINAL_SECRETS_SUMMARY.md)
+
+---
+
 ## 🎯 **What is GenX FX?**
 
 **GenX FX** is a complete, production-ready **automated forex and gold trading system** that combines:
@@ -154,6 +197,17 @@ GenX_FX/
 
 ## 🎯 **Choose Your Path**
 
+### **🏆 For AWS Cloud Deployment (Recommended)**
+**Perfect for 24/7 automated trading with zero setup:**
+
+1. 🚀 **Deploy**: Click [Deploy to AWS](https://console.aws.amazon.com/iam/home#/security_credentials) button above
+2. 🔑 **Configure**: Add AWS credentials to GitHub secrets
+3. ⚡ **Launch**: Trigger deployment with `gh workflow run "Deploy to AWS"`
+4. 💰 **Trade**: Start automated trading immediately
+5. 📊 **Monitor**: Real-time dashboard with Grafana
+
+**💰 Cost: $0 for 12 months (AWS Free Tier)**
+
 ### **🥇 For Immediate Gold Trading**
 **Perfect for traders who want to start gold trading immediately:**
 
@@ -197,7 +251,10 @@ GenX_FX/
 - **[API_KEY_SETUP.md](API_KEY_SETUP.md)** - API configuration and authentication
 
 ### **🚀 Deployment & Operations**
+- **[FINAL_SECRETS_SUMMARY.md](FINAL_SECRETS_SUMMARY.md)** - ⭐ Complete AWS deployment setup
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
+- **[AWS_DEPLOYMENT_GUIDE.md](AWS_DEPLOYMENT_GUIDE.md)** - AWS deployment guide
+- **[DOCKER_DEPLOYMENT_GUIDE.md](DOCKER_DEPLOYMENT_GUIDE.md)** - Docker deployment guide
 - **[DOCKER_DEPLOYMENT_SUMMARY.md](DOCKER_DEPLOYMENT_SUMMARY.md)** - Docker containerization
 - **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Complete project organization
 
@@ -373,6 +430,25 @@ responsible for any trading losses incurred while using this system.
 
 ## 🎉 **Ready to Start Trading?**
 
+<div align="center">
+
+### **🚀 One-Click AWS Deployment**
+
+[![Deploy to AWS](https://img.shields.io/badge/Deploy_to_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://console.aws.amazon.com/iam/home#/security_credentials)
+
+**Get AWS Credentials → Deploy → Start Trading in Minutes!**
+
+</div>
+
+### **🏆 AWS Cloud Deployment (Recommended - 5 minutes)**
+1. **🚀 Deploy**: Click [Deploy to AWS](https://console.aws.amazon.com/iam/home#/security_credentials) button above
+2. **🔑 Configure**: Add AWS credentials to [GitHub Secrets](https://github.com/Mouy-leng/GenX_FX/settings/secrets/actions)
+3. **⚡ Launch**: Run `gh workflow run "Deploy to AWS"`
+4. **💰 Trade**: Start automated trading immediately
+5. **📊 Monitor**: Real-time dashboard with Grafana
+
+**💰 Cost: $0 for 12 months (AWS Free Tier)**
+
 ### **🥇 Immediate Gold Trading (5 minutes)**
 1. Download [GenX_Gold_Master_EA.mq4](expert-advisors/GenX_Gold_Master_EA.mq4)
 2. Read [GOLD_MASTER_EA_GUIDE.md](GOLD_MASTER_EA_GUIDE.md)
@@ -388,6 +464,8 @@ responsible for any trading losses incurred while using this system.
 1. Clone this repository
 2. Follow [GETTING_STARTED.md](GETTING_STARTED.md)
 3. Deploy your own 24/7 trading system
+
+**📋 Complete AWS Setup Guide**: [FINAL_SECRETS_SUMMARY.md](FINAL_SECRETS_SUMMARY.md)
 
 ---
 
