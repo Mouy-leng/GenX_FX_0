@@ -3,11 +3,31 @@ Position Sizing and Risk Management for GenX FX Trading System
 Manages position sizes, risk limits, and portfolio risk
 """
 
-import pandas as pd
-import numpy as np
+import math
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from enum import Enum
+from datetime import datetime
+
+# Try to import pandas and numpy, but provide fallbacks if not available
+try:
+    import pandas as pd
+    import numpy as np
+    PANDAS_AVAILABLE = True
+    NUMPY_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+    NUMPY_AVAILABLE = False
+    # Create simple fallback classes
+    class pd:
+        @staticmethod
+        def Timestamp():
+            return datetime.now()
+    
+    class np:
+        @staticmethod
+        def round(x, decimals=0):
+            return round(x, decimals)
 
 class RiskLevel(Enum):
     CONSERVATIVE = "conservative"
@@ -74,6 +94,13 @@ class PositionSizer:
             PositionInfo with calculated position details
         """
         try:
+            # Validate inputs
+            if entry_price <= 0 or stop_loss <= 0:
+                raise ValueError("Entry price and stop loss must be positive")
+            
+            if confidence < 0 or confidence > 1:
+                confidence = max(0, min(1, confidence))  # Clamp to 0-1
+            
             # Calculate risk per pip/point
             price_difference = abs(entry_price - stop_loss)
             if price_difference == 0:
@@ -226,7 +253,7 @@ class PositionSizer:
                     'exit_price': exit_price,
                     'position_size': position.position_size,
                     'profit_loss': profit_loss,
-                    'exit_time': pd.Timestamp.now()
+                    'exit_time': pd.Timestamp.now() if PANDAS_AVAILABLE else datetime.now()
                 })
                 
                 # Remove from active positions
@@ -275,6 +302,9 @@ class PositionSizer:
     def update_account_balance(self, new_balance: float) -> None:
         """Update account balance and recalculate risk limits"""
         try:
+            if new_balance <= 0:
+                raise ValueError("Account balance must be positive")
+                
             self.account_balance = new_balance
             
             # Update existing position risk percentages
@@ -295,6 +325,9 @@ class PositionSizer:
             True if position can be opened
         """
         try:
+            if risk_amount <= 0:
+                return False
+                
             current_risk = self._calculate_total_portfolio_risk()
             new_risk_percent = risk_amount / self.account_balance
             total_risk = current_risk + new_risk_percent
@@ -311,19 +344,21 @@ class PositionSizer:
             portfolio_summary = self.get_portfolio_summary()
             
             # Calculate additional metrics
-            avg_position_risk = (portfolio_summary['total_risk_percent'] / 
-                               max(1, portfolio_summary['active_positions']))
+            active_positions = portfolio_summary.get('active_positions', 0)
+            total_risk_percent = portfolio_summary.get('total_risk_percent', 0)
             
-            risk_concentration = (portfolio_summary['total_risk_percent'] / 
+            avg_position_risk = (total_risk_percent / max(1, active_positions))
+            
+            risk_concentration = (total_risk_percent / 
                                 self.max_portfolio_risk) if self.max_portfolio_risk > 0 else 0
             
             return {
                 'max_risk_per_trade': self.max_risk_per_trade,
                 'max_portfolio_risk': self.max_portfolio_risk,
-                'current_portfolio_risk': portfolio_summary['total_risk_percent'],
+                'current_portfolio_risk': total_risk_percent,
                 'average_position_risk': avg_position_risk,
                 'risk_concentration': risk_concentration,
-                'remaining_capacity': portfolio_summary['remaining_risk_capacity'],
+                'remaining_capacity': portfolio_summary.get('remaining_risk_capacity', 0),
                 'risk_multiplier': self.risk_multipliers[self.risk_level]
             }
             
