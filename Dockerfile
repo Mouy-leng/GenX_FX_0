@@ -1,4 +1,5 @@
 # Multi-stage build for GenX FX Trading System
+# Docker Hub: keamouyleng/genx_docker
 FROM node:18-alpine AS frontend-builder
 
 # Set working directory
