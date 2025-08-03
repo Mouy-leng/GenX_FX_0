@@ -7,7 +7,8 @@
   ],
   "type": "module",
   "bin": {
-    "genx-cli": "genx-cli/cli.js"
+    "genx-cli": "genx-cli/cli.js",
+    "historymaker": "genx-cli/historymaker-cli.js"
   },
   "scripts": {
     "dev": "concurrently \"npm:client\" \"npm:server\" \"npm:python:dev\" \"npm:historymaker\"",

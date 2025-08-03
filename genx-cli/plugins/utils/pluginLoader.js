@@ -16,7 +16,8 @@ export async function loadPlugins(config) {
         plugins.push({ name });
       } else {
         const pluginPath = path.join(pluginDir, `${name}.js`);
-        const plugin = await import(pathToFileURL(pluginPath).href);
+        const pluginModule = await import(pathToFileURL(pluginPath).href);
+        const plugin = pluginModule.default || pluginModule;
         plugins.push({ name, ...plugin });
       }
     } catch (error) {
