@@ -8,15 +8,32 @@
 
 ---
 
-## 🚀 **One-Click AWS Deployment**
+<div align="center">
+
+## 🚀 **Quick Deploy**
+
+[![Deploy to AWS Free Tier](https://img.shields.io/badge/Deploy_to_AWS_Free_Tier-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white&labelColor=FF9900)](https://console.aws.amazon.com/iam/home#/security_credentials)
+[![Deploy with Docker](https://img.shields.io/badge/Deploy_with_Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white&labelColor=2496ED)](https://hub.docker.com/r/keamouyleng/genx-fx)
+[![GitHub Actions Deploy](https://img.shields.io/badge/GitHub_Actions_Deploy-2088FF?style=for-the-badge&logo=github-actions&logoColor=white&labelColor=2088FF)](https://github.com/Mouy-leng/GenX_FX/actions)
+
+**💰 Free for 12 months | 🚀 Deploy in 5 minutes | 📊 24/7 Trading**
+
+</div>
+
+---
+
+## 🚀 **One-Click Deployment**
 
 <div align="center">
 
-### **Deploy Your AMP Trading System to AWS Free Tier**
+### **Deploy Your AMP Trading System in Minutes**
 
 [![Deploy to AWS](https://img.shields.io/badge/Deploy_to_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://console.aws.amazon.com/iam/home#/security_credentials)
+[![Deploy to DigitalOcean](https://img.shields.io/badge/Deploy_to_DigitalOcean-0080FF?style=for-the-badge&logo=digitalocean&logoColor=white)](https://cloud.digitalocean.com/apps)
+[![Deploy with Docker](https://img.shields.io/badge/Deploy_with_Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/keamouyleng/genx-fx)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/Mouy-leng/GenX_FX/actions)
 
-**Get AWS Credentials → Deploy → Start Trading in Minutes!**
+**Choose Your Deployment Method → Configure → Deploy → Start Trading!**
 
 </div>
 
@@ -432,11 +449,13 @@ responsible for any trading losses incurred while using this system.
 
 <div align="center">
 
-### **🚀 One-Click AWS Deployment**
+### **🚀 One-Click Deployment Options**
 
-[![Deploy to AWS](https://img.shields.io/badge/Deploy_to_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://console.aws.amazon.com/iam/home#/security_credentials)
+[![Deploy to AWS Free Tier](https://img.shields.io/badge/Deploy_to_AWS_Free_Tier-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://console.aws.amazon.com/iam/home#/security_credentials)
+[![Deploy with Docker](https://img.shields.io/badge/Deploy_with_Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/keamouyleng/genx-fx)
+[![Deploy to DigitalOcean](https://img.shields.io/badge/Deploy_to_DigitalOcean-0080FF?style=for-the-badge&logo=digitalocean&logoColor=white)](https://cloud.digitalocean.com/apps)
 
-**Get AWS Credentials → Deploy → Start Trading in Minutes!**
+**Choose Your Platform → Configure → Deploy → Start Trading!**
 
 </div>
 
@@ -466,6 +485,21 @@ responsible for any trading losses incurred while using this system.
 3. Deploy your own 24/7 trading system
 
 **📋 Complete AWS Setup Guide**: [FINAL_SECRETS_SUMMARY.md](FINAL_SECRETS_SUMMARY.md)
+
+---
+
+## 📊 **Deployment Status & Monitoring**
+
+<div align="center">
+
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/Mouy-leng/GenX_FX/actions)
+[![Docker Build](https://img.shields.io/badge/Docker_Build-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/keamouyleng/genx-fx)
+[![AWS Deployment](https://img.shields.io/badge/AWS_Deployment-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://console.aws.amazon.com/ec2/v2/home)
+[![Live System](https://img.shields.io/badge/Live_System-00FF00?style=for-the-badge&logo=check-circle&logoColor=white)](http://34.71.143.222:8080/status)
+
+**Monitor your deployment progress and system status**
+
+</div>
 
 ---
 
