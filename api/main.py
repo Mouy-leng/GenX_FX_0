@@ -86,18 +86,27 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Add middleware
+# Security: Configure CORS properly
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
+if os.getenv("ENVIRONMENT") == "development":
+    allowed_origins.append("http://localhost:*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
+# Security: Configure trusted hosts properly
+allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+if os.getenv("ENVIRONMENT") == "development":
+    allowed_hosts.extend(["localhost", "127.0.0.1", "*"])
+
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"]  # Configure for production
+    allowed_hosts=allowed_hosts
 )
 
 # Add authentication middleware
