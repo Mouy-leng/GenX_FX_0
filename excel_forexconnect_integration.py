@@ -32,11 +32,13 @@ class ForexConnectExcelGenerator:
         self.session = None
         self.connected = False
         
-        # Demo credentials from your .env.example
-        self.username = os.getenv('FXCM_USERNAME', 'D27739526')
-        self.password = os.getenv('FXCM_PASSWORD', 'cpsj1')
+        # FXCM ForexConnect configuration
+        self.url = os.getenv('FXCM_URL', 'https://api-demo.fxcm.com')
+        self.username = os.getenv('FXCM_USERNAME', 'demo')
+        self.password = os.getenv('FXCM_PASSWORD')
+        if not self.password:
+            raise ValueError("FXCM_PASSWORD environment variable is required")
         self.connection_type = os.getenv('FXCM_CONNECTION_TYPE', 'Demo')
-        self.url = os.getenv('FXCM_URL', 'http://fxcorporate.com/Hosts.jsp')
         
         # Create output directory
         os.makedirs(self.signal_output_dir, exist_ok=True)
