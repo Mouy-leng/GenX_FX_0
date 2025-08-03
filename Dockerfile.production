@@ -16,10 +16,12 @@ WORKDIR /app
 # Copy requirements
 COPY requirements.txt .
 COPY requirements-prod.txt .
+COPY requirements-amp.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements-prod.txt
+    pip install --no-cache-dir -r requirements-prod.txt && \
+    pip install --no-cache-dir -r requirements-amp.txt
 
 # Production stage
 FROM python:3.11-slim
@@ -42,8 +44,12 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
+# Install AMP CLI system
+RUN pip install --no-cache-dir -e . && \
+    chmod +x amp_alias.sh amp_wrapper.py
+
 # Create necessary directories
-RUN mkdir -p /app/logs /app/data /app/ai_models && \
+RUN mkdir -p /app/logs /app/data /app/ai_models /app/reports && \
     chown -R genx:genx /app
 
 # Switch to non-root user
