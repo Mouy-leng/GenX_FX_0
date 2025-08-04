@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Container Setup Script for GenX-FX Trading Platform
-# Using provided credentials for GitHub, Docker Hub, and other services
+# Simple Container Setup Script for GenX-FX Trading Platform
+# Works in container environments without systemd
 
 set -e
 
@@ -12,17 +12,11 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🚀 Setting up GenX-FX Trading Platform Container${NC}"
+echo -e "${GREEN}🚀 Setting up GenX-FX Trading Platform (Simple Setup)${NC}"
 
 # === GitHub Configuration ===
 GITHUB_USERNAME="genxdbxfx1"
 GITHUB_REPOSITORY="https://github.com/genxdbxfx1-ctrl/GenX_db_FX-.git"
-
-# === Docker Hub Configuration ===
-DOCKER_USERNAME="genxdbx"
-DOCKER_CONTAINER="genxdbx/genxdbxfx1"
-DOCKER_EMAIL="genxdbxfx1@gmail.com"
-DOCKER_PASSWORD="Leng12345@#$01"
 
 # === App Credentials ===
 MT5_LOGIN="279023502"
@@ -44,39 +38,10 @@ DATABASE_URL="mysql://root:password@localhost:3306/genxdb_fx_db"
 # === Security ===
 SECRET_KEY=$(openssl rand -hex 32)
 
-# Function to check if command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Check and install Docker
-if ! command_exists docker; then
-    echo -e "${YELLOW}Installing Docker...${NC}"
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
-    sudo usermod -aG docker $USER
-    echo -e "${GREEN}✅ Docker installed${NC}"
-else
-    echo -e "${GREEN}✅ Docker already installed${NC}"
-fi
-
-# Check and install Docker Compose
-if ! command_exists docker-compose; then
-    echo -e "${YELLOW}Installing Docker Compose...${NC}"
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    echo -e "${GREEN}✅ Docker Compose installed${NC}"
-else
-    echo -e "${GREEN}✅ Docker Compose already installed${NC}"
-fi
-
-# Login to Docker Hub
-echo -e "${YELLOW}Logging into Docker Hub...${NC}"
-# Try different login methods
-if ! echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; then
-    echo -e "${YELLOW}Trying alternative Docker login method...${NC}"
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-fi
+# Start Docker daemon in background
+echo -e "${YELLOW}Starting Docker daemon...${NC}"
+dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2376 &
+sleep 10
 
 # Create environment file
 echo -e "${YELLOW}Creating environment file...${NC}"
@@ -84,12 +49,6 @@ cat > .env << EOF
 # === GitHub ===
 GITHUB_USERNAME=$GITHUB_USERNAME
 GITHUB_REPOSITORY=$GITHUB_REPOSITORY
-
-# === Docker Hub ===
-DOCKER_USERNAME=$DOCKER_USERNAME
-DOCKER_CONTAINER=$DOCKER_CONTAINER
-DOCKER_EMAIL=$DOCKER_EMAIL
-DOCKER_PASSWORD=$DOCKER_PASSWORD
 
 # === App Credentials ===
 MT5_LOGIN=$MT5_LOGIN
@@ -117,9 +76,9 @@ EOF
 
 echo -e "${GREEN}✅ Environment file created${NC}"
 
-# Create Docker Compose configuration
-echo -e "${YELLOW}Creating Docker Compose configuration...${NC}"
-cat > docker-compose.container.yml << EOF
+# Create minimal Docker Compose configuration
+echo -e "${YELLOW}Creating minimal Docker Compose configuration...${NC}"
+cat > docker-compose.simple.yml << EOF
 version: '3.8'
 
 services:
@@ -153,74 +112,6 @@ services:
     networks:
       - genx_network
 
-  # Backend API Service
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: genxdb_fx_api
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=mysql://genx_user:genx_password@mysql:3306/genxdb_fx_db
-      - REDIS_URL=redis://redis:6379
-      - SECRET_KEY=$SECRET_KEY
-      - MT5_LOGIN=$MT5_LOGIN
-      - MT5_SERVER=$MT5_SERVER
-      - MT5_PASSWORD=$MT5_PASSWORD
-      - GEMINI_API_KEY=$GEMINI_API_KEY
-      - ALPHAVANTAGE_API_KEY=$ALPHAVANTAGE_API_KEY
-      - NEWS_API_KEY=$NEWS_API_KEY
-      - NEWSDATA_API_KEY=$NEWSDATA_API_KEY
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-      - redis
-    volumes:
-      - ./logs:/app/logs
-      - ./data:/app/data
-    networks:
-      - genx_network
-
-  # Frontend Service
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    container_name: genxdb_fx_frontend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    depends_on:
-      - api
-    volumes:
-      - ./client:/app/client
-    networks:
-      - genx_network
-
-  # Trading Bot Service
-  trading_bot:
-    build:
-      context: .
-      dockerfile: Dockerfile.trading
-    container_name: genxdb_fx_trading
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=mysql://genx_user:genx_password@mysql:3306/genxdb_fx_db
-      - REDIS_URL=redis://redis:6379
-      - MT5_LOGIN=$MT5_LOGIN
-      - MT5_SERVER=$MT5_SERVER
-      - MT5_PASSWORD=$MT5_PASSWORD
-    depends_on:
-      - mysql
-      - redis
-      - api
-    volumes:
-      - ./expert-advisors:/app/expert-advisors
-      - ./logs:/app/logs
-    networks:
-      - genx_network
-
   # Monitoring Service
   monitoring:
     image: grafana/grafana:latest
@@ -246,95 +137,6 @@ networks:
 EOF
 
 echo -e "${GREEN}✅ Docker Compose configuration created${NC}"
-
-# Create Dockerfiles
-echo -e "${YELLOW}Creating Dockerfiles...${NC}"
-
-# API Dockerfile
-cat > Dockerfile.api << EOF
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \\
-    gcc \\
-    g++ \\
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Create necessary directories
-RUN mkdir -p logs data
-
-# Expose port
-EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \\
-    CMD curl -f http://localhost:8080/health || exit 1
-
-# Run the application
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]
-EOF
-
-# Frontend Dockerfile
-cat > Dockerfile.frontend << EOF
-FROM node:18-alpine
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy application code
-COPY . .
-
-# Build the application
-RUN npm run build
-
-# Expose port
-EXPOSE 3000
-
-# Run the application
-CMD ["npm", "start"]
-EOF
-
-# Trading Bot Dockerfile
-cat > Dockerfile.trading << EOF
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \\
-    gcc \\
-    g++ \\
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Create necessary directories
-RUN mkdir -p logs expert-advisors
-
-# Run the trading bot
-CMD ["python", "main.py"]
-EOF
-
-echo -e "${GREEN}✅ Dockerfiles created${NC}"
 
 # Create database initialization script
 echo -e "${YELLOW}Creating database initialization script...${NC}"
@@ -450,12 +252,9 @@ EOF
 
 echo -e "${GREEN}✅ Database initialization script created${NC}"
 
-# Build and start containers
-echo -e "${YELLOW}Building and starting containers...${NC}"
-docker-compose -f docker-compose.container.yml build
-
+# Start containers
 echo -e "${YELLOW}Starting containers...${NC}"
-docker-compose -f docker-compose.container.yml up -d
+docker-compose -f docker-compose.simple.yml up -d
 
 # Wait for services to be ready
 echo -e "${YELLOW}Waiting for services to be ready...${NC}"
@@ -463,23 +262,24 @@ sleep 30
 
 # Check container status
 echo -e "${YELLOW}Checking container status...${NC}"
-docker-compose -f docker-compose.container.yml ps
+docker-compose -f docker-compose.simple.yml ps
+
+# Test database connection
+echo -e "${YELLOW}Testing database connection...${NC}"
+sleep 10
+docker exec genxdb_fx_mysql mysql -u root -ppassword -e "SELECT 1;" || echo "Database connection test failed"
 
 # Create deployment info file
-cat > container_deployment_info.txt << EOF
-GenX-FX Trading Platform Container Deployment
-============================================
+cat > simple_deployment_info.txt << EOF
+GenX-FX Trading Platform Simple Deployment
+==========================================
 
 Deployment Date: $(date)
 GitHub Repository: $GITHUB_REPOSITORY
-Docker Hub Container: $DOCKER_CONTAINER
 
 Services:
 - MySQL Database: localhost:3306
 - Redis Cache: localhost:6379
-- API Backend: localhost:8080
-- Frontend: localhost:3000
-- Trading Bot: Running in container
 - Monitoring (Grafana): localhost:3001
 
 Credentials:
@@ -495,20 +295,20 @@ MT5 Credentials:
 - Password: $MT5_PASSWORD
 
 Useful Commands:
-- View logs: docker-compose -f docker-compose.container.yml logs
-- Stop services: docker-compose -f docker-compose.container.yml down
-- Restart services: docker-compose -f docker-compose.container.yml restart
-- Update containers: docker-compose -f docker-compose.container.yml pull && docker-compose -f docker-compose.container.yml up -d
+- View logs: docker-compose -f docker-compose.simple.yml logs
+- Stop services: docker-compose -f docker-compose.simple.yml down
+- Restart services: docker-compose -f docker-compose.simple.yml restart
+- Access MySQL: docker exec -it genxdb_fx_mysql mysql -u root -ppassword genxdb_fx_db
+- Access Redis: docker exec -it genxdb_fx_redis redis-cli
 
-API Endpoints:
-- Health Check: http://localhost:8080/health
-- API Documentation: http://localhost:8080/docs
-- Frontend: http://localhost:3000
-- Monitoring: http://localhost:3001
+Next Steps:
+1. Start the API server: python -m uvicorn api.main:app --host 0.0.0.0 --port 8080
+2. Access monitoring: http://localhost:3001
+3. Connect to database: localhost:3306
 EOF
 
-echo -e "${GREEN}✅ Container setup complete!${NC}"
-echo -e "${GREEN}📝 Deployment information saved to container_deployment_info.txt${NC}"
-echo -e "${BLUE}🌐 Access your application at: http://localhost:3000${NC}"
+echo -e "${GREEN}✅ Simple container setup complete!${NC}"
+echo -e "${GREEN}📝 Deployment information saved to simple_deployment_info.txt${NC}"
 echo -e "${BLUE}📊 Monitoring dashboard at: http://localhost:3001${NC}"
-echo -e "${BLUE}📚 API documentation at: http://localhost:8080/docs${NC}"
+echo -e "${BLUE}🗄️  Database ready at localhost:3306${NC}"
+echo -e "${YELLOW}🚀 Next: Start the API server with: python -m uvicorn api.main:app --host 0.0.0.0 --port 8080${NC}"
