@@ -9,7 +9,7 @@ import asyncio
 import os
 
 from .config import settings
-from .routers import predictions, trading, market_data, system
+from .routers import predictions, trading, market_data, system, database
 from .middleware.auth import auth_middleware
 from .services.ml_service import MLService
 from .services.data_service import DataService
@@ -122,6 +122,7 @@ app.include_router(predictions.router, prefix=settings.API_V1_STR)
 app.include_router(trading.router, prefix=settings.API_V1_STR)
 app.include_router(market_data.router, prefix=settings.API_V1_STR)
 app.include_router(system.router, prefix=settings.API_V1_STR)
+app.include_router(database.router)
 
 # Root endpoint
 @app.get("/")
