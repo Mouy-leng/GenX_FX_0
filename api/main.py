@@ -1,195 +1,107 @@
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse
-import logging
-import uvicorn
-from contextlib import asynccontextmanager
-import asyncio
+import sqlite3
 import os
+from datetime import datetime
 
-from .config import settings
-from .routers import predictions, trading, market_data, system
-from .middleware.auth import auth_middleware
-from .services.ml_service import MLService
-from .services.data_service import DataService
-from .services.gemini_service import GeminiService
-from .services.reddit_service import RedditService
-from .services.news_service import NewsService
-from .services.websocket_service import WebSocketService
-from .utils.logging_config import setup_logging
-
-# Setup logging
-setup_logging()
-logger = logging.getLogger(__name__)
-
-# Initialize services
-ml_service = MLService()
-data_service = DataService()
-gemini_service = GeminiService() if os.getenv("GEMINI_API_KEY") else None
-reddit_service = RedditService() if os.getenv("REDDIT_CLIENT_ID") else None
-news_service = NewsService() if os.getenv("NEWSDATA_API_KEY") or os.getenv("NEWSAPI_ORG_KEY") else None
-websocket_service = WebSocketService() if os.getenv("ENABLE_WEBSOCKET_FEED", "false").lower() == "true" else None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Handle startup and shutdown events"""
-    # Startup
-    logger.info("Starting GenX-EA Trading Platform API...")
-    
-    # Initialize services
-    await ml_service.initialize()
-    await data_service.initialize()
-    
-    # Initialize optional services
-    if gemini_service:
-        await gemini_service.initialize()
-    if reddit_service:
-        await reddit_service.initialize()
-    if news_service:
-        await news_service.initialize()
-    if websocket_service:
-        await websocket_service.initialize()
-    
-    # Start background tasks
-    asyncio.create_task(ml_service.start_model_monitoring())
-    asyncio.create_task(data_service.start_data_feed())
-    
-    logger.info("API startup complete")
-    
-    yield
-    
-    # Shutdown
-    logger.info("Shutting down GenX-EA Trading Platform API...")
-    await ml_service.shutdown()
-    await data_service.shutdown()
-    
-    # Shutdown optional services
-    if gemini_service:
-        await gemini_service.shutdown()
-    if reddit_service:
-        await reddit_service.shutdown()
-    if news_service:
-        await news_service.shutdown()
-    if websocket_service:
-        await websocket_service.shutdown()
-    
-    logger.info("API shutdown complete")
-
-# Create FastAPI app
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description=settings.DESCRIPTION,
-    version=settings.VERSION,
-    lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    title="GenX-FX Trading Platform API",
+    description="Trading platform with ML-powered predictions",
+    version="1.0.0"
 )
 
-# Security: Configure CORS properly
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
-if os.getenv("ENVIRONMENT") == "development":
-    allowed_origins.append("http://localhost:*")
-
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Security: Configure trusted hosts properly
-allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-if os.getenv("ENVIRONMENT") == "development":
-    allowed_hosts.extend(["localhost", "127.0.0.1", "*"])
-
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=allowed_hosts
-)
-
-# Add authentication middleware
-@app.middleware("http")
-async def auth_middleware_wrapper(request, call_next):
-    """Wrapper for auth middleware"""
-    try:
-        # Skip auth for public endpoints
-        public_endpoints = ["/", "/docs", "/redoc", "/openapi.json", "/health"]
-        
-        if request.url.path in public_endpoints:
-            return await call_next(request)
-        
-        # For now, allow all requests (remove this in production)
-        return await call_next(request)
-    except Exception as e:
-        logger.error(f"Auth middleware error: {str(e)}")
-        return await call_next(request)
-
-# Include routers
-app.include_router(predictions.router, prefix=settings.API_V1_STR)
-app.include_router(trading.router, prefix=settings.API_V1_STR)
-app.include_router(market_data.router, prefix=settings.API_V1_STR)
-app.include_router(system.router, prefix=settings.API_V1_STR)
-
-# Root endpoint
 @app.get("/")
-async def read_root():
-    """Root endpoint"""
+async def root():
     return {
-        "message": f"Welcome to {settings.PROJECT_NAME}",
-        "version": settings.VERSION,
-        "status": "active",
-        "docs": "/docs"
+        "message": "GenX-FX Trading Platform API",
+        "version": "1.0.0",
+        "status": "running",
+        "github": "genxdbxfx1",
+        "repository": "https://github.com/genxdbxfx1-ctrl/GenX_db_FX-.git"
     }
 
-# Health check
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     try:
-        # Check ML service
-        ml_status = await ml_service.health_check()
-        
-        # Check data service
-        data_status = await data_service.health_check()
+        # Test database connection
+        conn = sqlite3.connect("genxdb_fx.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        conn.close()
         
         return {
             "status": "healthy",
-            "timestamp": "2024-01-01T00:00:00Z",
-            "services": {
-                "ml_service": ml_status,
-                "data_service": data_status
-            }
+            "database": "connected",
+            "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy",
-                "error": str(e)
-            }
-        )
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Global exception handler"""
-    logger.error(f"Unhandled exception: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "Internal server error",
-            "message": "An unexpected error occurred"
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
         }
-    )
+
+@app.get("/trading-pairs")
+async def get_trading_pairs():
+    try:
+        conn = sqlite3.connect("genxdb_fx.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT symbol, base_currency, quote_currency FROM trading_pairs WHERE is_active = 1")
+        pairs = cursor.fetchall()
+        conn.close()
+        
+        return {
+            "trading_pairs": [
+                {
+                    "symbol": pair[0],
+                    "base_currency": pair[1],
+                    "quote_currency": pair[2]
+                }
+                for pair in pairs
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/users")
+async def get_users():
+    try:
+        conn = sqlite3.connect("genxdb_fx.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT username, email, is_active FROM users")
+        users = cursor.fetchall()
+        conn.close()
+        
+        return {
+            "users": [
+                {
+                    "username": user[0],
+                    "email": user[1],
+                    "is_active": bool(user[2])
+                }
+                for user in users
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/mt5-info")
+async def get_mt5_info():
+    return {
+        "login": "279023502",
+        "server": "Exness-MT5Trial8",
+        "status": "configured"
+    }
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "api.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level=settings.LOG_LEVEL.lower()
-    )
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
