@@ -43,19 +43,19 @@ git rev-parse origin/main
 
 echo.
 echo [9] Expected commit hash (from Linux verification):
-echo fd1a51b8c44468e78188026e80bb841e51e2e791
+echo a7c541b4058014610b70c3e6a115ae6673dd53da
 
 echo.
 echo [10] Comparison check:
 for /f %%i in ('git rev-parse HEAD') do set LOCAL_HASH=%%i
 for /f %%i in ('git rev-parse origin/main') do set REMOTE_HASH=%%i
 
-if "%LOCAL_HASH%"=="fd1a51b8c44468e78188026e80bb841e51e2e791" (
+if "%LOCAL_HASH%"=="a7c541b4058014610b70c3e6a115ae6673dd53da" (
     echo ✅ SUCCESS: Your Windows laptop is FULLY SYNCED with the repository!
     echo ✅ Local commit matches the expected Linux commit hash
 ) else (
     echo ⚠️  WARNING: Your Windows laptop may need updates
-    echo Expected: fd1a51b8c44468e78188026e80bb841e51e2e791
+    echo Expected: a7c541b4058014610b70c3e6a115ae6673dd53da
     echo Current:  %LOCAL_HASH%
     echo.
     echo To sync your Windows laptop, run:

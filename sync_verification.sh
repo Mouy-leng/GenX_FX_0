@@ -43,7 +43,7 @@ echo $REMOTE_HASH
 
 echo
 echo "[9] Expected commit hash (reference):"
-EXPECTED_HASH="fd1a51b8c44468e78188026e80bb841e51e2e791"
+EXPECTED_HASH="a7c541b4058014610b70c3e6a115ae6673dd53da"
 echo $EXPECTED_HASH
 
 echo
