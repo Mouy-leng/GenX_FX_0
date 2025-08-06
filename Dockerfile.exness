@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     curl \
     build-essential \
+    gcc \
+    g++ \
+    libc6-dev \
+    make \
     && rm -rf /var/lib/apt/lists/*
 
 # Install TA-Lib C library
@@ -20,21 +24,26 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     make && \
     make install && \
     cd .. && \
-    rm -rf ta-lib-0.4.0-src.tar.gz ta-lib/
+    rm -rf ta-lib-0.4.0-src.tar.gz ta-lib/ && \
+    ldconfig
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy EA files and trading system
+# Copy EA files and trading system (only existing directories)
 COPY expert-advisors/ ./expert-advisors/
 COPY core/ ./core/
 COPY config/ ./config/
 COPY utils/ ./utils/
+COPY api/ ./api/
+COPY services/ ./services/
+COPY shared/ ./shared/
+COPY database/ ./database/
 COPY main.py .
 
 # Copy deployment scripts
-COPY deploy/exness_deploy.sh ./deploy/
+COPY deploy/exness_deploy.sh ./deploy/exness_deploy.sh
 RUN chmod +x ./deploy/exness_deploy.sh
 
 # Create directories for logs and data
@@ -48,5 +57,9 @@ ENV PYTHONPATH=/app
 ENV TRADING_MODE=exness
 ENV BROKER=exness
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
 # Start the trading system
-CMD ["python", "main.py"] 
+CMD ["python", "main.py", "--mode", "live", "--broker", "exness"] 
