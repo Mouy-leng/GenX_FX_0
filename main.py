@@ -12,6 +12,9 @@ from pathlib import Path
 from datetime import datetime
 import signal
 import json
+import os
+from threading import Thread
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
@@ -25,6 +28,23 @@ from utils.config_manager import ConfigManager
 from utils.logger_setup import setup_logging
 
 logger = logging.getLogger(__name__)
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    """Simple health check handler for Cloud Run"""
+    
+    def do_GET(self):
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"status": "healthy", "service": "genx-trading-system"}')
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
+    def log_message(self, format, *args):
+        # Suppress default HTTP server logs
+        pass
 
 class GenXTradingSystem:
     """
@@ -42,6 +62,7 @@ class GenXTradingSystem:
         self.config = self.config_manager.get_config()
         self.trading_engine = None
         self.is_running = False
+        self.health_server = None
         
         # Setup graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -53,6 +74,18 @@ class GenXTradingSystem:
         """Handle shutdown signals gracefully"""
         logger.info(f"Received signal {signum}, shutting down...")
         self.is_running = False
+        if self.health_server:
+            self.health_server.shutdown()
+    
+    def start_health_server(self, port=8080):
+        """Start health check server for Cloud Run"""
+        try:
+            self.health_server = HTTPServer(('', port), HealthCheckHandler)
+            health_thread = Thread(target=self.health_server.serve_forever, daemon=True)
+            health_thread.start()
+            logger.info(f"Health check server started on port {port}")
+        except Exception as e:
+            logger.warning(f"Could not start health server: {e}")
     
     async def run_live_trading(self):
         """Run live trading signal generation"""
@@ -282,6 +315,9 @@ async def main():
     # Initialize system
     system = GenXTradingSystem(args.config)
     system.print_system_info()
+    
+    # Start health check server for Cloud Run
+    system.start_health_server(port=int(os.environ.get('PORT', 8080)))
     
     try:
         if args.mode == 'live':
