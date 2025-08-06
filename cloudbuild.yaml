@@ -35,6 +35,16 @@ steps:
 images:
   - 'gcr.io/$PROJECT_ID/genx-exness-ea'
 
+# Fix for 2024 Cloud Build service account changes
+serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/$PROJECT_NUMBER-compute@developer.gserviceaccount.com'
+
 options:
   logging: CLOUD_LOGGING_ONLY
   machineType: 'E2_HIGHCPU_8'
+  # Add timeout to prevent hanging builds
+  env:
+    - 'CLOUDSDK_COMPUTE_ZONE=europe-west1'
+    - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
+
+# Add timeout for the entire build
+timeout: '1800s'
