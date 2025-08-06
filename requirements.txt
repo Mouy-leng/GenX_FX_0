@@ -32,7 +32,6 @@ pyyaml>=6.0
 click>=8.1.0
 
 # Async and Concurrency
-asyncio>=3.4.3
 uvloop>=0.17.0
 
 # Logging and Monitoring
