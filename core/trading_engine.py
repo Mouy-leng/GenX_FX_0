@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 
+from core.config import config
 from core.ai_models.ensemble_predictor import EnsemblePredictor
 from core.data_sources.fxcm_provider import FXCMDataProvider
 from core.risk_management.position_sizer import PositionSizer
@@ -86,17 +87,16 @@ class TradingEngine:
     Focuses on reliability, flexibility, and performance
     """
     
-    def __init__(self, config_path: str = "config/trading_config.json"):
-        self.config = self._load_config(config_path)
+    def __init__(self):
         self.is_running = False
         self.last_signals = {}
         
         # Initialize core components
-        self.data_provider = FXCMDataProvider(self.config['fxcm'])
-        self.ensemble_predictor = EnsemblePredictor(self.config['ai_models'])
-        self.position_sizer = PositionSizer(self.config['risk_management'])
-        self.signal_validator = MultiTimeframeValidator(self.config['validation'])
-        self.spreadsheet_manager = SpreadsheetManager(self.config['spreadsheet'])
+        self.data_provider = FXCMDataProvider(config.get('fxcm'))
+        self.ensemble_predictor = EnsemblePredictor(config.get('ai_models'))
+        self.position_sizer = PositionSizer(config.get('risk_management'))
+        self.signal_validator = MultiTimeframeValidator(config.get('validation'))
+        self.spreadsheet_manager = SpreadsheetManager(config.get('spreadsheet'))
         self.technical_indicators = TechnicalIndicators()
         
         # Performance tracking
@@ -104,56 +104,6 @@ class TradingEngine:
         self.performance_metrics = {}
         
         logger.info("Trading Engine initialized successfully")
-    
-    def _load_config(self, config_path: str) -> Dict:
-        """Load trading configuration"""
-        try:
-            with open(config_path, 'r') as f:
-                config = json.load(f)
-            return config
-        except FileNotFoundError:
-            logger.warning(f"Config file {config_path} not found, using defaults")
-            return self._get_default_config()
-    
-    def _get_default_config(self) -> Dict:
-        """Default configuration for the trading engine"""
-        return {
-            'symbols': ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'],
-            'timeframes': ['M15', 'H1', 'H4', 'D1'],
-            'primary_timeframe': 'H1',
-            'signal_generation_interval': 300,  # 5 minutes
-            'max_concurrent_signals': 3,
-            'min_confidence_threshold': 0.65,
-            'risk_management': {
-                'max_risk_per_trade': 0.02,  # 2%
-                'max_total_risk': 0.06,      # 6%
-                'position_sizing_method': 'fixed_fractional',
-                'stop_loss_method': 'atr_based',
-                'take_profit_ratio': 2.0
-            },
-            'ai_models': {
-                'ensemble_size': 5,
-                'retrain_interval_hours': 24,
-                'lookback_periods': 100,
-                'feature_engineering': True,
-                'cross_validation_folds': 5
-            },
-            'validation': {
-                'timeframe_confluence_required': 2,
-                'technical_confluence_threshold': 3,
-                'fundamental_weight': 0.3,
-                'sentiment_weight': 0.2
-            },
-            'fxcm': {
-                'environment': 'demo',  # or 'real'
-                'refresh_interval': 60
-            },
-            'spreadsheet': {
-                'update_interval': 30,
-                'max_signals': 50,
-                'backup_enabled': True
-            }
-        }
     
     async def start(self):
         """Start the trading engine"""
@@ -213,7 +163,7 @@ class TradingEngine:
                 
                 # Calculate next execution time
                 execution_time = (datetime.now() - start_time).total_seconds()
-                sleep_time = max(0, self.config['signal_generation_interval'] - execution_time)
+                sleep_time = max(0, config.get('trading.signal_generation_interval') - execution_time)
                 
                 if sleep_time > 0:
                     await asyncio.sleep(sleep_time)
@@ -226,7 +176,7 @@ class TradingEngine:
         """Generate trading signals for all symbols"""
         signals = []
         
-        for symbol in self.config['symbols']:
+        for symbol in config.get('trading.symbols'):
             try:
                 # Get market data for all required timeframes
                 market_data = await self._get_multi_timeframe_data(symbol)
@@ -237,12 +187,12 @@ class TradingEngine:
                 # Generate AI prediction
                 prediction = await self.ensemble_predictor.predict(
                     symbol=symbol,
-                    data=market_data[self.config['primary_timeframe']],
+                    data=market_data[config.get('trading.primary_timeframe')],
                     multi_timeframe_data=market_data
                 )
                 
                 # Check if prediction meets confidence threshold
-                if prediction['confidence'] < self.config['min_confidence_threshold']:
+                if prediction['confidence'] < config.get('trading.min_confidence_threshold'):
                     continue
                 
                 # Determine market condition
@@ -268,12 +218,12 @@ class TradingEngine:
         """Get market data for multiple timeframes"""
         data = {}
         
-        for timeframe in self.config['timeframes']:
+        for timeframe in config.get('trading.timeframes'):
             try:
                 df = await self.data_provider.get_historical_data(
                     symbol=symbol,
                     timeframe=timeframe,
-                    periods=self.config['ai_models']['lookback_periods']
+                    periods=config.get('ai_models.lookback_periods')
                 )
                 
                 # Add technical indicators
@@ -290,7 +240,7 @@ class TradingEngine:
         if not market_data:
             return False
         
-        primary_data = market_data.get(self.config['primary_timeframe'])
+        primary_data = market_data.get(config.get('trading.primary_timeframe'))
         if primary_data is None or len(primary_data) < 50:
             return False
         
@@ -303,7 +253,7 @@ class TradingEngine:
     
     def _analyze_market_condition(self, market_data: Dict[str, pd.DataFrame]) -> str:
         """Analyze overall market condition"""
-        primary_data = market_data[self.config['primary_timeframe']]
+        primary_data = market_data[config.get('trading.primary_timeframe')]
         
         # Calculate volatility
         volatility = primary_data['close'].rolling(20).std().iloc[-1]
@@ -334,7 +284,7 @@ class TradingEngine:
     ) -> Optional[TradingSignal]:
         """Create a validated trading signal"""
         
-        primary_data = market_data[self.config['primary_timeframe']]
+        primary_data = market_data[config.get('trading.primary_timeframe')]
         current_price = primary_data['close'].iloc[-1]
         
         # Determine signal type based on prediction
@@ -372,7 +322,7 @@ class TradingEngine:
             account_balance=100000,  # This should come from broker
             risk_amount=entry_price - stop_loss if signal_type == SignalType.BUY else stop_loss - entry_price,
             entry_price=entry_price,
-            max_risk_pct=self.config['risk_management']['max_risk_per_trade']
+            max_risk_pct=config.get('risk_management.max_risk_per_trade')
         )
         
         # Determine signal strength
@@ -391,19 +341,19 @@ class TradingEngine:
             take_profit=take_profit,
             confidence=prediction['confidence'],
             risk_reward_ratio=risk_reward_ratio,
-            timeframe=self.config['primary_timeframe'],
+            timeframe=config.get('trading.primary_timeframe'),
             model_predictions=prediction.get('model_scores', {}),
             technical_confluence=technical_confluence,
             fundamental_score=prediction.get('fundamental_score', 0.5),
             market_condition=market_condition,
             position_size_pct=position_size_pct,
-            max_risk_pct=self.config['risk_management']['max_risk_per_trade'],
+            max_risk_pct=config.get('risk_management.max_risk_per_trade'),
             expiry_time=datetime.now() + timedelta(hours=4)  # 4-hour expiry
         )
     
     def _get_signal_type(self, direction: float, confidence: float) -> SignalType:
         """Determine signal type from prediction"""
-        if confidence < self.config['min_confidence_threshold']:
+        if confidence < config.get('trading.min_confidence_threshold'):
             return SignalType.HOLD
         
         if direction > 0.6:
@@ -510,7 +460,7 @@ class TradingEngine:
                 logger.error(f"Error validating signal for {signal.symbol}: {e}")
         
         # Limit concurrent signals
-        max_signals = self.config['max_concurrent_signals']
+        max_signals = config.get('trading.max_concurrent_signals')
         if len(validated_signals) > max_signals:
             # Sort by strength and confidence, take the best ones
             validated_signals.sort(
@@ -538,7 +488,7 @@ class TradingEngine:
     async def force_signal_generation(self, symbols: List[str] = None) -> List[TradingSignal]:
         """Force signal generation for testing purposes"""
         if symbols is None:
-            symbols = self.config['symbols']
+            symbols = config.get('trading.symbols')
         
         logger.info(f"Force generating signals for: {symbols}")
         
@@ -551,7 +501,7 @@ class TradingEngine:
                 
                 prediction = await self.ensemble_predictor.predict(
                     symbol=symbol,
-                    data=market_data[self.config['primary_timeframe']],
+                    data=market_data[config.get('trading.primary_timeframe')],
                     multi_timeframe_data=market_data
                 )
                 
