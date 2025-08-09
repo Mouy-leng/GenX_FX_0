@@ -1,3 +1,5 @@
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/Mouy-leng/GenX_FX)
+
 # 🚀 GenX Trading Platform
 
 **Advanced AI-Powered Forex & Cryptocurrency Trading System**
