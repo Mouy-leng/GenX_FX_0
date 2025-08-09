@@ -76,6 +76,15 @@ tasks:
       fi
       echo "✅ AMP system initialized!"
 
+  - name: Install GitLab CLI
+    init: |
+      echo "🦊 Installing GitLab CLI..."
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+      brew install glab
+    command: |
+      echo "✅ GitLab CLI installed!"
+
   - name: Run Backend Server
     command: |
       uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
