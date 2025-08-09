@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = Field(..., description="Secret key for JWT tokens")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALLOWED_ORIGINS: list[str] = ["*"]
+    ALLOWED_HOSTS: list[str] = ["*"]
     
     # Logging
     LOG_LEVEL: str = "INFO"

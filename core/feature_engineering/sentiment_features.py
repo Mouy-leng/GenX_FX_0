@@ -103,7 +103,8 @@ class SentimentFeatures:
                     # Higher impact on weekdays
                     weekday_multiplier = np.where(df.index.dayofweek < 5, 1.2, 0.8)
                     df['calendar_impact'] *= weekday_multiplier
-            except:
+            except Exception as e:
+                print(f"Warning: Could not apply day-of-week sentiment adjustment: {e}")
                 pass
         else:
             df['calendar_impact'] = 0

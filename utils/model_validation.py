@@ -189,7 +189,8 @@ class ModelValidator:
             running_max = np.maximum.accumulate(cumulative)
             drawdown = (cumulative - running_max) / running_max
             return np.min(drawdown)
-        except:
+        except Exception as e:
+            print(f"Warning: Could not calculate max drawdown: {e}")
             return 0.0
     
     def _calculate_profit_factor(self, returns: np.ndarray) -> float:
@@ -202,7 +203,8 @@ class ModelValidator:
             gross_loss = abs(np.sum(losses)) if len(losses) > 0 else 1e-8
             
             return gross_profit / gross_loss
-        except:
+        except Exception as e:
+            print(f"Warning: Could not calculate profit factor: {e}")
             return 1.0
     
     def _empty_trading_metrics(self) -> Dict[str, float]:

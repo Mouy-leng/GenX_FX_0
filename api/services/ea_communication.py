@@ -242,7 +242,8 @@ class EAConnection:
             self.is_connected = False
             try:
                 self.socket.close()
-            except:
+            except Exception as e:
+                logger.debug(f"Error closing socket for {self.address}: {e}")
                 pass
             
             self.server._remove_connection(self)

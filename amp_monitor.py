@@ -133,7 +133,8 @@ class AMPMonitor:
                     if job_data.get("status") == "completed":
                         success_count += 1
                         
-                except Exception:
+                except (json.JSONDecodeError, IOError) as e:
+                    print(f"Warning: Could not process job report {report_file}: {e}")
                     continue
             
             return {
