@@ -15,7 +15,7 @@ env:
   DOCKER_TAG: latest
   
   # Python Configuration
-  PYTHON_VERSION: 3.11
+  PYTHON_VERSION: "3.11"
 
 # Ports to expose
 ports:
