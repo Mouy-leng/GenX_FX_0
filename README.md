@@ -288,3 +288,76 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **🚀 Ready to revolutionize your trading with AI?**
 
 Start with `./genx overview` and explore the platform's capabilities!
+
+# Docker Jules Orchestrator
+
+[![Security](https://github.com/Mouy-leng/docker_jules_orchestrator/workflows/Enhanced%20Security%20Analysis/badge.svg)](https://github.com/Mouy-leng/docker_jules_orchestrator/actions/workflows/security-enhanced.yml)
+[![Tests](https://github.com/Mouy-leng/docker_jules_orchestrator/workflows/Run%20Tests%20and%20Quality%20Checks/badge.svg)](https://github.com/Mouy-leng/docker_jules_orchestrator/actions/workflows/test.yml)
+[![Code Quality](https://github.com/Mouy-leng/docker_jules_orchestrator/workflows/Code%20Quality%20Check/badge.svg)](https://github.com/Mouy-leng/docker_jules_orchestrator/actions/workflows/code-quality.yml)
+[![Docker Build](https://github.com/Mouy-leng/docker_jules_orchestrator/workflows/Build%20and%20Push%20Docker%20Image/badge.svg)](https://github.com/Mouy-leng/docker_jules_orchestrator/actions/workflows/docker-build.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen.svg)](https://dependabot.com/)
+[![Security Policy](https://img.shields.io/badge/security-policy-brightgreen.svg)](SECURITY.md)
+
+## 🛡️ Security & Quality Status
+
+This repository maintains high security standards through automated checks:
+
+- **🔒 Security Analysis**: CodeQL, secret scanning, dependency vulnerability checks
+- **🧪 Automated Testing**: Multi-Python version testing with coverage reporting
+- **📊 Code Quality**: Linting, formatting, and type checking
+- **🐳 Docker Security**: Container vulnerability scanning and build verification
+- **🔄 Dependency Updates**: Automated security updates via Dependabot
+
+## 🚀 Quick Start
+
+[Your existing quick start content here...]
+
+## 🔐 Security Features
+
+- **Branch Protection**: Main branch requires passing security checks
+- **Automated Scanning**: Weekly security audits and vulnerability detection
+- **Secret Detection**: Prevents accidental credential exposure
+- **Container Security**: Docker image vulnerability scanning
+- **Dependency Monitoring**: Automatic security update notifications
+
+## 📋 Requirements
+
+[Your existing requirements content here...]
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage
+pytest tests/ --cov=. --cov-report=html
+
+# Run security checks
+bandit -r .
+safety check
+```
+
+## 🐳 Docker
+
+[Your existing Docker content here...]
+
+## 🔧 Development
+
+[Your existing development content here...]
+
+## 📚 Documentation
+
+[Your existing documentation content here...]
+
+## 🤝 Contributing
+
+Please read our [Contributing Guidelines](CONTRIBUTING.md) and [Security Policy](SECURITY.md) before submitting changes.
+
+## 📄 License
+
+[Your existing license content here...]
+
+---
+
+**🔒 Security is our top priority. Report vulnerabilities privately following our [Security Policy](SECURITY.md).**
