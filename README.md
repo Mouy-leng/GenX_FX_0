@@ -74,6 +74,13 @@ pip install -r requirements.txt
 npm install
 ```
 
+### 2.5) Configure environment
+Copy `.env.example` to `.env` and fill in required values (API keys, ports, database, etc.).
+```bash
+cp .env.example .env
+# then edit .env
+```
+
 ### 3) Start everything (client + server + API)
 ```bash
 npm run dev
