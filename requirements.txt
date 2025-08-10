@@ -53,7 +53,7 @@ pykalman>=0.9.5,<1.0.0
 pytest>=7.4.0,<8.0.0
 pytest-asyncio>=0.21.0,<1.0.0
 black>=23.0.0,<24.0.0
-flake8>=6.0.0,<7.0.0
+flake8>=6.0.0,<8.0.0
 
 # Time Series Analysis
 arch>=6.2.0,<7.0.0
