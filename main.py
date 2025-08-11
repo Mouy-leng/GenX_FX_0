@@ -20,7 +20,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 sys.path.append(str(Path(__file__).parent))
 
 from core.trading_engine import TradingEngine
-from core.data_sources.fxcm_provider import FXCMDataProvider, MockFXCMProvider
+from core.data_sources.fxcm_forexconnect_provider import FXCMForexConnectProvider, MockFXCMForexConnectProvider
 from core.ai_models.ensemble_predictor import EnsemblePredictor
 from core.model_trainer import ModelTrainer
 from core.backtester import Backtester
@@ -193,9 +193,9 @@ class GenXTradingSystem:
             # Test data provider connection
             logger.info("Testing data provider...")
             if self.config.get('fxcm', {}).get('use_mock', True):
-                data_provider = MockFXCMProvider(self.config['fxcm'])
+                data_provider = MockFXCMForexConnectProvider(self.config['fxcm'])
             else:
-                data_provider = FXCMDataProvider(self.config['fxcm'])
+                data_provider = FXCMForexConnectProvider(self.config['fxcm'])
             
             connected = await data_provider.connect()
             if connected:

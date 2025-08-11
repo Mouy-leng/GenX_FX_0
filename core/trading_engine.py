@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 
 from core.ai_models.ensemble_predictor import EnsemblePredictor
-from core.data_sources.fxcm_provider import FXCMDataProvider
+from core.data_sources.fxcm_forexconnect_provider import FXCMForexConnectProvider as DataProvider
 from core.risk_management.position_sizer import PositionSizer
 from core.signal_validators.multi_timeframe_validator import MultiTimeframeValidator
 from core.spreadsheet_manager import SpreadsheetManager
@@ -92,7 +92,7 @@ class TradingEngine:
         self.last_signals = {}
         
         # Initialize core components
-        self.data_provider = FXCMDataProvider(self.config['fxcm'])
+        self.data_provider = DataProvider(self.config['fxcm'])
         self.ensemble_predictor = EnsemblePredictor(self.config['ai_models'])
         self.position_sizer = PositionSizer(self.config['risk_management'])
         self.signal_validator = MultiTimeframeValidator(self.config['validation'])
@@ -273,7 +273,7 @@ class TradingEngine:
                 df = await self.data_provider.get_historical_data(
                     symbol=symbol,
                     timeframe=timeframe,
-                    periods=self.config['ai_models']['lookback_periods']
+                    count=self.config['ai_models']['lookback_periods']
                 )
                 
                 # Add technical indicators

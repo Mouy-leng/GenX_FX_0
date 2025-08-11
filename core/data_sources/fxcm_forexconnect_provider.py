@@ -456,6 +456,32 @@ class MockFXCMForexConnectProvider(FXCMForexConnectProvider):
         df.set_index('timestamp', inplace=True)
         
         return df
+
+    async def get_account_summary(self) -> Dict[str, Any]:
+        """Get mock account summary"""
+        if not self.is_connected:
+            return {}
+
+        mock_positions = [
+            {
+                'symbol': 'EUR/USD',
+                'side': 'buy',
+                'amount': 10000,
+                'open_price': 1.0800,
+                'current_price': 1.0850,
+                'pl': 50.0,
+                'trade_id': 'MOCK_T1'
+            }
+        ]
+
+        return {
+            'account_info': self.account_info,
+            'positions': mock_positions,
+            'total_positions': len(mock_positions),
+            'total_pl': sum(p['pl'] for p in mock_positions),
+            'connection_status': 'connected',
+            'last_update': datetime.now()
+        }
     
     async def health_check(self) -> bool:
         """Mock health check - always healthy"""
