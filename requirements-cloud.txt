@@ -31,7 +31,7 @@ loguru==0.7.2
 websockets==11.0.2
 
 # Configuration
-pydantic==2.5.0
+pydantic==2.11.7
 click==8.1.7
 
 # Async support
