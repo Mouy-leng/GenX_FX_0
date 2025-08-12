@@ -9,7 +9,7 @@ pandas==2.0.3
 scikit-learn==1.3.0
 
 # Lightweight alternatives for ML
-xgboost==3.0.3
+xgboost==3.0.4
 
 # Financial data (lightweight)
 yfinance==0.2.65
