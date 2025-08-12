@@ -44,4 +44,4 @@ scipy==1.11.4
 psutil==7.0.0
 
 # Web server
-gunicorn==21.2.0
+gunicorn==23.0.0
