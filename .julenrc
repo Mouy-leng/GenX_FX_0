@@ -6,10 +6,7 @@
     "jules_plugin",
     "codacy_plugin",
     "license_checker.py",
-    "amp_adapter",
-    "trading_system",
-    "ai_analyzer.py",
-    "config_manager"
+    "amp_adapter"
   ],
   "git": {
     "github": {

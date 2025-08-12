@@ -13,48 +13,14 @@ export async function loadPlugins(config) {
   for (const name of pluginNames) {
     try {
       if (name.endsWith('.py')) {
-        plugins.push({ 
-          name,
-          description: 'Python plugin',
-          run: (config) => {
-            // For Python plugins, we'll handle them specially in the main CLI
-            console.log(`Python plugin ${name} requires special handling`);
-          }
-        });
+        plugins.push({ name });
       } else {
         const pluginPath = path.join(pluginDir, `${name}.js`);
         const plugin = await import(pathToFileURL(pluginPath).href);
-        
-        // Ensure the plugin has the required interface
-        if (plugin.default && typeof plugin.default.run === 'function') {
-          plugins.push({ 
-            name, 
-            description: plugin.default.description || 'No description',
-            run: plugin.default.run
-          });
-        } else if (typeof plugin.run === 'function') {
-          plugins.push({ 
-            name, 
-            description: plugin.description || 'No description',
-            run: plugin.run
-          });
-        } else {
-          console.warn(`Plugin ${name} does not have a valid run function`);
-          plugins.push({ 
-            name, 
-            description: 'Invalid plugin',
-            run: () => console.log(`Plugin ${name} is not properly configured`)
-          });
-        }
+        plugins.push({ name, ...plugin });
       }
     } catch (error) {
       console.error(`Error loading plugin "${name}":`, error);
-      // Add a fallback plugin
-      plugins.push({ 
-        name, 
-        description: 'Error loading plugin',
-        run: () => console.log(`Plugin ${name} failed to load: ${error.message}`)
-      });
     }
   }
 
