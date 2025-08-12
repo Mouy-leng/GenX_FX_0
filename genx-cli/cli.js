@@ -46,30 +46,13 @@ async function main() {
       return;
     }
 
-    if (pluginName.endsWith('.py')) {
-      // Handle Python plugins
-      const args = process.argv.slice(3); // Get additional arguments
-      const pythonArgs = ['genx-cli/plugins/' + pluginName];
-      
-      // Add command arguments if provided (skip the plugin name itself)
-      if (args.length > 1) {
-        pythonArgs.push(args[1]); // Only add the command, not the plugin name
-      }
-      
-      console.log(`Running Python plugin: ${pluginName} with args: ${pythonArgs.join(' ')}`);
-      
-      const pythonProcess = spawn('python3', pythonArgs);
+    if (pluginName === 'license_checker') {
+      const pythonProcess = spawn('python', ['genx-cli/plugins/license_checker.py']);
       pythonProcess.stdout.on('data', (data) => {
         console.log(data.toString());
       });
       pythonProcess.stderr.on('data', (data) => {
         console.error(data.toString());
-      });
-      
-      pythonProcess.on('exit', (code) => {
-        if (code !== 0) {
-          console.log(`Python plugin exited with code ${code}`);
-        }
       });
       return;
     }
