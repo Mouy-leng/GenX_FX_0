@@ -39,7 +39,7 @@ loguru>=0.7.0,<1.0.0
 psutil>=5.9.0,<8.0.0
 
 # API and WebSocket Support
-websockets>=11.0.0,<12.0.0
+websockets>=11.0.0,<16.0.0
 requests>=2.31.0,<3.0.0
 
 # Math and Statistics
