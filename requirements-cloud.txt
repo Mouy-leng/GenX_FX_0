@@ -2,7 +2,7 @@
 # This version avoids source compilation issues
 
 # Use pre-compiled NumPy wheel (specific version known to have wheels)
-numpy==1.24.3
+numpy==1.26.4
 
 # Core dependencies with known wheel support
 pandas==2.0.3
