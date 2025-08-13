@@ -9,6 +9,19 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+# Install TA-Lib C library and build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends wget build-essential && \
+    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz -q -O -> /tmp/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf /tmp/ta-lib-0.4.0-src.tar.gz -C /tmp && \
+    cd /tmp/ta-lib && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/ta-lib* && \
+    apt-get purge -y --auto-remove wget build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install pip requirements
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt

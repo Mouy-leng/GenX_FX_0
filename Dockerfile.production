@@ -1,26 +1,34 @@
 # Multi-stage build for production
 FROM python:3.11-slim as builder
 
-# Install system dependencies
+# Install system dependencies and TA-Lib
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     make \
     libffi-dev \
     libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+    wget \
+    && wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz -q -O -> /tmp/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf /tmp/ta-lib-0.4.0-src.tar.gz -C /tmp && \
+    cd /tmp/ta-lib && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/ta-lib* && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set work directory
 WORKDIR /app
 
 # Copy requirements
 COPY requirements.txt .
-COPY requirements-prod.txt .
 COPY requirements-amp.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements-prod.txt && \
+    pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir -r requirements-amp.txt
 
 # Production stage
