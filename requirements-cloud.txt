@@ -15,7 +15,7 @@ xgboost==3.0.3
 yfinance==0.2.65
 
 # Essential utilities
-requests==2.31.0
+requests==2.32.4
 aiohttp==3.12.15
 python-dotenv==1.0.0
 pyyaml==6.0.1
