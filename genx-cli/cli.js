@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { loadPlugins } from './plugins/utils/pluginLoader.js';
+import { firebasePlugin } from './plugins/firebase_plugin.js';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -16,6 +17,9 @@ async function main() {
   }
 
   const plugins = await loadPlugins(config);
+  
+  // Add Firebase plugin
+  plugins.push(firebasePlugin);
 
   if (args.length === 0 || args[0] === '--help') {
     console.log('Usage: genx-cli <command>');
@@ -63,7 +67,13 @@ async function main() {
       return;
     }
 
-    plugin.run(config);
+    plugin.run(config, args.slice(2));
+    return;
+  }
+  
+  // Handle Firebase commands directly
+  if (args[0] === 'firebase') {
+    await firebasePlugin.run(config, args.slice(1));
     return;
   }
 

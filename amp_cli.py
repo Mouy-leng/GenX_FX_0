@@ -565,6 +565,125 @@ def monitor(
     except ImportError:
         console.print("❌ [bold red]Monitor module not found")
 
+@app.command()
+def firebase(
+    action: str = typer.Argument(..., help="Firebase action (init, deploy, hosting, functions, firestore, auth, status, login, logout)"),
+    target: Optional[str] = typer.Option(None, "--target", help="Deployment target or action parameter"),
+    features: Optional[List[str]] = typer.Option(None, "--features", help="Firebase features to initialize"),
+    channel: Optional[str] = typer.Option(None, "--channel", help="Hosting channel name"),
+    file: Optional[str] = typer.Option(None, "--file", help="File for auth import/export")
+):
+    """Firebase CLI integration for GenX FX deployment"""
+    import subprocess
+    import sys
+    
+    try:
+        # Check if Firebase CLI is installed
+        subprocess.run(["firebase", "--version"], check=True, capture_output=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        console.print("❌ [bold red]Firebase CLI not found. Install with: npm install -g firebase-tools")
+        return
+    
+    console.print(f"🔥 [bold blue]Firebase {action.title()} for GenX FX...")
+    
+    try:
+        if action == "init":
+            features_list = features or ["hosting", "functions", "firestore"]
+            cmd = ["firebase", "init"] + features_list
+            
+        elif action == "deploy":
+            cmd = ["firebase", "deploy"]
+            if target:
+                cmd.extend(["--only", target])
+                
+        elif action == "hosting":
+            if target == "deploy":
+                cmd = ["firebase", "deploy", "--only", "hosting"]
+            elif target == "serve":
+                cmd = ["firebase", "serve", "--only", "hosting"]
+            elif target == "channel":
+                channel_name = channel or "preview"
+                cmd = ["firebase", "hosting:channel:deploy", channel_name]
+            else:
+                cmd = ["firebase", "hosting:sites:list"]
+                
+        elif action == "functions":
+            if target == "deploy":
+                cmd = ["firebase", "deploy", "--only", "functions"]
+            elif target == "logs":
+                cmd = ["firebase", "functions:log"]
+            elif target == "shell":
+                cmd = ["firebase", "functions:shell"]
+            else:
+                cmd = ["firebase", "functions:list"]
+                
+        elif action == "firestore":
+            if target == "deploy":
+                cmd = ["firebase", "deploy", "--only", "firestore"]
+            elif target == "indexes":
+                cmd = ["firebase", "firestore:indexes"]
+            elif target == "rules":
+                cmd = ["firebase", "deploy", "--only", "firestore:rules"]
+            else:
+                console.print("🗄️ [blue]Firestore commands: deploy, indexes, rules")
+                return
+                
+        elif action == "auth":
+            if target == "export":
+                export_file = file or "auth-export.json"
+                cmd = ["firebase", "auth:export", export_file]
+            elif target == "import":
+                import_file = file or "auth-export.json"
+                cmd = ["firebase", "auth:import", import_file]
+            else:
+                console.print("🔐 [blue]Auth commands: export, import")
+                return
+                
+        elif action == "status":
+            console.print("🔥 [bold blue]Firebase Status for GenX FX:")
+            console.print("=" * 40)
+            
+            # Show login status
+            console.print("👤 [blue]Authentication:")
+            subprocess.run(["firebase", "login:list"])
+            
+            # Show projects
+            console.print("\n📊 [blue]Projects:")
+            subprocess.run(["firebase", "projects:list"])
+            
+            # Show hosting sites
+            console.print("\n🌐 [blue]Hosting Sites:")
+            subprocess.run(["firebase", "hosting:sites:list"])
+            return
+            
+        elif action == "login":
+            cmd = ["firebase", "login"]
+            
+        elif action == "logout":
+            cmd = ["firebase", "logout"]
+            
+        else:
+            console.print(f"❌ [bold red]Unknown Firebase action: {action}")
+            console.print("Available actions: init, deploy, hosting, functions, firestore, auth, status, login, logout")
+            return
+        
+        # Execute Firebase command
+        result = subprocess.run(cmd, check=True)
+        
+        if result.returncode == 0:
+            console.print(f"✅ [bold green]Firebase {action} completed successfully!")
+            
+            # Show deployment info for deploy actions
+            if action == "deploy" or (action == "hosting" and target == "deploy"):
+                console.print("\n🎉 [bold green]GenX FX Deployment Complete!")
+                console.print("🌐 Your trading platform is now live on Firebase")
+                console.print("📊 Check Firebase Console for detailed metrics")
+        
+    except subprocess.CalledProcessError as e:
+        console.print(f"❌ [bold red]Firebase {action} failed with code {e.returncode}")
+    except Exception as e:
+        console.print(f"❌ [bold red]Error running Firebase command: {str(e)}")
+
 def main():
     """Main function"""
     app()

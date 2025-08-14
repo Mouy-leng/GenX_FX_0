@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // GenX FX Trading Platform Firestore Rules
+    
+    // Trading signals - read-only for authenticated users
+    match /trading_signals/{signalId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.admin == true;
+    }
+    
+    // User trading data - user can only access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && 
+                            request.auth.uid == userId;
+    }
+    
+    // Market data - read-only for authenticated users
+    match /market_data/{dataId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.admin == true;
+    }
+    
+    // Trading history - user can only access their own history
+    match /trading_history/{userId}/{historyId} {
+      allow read, write: if request.auth != null && 
+                            request.auth.uid == userId;
+    }
+    
+    // System logs - admin only
+    match /system_logs/{logId} {
+      allow read, write: if request.auth != null && 
+                            request.auth.token.admin == true;
+    }
+    
+    // Public data - anyone can read
+    match /public/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+                      request.auth.token.admin == true;
+    }
+  }
+}
