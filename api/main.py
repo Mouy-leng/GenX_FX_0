@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -8,9 +8,8 @@ from contextlib import asynccontextmanager
 import asyncio
 import os
 
-from .config import settings
+from .config import get_settings
 from .routers import predictions, trading, market_data, system
-from .middleware.auth import auth_middleware
 from .services.ml_service import MLService
 from .services.data_service import DataService
 from .services.gemini_service import GeminiService
@@ -22,6 +21,9 @@ from .utils.logging_config import setup_logging
 # Setup logging
 setup_logging()
 logger = logging.getLogger(__name__)
+
+# Initialize settings
+settings = get_settings()
 
 # Initialize services
 ml_service = MLService()
