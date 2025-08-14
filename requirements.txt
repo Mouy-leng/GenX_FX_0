@@ -1,12 +1,16 @@
-# Core ML and Data Science
+# Core FastAPI and Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
+
+# Core ML and Data Science (without ta-lib)
 numpy>=1.24.0
 pandas>=2.0.0
 scikit-learn>=1.3.0
 xgboost>=1.7.0
 lightgbm>=4.0.0
 
-# Technical Analysis and Financial Data
-ta-lib>=0.4.26
+# Financial Data (without ta-lib dependency)
 yfinance>=0.2.18
 mplfinance>=0.12.9b7
 
@@ -19,7 +23,6 @@ seaborn>=0.12.0
 # Data Processing
 aiohttp>=3.8.0
 aiofiles>=23.0.0
-asyncio-mqtt>=0.16.0
 
 # Excel and CSV Processing
 openpyxl>=3.1.0
@@ -31,10 +34,6 @@ python-dotenv>=1.0.0
 pyyaml>=6.0
 click>=8.1.0
 
-# Async and Concurrency
-asyncio>=3.4.3
-uvloop>=0.17.0
-
 # Logging and Monitoring
 loguru>=0.7.0
 psutil>=5.9.0
@@ -45,25 +44,11 @@ requests>=2.31.0
 
 # Math and Statistics
 statsmodels>=0.14.0
-pykalman>=0.9.5
 
-# Optional: FXCM Trading (if using real broker)
-# fxcmpy>=1.3.0
+# Google Cloud dependencies
+google-cloud-storage>=2.10.0
+google-cloud-logging>=3.8.0
 
-# Development and Testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-black>=23.0.0
-flake8>=6.0.0
-
-# Time Series Analysis
-arch>=6.2.0
-pmdarima>=2.0.0
-
-# Risk Management
-pyfolio>=0.9.2
-empyrical>=0.5.5
-
-# Notification Support (Optional)
-# python-telegram-bot>=20.0
-# slack-sdk>=3.21.0
+# AMP system dependencies
+httpx>=0.25.0
+typer>=0.9.0
