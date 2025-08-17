@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import os
 from datetime import datetime
-
 app = FastAPI(
     title="GenX-FX Trading Platform API",
     description="Trading platform with ML-powered predictions",
