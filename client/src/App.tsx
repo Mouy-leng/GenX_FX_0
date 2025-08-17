@@ -5,7 +5,7 @@ function App() {
   const [apiHealth, setApiHealth] = useState<any>(null)
 
   useEffect(() => {
-    const API = (import.meta as any).env?.VITE_API_URL || ''
+    const API = 'http://localhost:8081'
 
     // Test Node.js server health
     fetch(`${API}/health`)
