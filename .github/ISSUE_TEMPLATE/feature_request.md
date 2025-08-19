@@ -1,9 +1,10 @@
 ---
-name: 💡 Feature Request
+name: "\U0001F4A1 Feature Request"
 about: Suggest an idea for this project
-title: '[FEATURE] '
-labels: ['enhancement', 'needs-triage']
-assignees: ['Mouy-leng']
+title: "[FEATURE] "
+labels: enhancement
+assignees: Mouy-leng
+
 ---
 
 ## 💡 Feature Description
