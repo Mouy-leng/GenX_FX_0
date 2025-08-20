@@ -52,6 +52,11 @@ class HeadCLI:
                 'description': 'GenX FX - Complete trading system management',
                 'commands': ['status', 'init', 'config', 'logs', 'tree', 'excel', 'forexconnect']
             },
+            'jules': {
+                'file': 'jules_simple.py',
+                'description': 'Jules Secret & Task Manager - Deployment and secret management',
+                'commands': ['secrets', 'deploy', 'workspace', 'status']
+            },
             'chat': {
                 'file': 'simple_amp_chat.py',
                 'description': 'Interactive chat with AMP trading system',
@@ -73,7 +78,7 @@ class HeadCLI:
             return 1
         
         # Build command
-        cmd = ['python3', str(cli_file)]
+        cmd = ['python', str(cli_file)]
         if command != 'interactive':
             cmd.append(command)
         if args:
@@ -174,6 +179,20 @@ def genx(
         raise typer.Exit(exit_code)
 
 @app.command()
+def jules(
+    command: str = typer.Argument(help="Jules command to run"),
+    args: Optional[List[str]] = typer.Argument(None, help="Additional arguments")
+):
+    """Run Jules CLI commands - secret management, deployment, tasks"""
+    console.print(f"[magenta]Running Jules command:[/magenta] {command}")
+    if args:
+        console.print(f"   [dim]Args: {' '.join(args)}[/dim]")
+    
+    exit_code = head_cli.run_cli_command('jules', command, args)
+    if exit_code != 0:
+        raise typer.Exit(exit_code)
+
+@app.command()
 def chat():
     """Start interactive chat with AMP trading system"""
     console.print("💬 [cyan]Starting AMP Chat...[/cyan]")
@@ -266,6 +285,7 @@ def help_all():
     console.print("  • status - Complete system status")
     console.print("  • auth - Authentication management")
     console.print("  • chat - Interactive AMP chat")
+    console.print("  • jules - Jules secret & task management")
     console.print("  • init - Initialize system")
     console.print("  • logs - View logs")
     console.print("  • monitor - System monitoring")
@@ -288,6 +308,8 @@ def main(
       head_cli overview              # Show system overview
       head_cli amp auth --status     # Check AMP authentication  
       head_cli genx status           # GenX system status
+      head_cli jules secrets list    # List Jules secrets
+      head_cli jules deploy aws      # Deploy via Jules
       head_cli chat                  # Start interactive chat
       head_cli status                # Complete system status
     """
