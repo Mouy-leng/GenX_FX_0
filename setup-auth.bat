@@ -9,11 +9,11 @@ git config --global credential.helper manager-core
 
 echo ☁️ GCloud authentication (already done)...
 echo Current account: lengkundee01@gmail.com
-echo Current project: genx-467217
+echo Current project: fortress-notes-omrjz
 
 echo 🔥 Firebase authentication...
 echo Please run: firebase login
-echo Then run: firebase use genx-467217
+echo Then run: firebase use fortress-notes-omrjz
 
 echo 🌐 AWS authentication...
 echo Please run: aws configure

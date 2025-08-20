@@ -21,53 +21,14 @@ echo "📁 Setting up project directory..."
 mkdir -p ~/GenX_FX
 cd ~/GenX_FX
 
-# Create .env file with your credentials
-echo "🔧 Creating .env file..."
-cat > .env << 'ENVEOF'
-# === Docker Registry Credentials ===
-DOCKER_USERNAME=genxapitrading@gmail.com
-DOCKER_PASSWORD=Leng12345@#$01
-DOCKER_IMAGE=keamouyleng/genx_docker
-DOCKER_TAG=latest
-
-# === API Keys ===
-GEMINI_API_KEY=AIzaSyDnjcaXnDpm1TzmIAV7EnoluI6w7wGBagM
-VANTAGE_ALPHAVANTAGE_API_KEY=B8E5RHKWZIE1JLK5
-NEWS_API_KEY=5919b24ab55d4ad0a71734fc2ef3542f
-NEWSDATA_API_KEY=pub_7b251a30c9634424b45bc966fc3356da
-FINNHUB_API_KEY=d1a1nh9r01qltimul4f0d1a1nh9r01qltimul4fg
-
-# === Telegram Credentials ===
-TELEGRAM_BOT_TOKEN=8193742894:AAHewpntyYzCaPLyP1yhPZda9eLcDDKBO8Y
-TELEGRAM_USER_ID=1725480922
-
-# === Gmail Credentials ===
-GMAIL_USER=lengkundee01@gmail.com
-GMAIL_PASSWORD=Leng12345@#$01
-GMAIL_APP_API_KEY=iwvb_zhme_jcga_qwks
-
-# === Reddit Credentials ===
-REDDIT_CLIENT_ID=gevc7tz7VJG-dFveG3QLJA
-REDDIT_CLIENT_SECRET=3ELg5NbaxAUJDpitlv_fPb7uFm7i3A
-REDDIT_USERNAME=Mysterious_Set1324
-REDDIT_PASSWORD=Leng12345@#$01
-REDDIT_USER_AGENT=GenX-Trading-Bot/1.0
-
-# === FXCM Credentials ===
-FXCM_USERNAME=D27739526
-FXCM_PASSWORD=cpsj1
-FXCM_CONNECTION_TYPE=Demo
-FXCM_URL=www.fxcorporate.com/Hosts.jsp
-
-# === Security Keys ===
-JWT_SECRET_KEY=f1a6828476f6892bfc9fa6601810147c2a595ab08a0bd8b8263344921dc87102
-
-# === Feature Flags ===
-ENABLE_NEWS_ANALYSIS=true
-ENABLE_REDDIT_ANALYSIS=true
-ENABLE_WEBSOCKET_FEED=true
-API_PROVIDER=gemini
-ENVEOF
+# Check for .env file
+echo "🔧 Checking for .env file..."
+if [ ! -f .env ]; then
+    echo "❌ Error: .env file not found."
+    echo "Please create a .env file from the .env.example template and fill in your credentials."
+    exit 1
+fi
+echo "✅ .env file found."
 
 # Clone the repository
 echo "📥 Cloning GenX_FX repository..."

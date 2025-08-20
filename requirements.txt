@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Core ML and Data Science
 numpy>=1.24.0,<2.0.0
 pandas>=2.0.0,<3.0.0
@@ -70,46 +69,10 @@ empyrical>=0.5.5,<1.0.0
 
 # Web server support for health checks
 # No additional web framework needed, using built-in http.server
-=======
-# Backend API runtime deps for Cloud Run (trimmed: no ta-lib, no pyfolio)
 
-# Web framework
+# Web Framework
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 gunicorn>=21.2.0
-
-# Core ML/data (wheels available)
-numpy>=1.24.0
-pandas>=2.0.0
-scikit-learn>=1.3.0
-xgboost>=1.7.0
-lightgbm>=4.0.0
-scipy>=1.11.0
-
-# Networking and async
-requests>=2.31.0
-aiohttp>=3.8.0
-aiofiles>=23.0.0
-websockets>=11.0.0
-
-# Config and utils
-pydantic>=2.0.0
-pydantic-settings>=2.0.0
-python-dotenv>=1.0.0
-pyyaml>=6.0
-click>=8.1.0
-loguru>=0.7.0
-psutil>=5.9.0
-
-# Optional services imported at module level
-google-generativeai>=0.7.0
-praw>=7.7.1
-newsapi-python>=0.2.7
-finnhub-python>=2.4.19
-alpha_vantage>=2.3.1
-python-jose[cryptography]>=3.3.0
-
-# Stats
-typing-extensions>=4.7.1
-statsmodels>=0.14.0
->>>>>>> Stashed changes
+pybit>=5.4.0
+httpx>=0.27.0

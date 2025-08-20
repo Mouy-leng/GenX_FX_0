@@ -12,7 +12,7 @@ cd client
 npm install
 npm run build
 firebase login
-firebase use genx-467217
+firebase use fortress-notes-omrjz
 firebase deploy --only hosting
 ```
 **Deliverables**:
@@ -30,7 +30,7 @@ firebase deploy --only hosting
 ```bash
 # Agent 2 Commands
 gcloud auth login
-gcloud config set project genx-467217
+gcloud config set project fortress-notes-omrjz
 docker build -t genx-api .
 gcloud run deploy genx-api --source . --region us-central1 --allow-unauthenticated
 ```
@@ -112,7 +112,7 @@ pause
     "agent_4_integration": "pending"
   },
   "shared_resources": {
-    "project_id": "genx-467217",
+    "project_id": "fortress-notes-omrjz",
     "region": "us-central1",
     "domain": "genx-fx.web.app"
   }
