@@ -42,3 +42,17 @@ pytest-asyncio>=0.21.0
 click>=8.1.0
 rich>=13.0.0
 typer>=0.7.0
+
+# API and Social Integration
+fastapi>=0.104.0
+praw>=7.7.0
+python-telegram-bot>=20.0
+aioredis>=2.0.0
+
+# News and Data Sources
+newsapi-python>=0.2.6
+requests>=2.31.0
+
+# AI and Trading APIs
+google-generativeai>=0.3.0
+bybit-api>=0.0.83
