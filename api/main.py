@@ -1,186 +1,154 @@
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse
-import logging
-import uvicorn
-from contextlib import asynccontextmanager
-import asyncio
-import os
+"""
+FastAPI application for the GenX Trading Platform
+"""
 
-from .config import settings
-from .routers import predictions, trading, market_data, system
-from .middleware.auth import auth_middleware
+import logging
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Optional
+
+# Import schemas and services
+from .models.schemas import (
+    SystemStatus, TradeSignal, OrderRequest, OrderResponse, PortfolioStatus,
+    PredictionResponse, MarketData
+)
+from .services.trading_service import TradingService
 from .services.ml_service import MLService
 from .services.data_service import DataService
-from .services.gemini_service import GeminiService
-from .services.reddit_service import RedditService
-from .services.news_service import NewsService
-from .services.websocket_service import WebSocketService
-from .utils.logging_config import setup_logging
+from .utils.auth import get_current_user
 
-# Setup logging
-setup_logging()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize services
-ml_service = MLService()
-data_service = DataService()
-gemini_service = GeminiService() if os.getenv("GEMINI_API_KEY") else None
-reddit_service = RedditService() if os.getenv("REDDIT_CLIENT_ID") else None
-news_service = NewsService() if os.getenv("NEWSDATA_API_KEY") or os.getenv("NEWSAPI_ORG_KEY") else None
-websocket_service = WebSocketService() if os.getenv("ENABLE_WEBSOCKET_FEED", "false").lower() == "true" else None
+# --- FastAPI App Initialization ---
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Handle startup and shutdown events"""
-    # Startup
-    logger.info("Starting GenX-EA Trading Platform API...")
-    
-    # Initialize services
-    await ml_service.initialize()
-    await data_service.initialize()
-    
-    # Initialize optional services
-    if gemini_service:
-        await gemini_service.initialize()
-    if reddit_service:
-        await reddit_service.initialize()
-    if news_service:
-        await news_service.initialize()
-    if websocket_service:
-        await websocket_service.initialize()
-    
-    # Start background tasks
-    asyncio.create_task(ml_service.start_model_monitoring())
-    asyncio.create_task(data_service.start_data_feed())
-    
-    logger.info("API startup complete")
-    
-    yield
-    
-    # Shutdown
-    logger.info("Shutting down GenX-EA Trading Platform API...")
-    await ml_service.shutdown()
-    await data_service.shutdown()
-    
-    # Shutdown optional services
-    if gemini_service:
-        await gemini_service.shutdown()
-    if reddit_service:
-        await reddit_service.shutdown()
-    if news_service:
-        await news_service.shutdown()
-    if websocket_service:
-        await websocket_service.shutdown()
-    
-    logger.info("API shutdown complete")
-
-# Create FastAPI app
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description=settings.DESCRIPTION,
-    version=settings.VERSION,
-    lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    title="GenX Trading Platform API",
+    description="A modern, high-performance API for AI-powered trading.",
+    version="2.0.0"
 )
 
-# Add middleware
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["*"]  # Configure for production
-)
+# --- Service Instantiation ---
 
-# Add authentication middleware
-@app.middleware("http")
-async def auth_middleware_wrapper(request, call_next):
-    """Wrapper for auth middleware"""
-    try:
-        # Skip auth for public endpoints
-        public_endpoints = ["/", "/docs", "/redoc", "/openapi.json", "/health"]
-        
-        if request.url.path in public_endpoints:
-            return await call_next(request)
-        
-        # For now, allow all requests (remove this in production)
-        return await call_next(request)
-    except Exception as e:
-        logger.error(f"Auth middleware error: {str(e)}")
-        return await call_next(request)
+trading_service = TradingService()
+ml_service = MLService()
+data_service = DataService()
 
-# Include routers
-app.include_router(predictions.router, prefix=settings.API_V1_STR)
-app.include_router(trading.router, prefix=settings.API_V1_STR)
-app.include_router(market_data.router, prefix=settings.API_V1_STR)
-app.include_router(system.router, prefix=settings.API_V1_STR)
+# --- API Endpoints ---
 
-# Root endpoint
-@app.get("/")
-async def read_root():
-    """Root endpoint"""
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    logger.info("Initializing API services...")
+    await trading_service.initialize()
+    await ml_service.initialize()
+    await data_service.initialize()
+    logger.info("API services initialized.")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Shutdown services gracefully"""
+    logger.info("Shutting down API services...")
+    await ml_service.shutdown()
+    logger.info("API services shut down.")
+
+
+# --- System Endpoints ---
+
+@app.get("/", tags=["System"])
+async def root():
+    """Root endpoint with basic API information."""
     return {
-        "message": f"Welcome to {settings.PROJECT_NAME}",
-        "version": settings.VERSION,
-        "status": "active",
-        "docs": "/docs"
+        "message": "Welcome to the GenX Trading Platform API",
+        "version": app.version,
+        "docs_url": "/docs"
     }
 
-# Health check
-@app.get("/health")
+@app.get("/health", response_model=SystemStatus, tags=["System"])
 async def health_check():
-    """Health check endpoint"""
-    try:
-        # Check ML service
-        ml_status = await ml_service.health_check()
-        
-        # Check data service
-        data_status = await data_service.health_check()
-        
-        return {
-            "status": "healthy",
-            "timestamp": "2024-01-01T00:00:00Z",
-            "services": {
-                "ml_service": ml_status,
-                "data_service": data_status
-            }
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy",
-                "error": str(e)
-            }
-        )
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Global exception handler"""
-    logger.error(f"Unhandled exception: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "Internal server error",
-            "message": "An unexpected error occurred"
-        }
+    """Provides a detailed health check of the API and its services."""
+    return SystemStatus(
+        api_status="healthy",
+        database_status="connected",  # This would be checked by a data service
+        model_status=await ml_service.health_check(),
+        trading_enabled=True, # This would come from config
     )
 
+
+# --- Trading Endpoints ---
+
+@app.get("/trading/signals", response_model=List[TradeSignal], tags=["Trading"])
+async def get_trading_signals(symbol: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get active trading signals."""
+    return await trading_service.get_active_signals(symbol)
+
+@app.post("/trading/orders", response_model=OrderResponse, tags=["Trading"])
+async def place_order(order_request: OrderRequest, current_user: dict = Depends(get_current_user)):
+    """Place a new trading order."""
+    return await trading_service.place_order(order_request)
+
+@app.get("/trading/orders/{order_id}", response_model=OrderResponse, tags=["Trading"])
+async def get_order(order_id: str, current_user: dict = Depends(get_current_user)):
+    """Get details of a specific order."""
+    order = await trading_service.get_order(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
+
+@app.delete("/trading/orders/{order_id}", tags=["Trading"])
+async def cancel_order(order_id: str, current_user: dict = Depends(get_current_user)):
+    """Cancel an existing order."""
+    success = await trading_service.cancel_order(order_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to cancel order")
+    return {"message": "Order cancelled successfully"}
+
+@app.get("/trading/portfolio", response_model=PortfolioStatus, tags=["Trading"])
+async def get_portfolio(current_user: dict = Depends(get_current_user)):
+    """Get the current portfolio status."""
+    return await trading_service.get_portfolio_status()
+
+
+# --- Machine Learning Endpoints ---
+
+@app.post("/ml/predict/{symbol}", response_model=PredictionResponse, tags=["Machine Learning"])
+async def get_prediction(symbol: str, current_user: dict = Depends(get_current_user)):
+    """Get a prediction for a given symbol."""
+    # In a real app, you'd pass real market data
+    market_data = await data_service.get_market_data(symbol)
+    if not market_data:
+        raise HTTPException(status_code=404, detail="Market data not found for symbol")
+        
+    prediction = await ml_service.predict(symbol, market_data)
+    return PredictionResponse(**prediction)
+
+@app.get("/ml/metrics", tags=["Machine Learning"])
+async def get_ml_metrics(current_user: dict = Depends(get_current_user)):
+    """Get performance metrics for the ML models."""
+    return await ml_service.get_model_metrics()
+
+
+# --- Data Endpoints ---
+
+@app.get("/data/market/{symbol}", response_model=MarketData, tags=["Data"])
+async def get_market_data(symbol: str, current_user: dict = Depends(get_current_user)):
+    """Get market data for a given symbol."""
+    data = await data_service.get_market_data(symbol)
+    if not data:
+        raise HTTPException(status_code=404, detail="Market data not found")
+    return data
+
+# --- Main execution ---
 if __name__ == "__main__":
-    uvicorn.run(
-        "api.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level=settings.LOG_LEVEL.lower()
-    )
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

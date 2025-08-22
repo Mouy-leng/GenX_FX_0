@@ -12,19 +12,39 @@ from pathlib import Path
 from datetime import datetime
 import signal
 import json
+import os
+from threading import Thread
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
 
+from core.config import config
 from core.trading_engine import TradingEngine
 from core.data_sources.fxcm_provider import FXCMDataProvider, MockFXCMProvider
 from core.ai_models.ensemble_predictor import EnsemblePredictor
 from core.model_trainer import ModelTrainer
 from core.backtester import Backtester
-from utils.config_manager import ConfigManager
 from utils.logger_setup import setup_logging
 
 logger = logging.getLogger(__name__)
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    """Simple health check handler for Cloud Run"""
+    
+    def do_GET(self):
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"status": "healthy", "service": "genx-trading-system"}')
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
+    def log_message(self, format, *args):
+        # Suppress default HTTP server logs
+        pass
 
 class GenXTradingSystem:
     """
@@ -37,11 +57,10 @@ class GenXTradingSystem:
     - test: Test system components
     """
     
-    def __init__(self, config_path: str = "config/trading_config.json"):
-        self.config_manager = ConfigManager(config_path)
-        self.config = self.config_manager.get_config()
+    def __init__(self):
         self.trading_engine = None
         self.is_running = False
+        self.health_server = None
         
         # Setup graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -53,6 +72,18 @@ class GenXTradingSystem:
         """Handle shutdown signals gracefully"""
         logger.info(f"Received signal {signum}, shutting down...")
         self.is_running = False
+        if self.health_server:
+            self.health_server.shutdown()
+    
+    def start_health_server(self, port=8080):
+        """Start health check server for Cloud Run"""
+        try:
+            self.health_server = HTTPServer(('', port), HealthCheckHandler)
+            health_thread = Thread(target=self.health_server.serve_forever, daemon=True)
+            health_thread.start()
+            logger.info(f"Health check server started on port {port}")
+        except Exception as e:
+            logger.warning(f"Could not start health server: {e}")
     
     async def run_live_trading(self):
         """Run live trading signal generation"""
@@ -60,7 +91,7 @@ class GenXTradingSystem:
         
         try:
             # Initialize trading engine
-            self.trading_engine = TradingEngine(self.config)
+            self.trading_engine = TradingEngine()
             
             # Start the engine
             await self.trading_engine.start()
@@ -90,11 +121,11 @@ class GenXTradingSystem:
         logger.info("🎯 Starting Training Mode")
         
         try:
-            trainer = ModelTrainer(self.config)
+            trainer = ModelTrainer(config)
             await trainer.initialize()
             
-            symbols = symbols or self.config.get('symbols', ['EURUSD', 'GBPUSD'])
-            timeframes = timeframes or self.config.get('timeframes', ['H1', 'H4'])
+            symbols = symbols or config.get('trading.symbols', ['EURUSD', 'GBPUSD'])
+            timeframes = timeframes or config.get('trading.timeframes', ['H1', 'H4'])
             
             logger.info(f"Training models for symbols: {symbols}")
             logger.info(f"Training timeframes: {timeframes}")
@@ -122,10 +153,10 @@ class GenXTradingSystem:
         logger.info("📈 Starting Backtesting Mode")
         
         try:
-            backtester = Backtester(self.config)
+            backtester = Backtester(config)
             await backtester.initialize()
             
-            start_date = start_date or "2023-01-01"
+            start_date = start_date or config.get('backtesting.default_start_date', "2023-01-01")
             end_date = end_date or datetime.now().strftime("%Y-%m-%d")
             
             logger.info(f"Backtesting period: {start_date} to {end_date}")
@@ -133,7 +164,7 @@ class GenXTradingSystem:
             results = await backtester.run_backtest(
                 start_date=start_date,
                 end_date=end_date,
-                symbols=self.config.get('symbols', ['EURUSD'])
+                symbols=config.get('trading.symbols', ['EURUSD'])
             )
             
             # Display backtest results
@@ -159,10 +190,10 @@ class GenXTradingSystem:
         try:
             # Test data provider connection
             logger.info("Testing data provider...")
-            if self.config.get('fxcm', {}).get('use_mock', True):
-                data_provider = MockFXCMProvider(self.config['fxcm'])
+            if config.get('fxcm.use_mock', True):
+                data_provider = MockFXCMProvider(config.get('fxcm'))
             else:
-                data_provider = FXCMDataProvider(self.config['fxcm'])
+                data_provider = FXCMDataProvider(config.get('fxcm'))
             
             connected = await data_provider.connect()
             if connected:
@@ -179,7 +210,7 @@ class GenXTradingSystem:
             
             # Test AI predictor
             logger.info("Testing AI predictor...")
-            predictor = EnsemblePredictor(self.config['ai_models'])
+            predictor = EnsemblePredictor(config.get('ai_models'))
             await predictor.initialize()
             
             if len(test_data) > 50:
@@ -188,7 +219,7 @@ class GenXTradingSystem:
             
             # Test signal generation
             logger.info("Testing signal generation...")
-            self.trading_engine = TradingEngine(self.config)
+            self.trading_engine = TradingEngine()
             test_signals = await self.trading_engine.force_signal_generation(['EURUSD'])
             
             if test_signals:
@@ -208,13 +239,13 @@ class GenXTradingSystem:
         logger.info(f"🎲 Generating {count} sample signals")
         
         try:
-            self.trading_engine = TradingEngine(self.config)
+            self.trading_engine = TradingEngine()
             await self.trading_engine.data_provider.connect()
             await self.trading_engine.ensemble_predictor.initialize()
             await self.trading_engine.spreadsheet_manager.initialize()
             
             signals = await self.trading_engine.force_signal_generation(
-                self.config.get('symbols', ['EURUSD', 'GBPUSD'])[:count]
+                config.get('trading.symbols', ['EURUSD', 'GBPUSD'])[:count]
             )
             
             if signals:
@@ -241,36 +272,34 @@ class GenXTradingSystem:
     def print_system_info(self):
         """Print system information"""
         logger.info("=" * 60)
-        logger.info("🚀 GenX FX Trading System")
+        logger.info(f"🚀 {config.get('system.name')}")
         logger.info("   Advanced AI-Powered Forex Signal Generator")
         logger.info("=" * 60)
-        logger.info(f"📊 Symbols: {', '.join(self.config.get('symbols', []))}")
-        logger.info(f"⏰ Timeframes: {', '.join(self.config.get('timeframes', []))}")
-        logger.info(f"🎯 Primary Timeframe: {self.config.get('primary_timeframe', 'H1')}")
-        logger.info(f"🤖 AI Models: {self.config.get('ai_models', {}).get('ensemble_size', 5)} ensemble models")
-        logger.info(f"📈 Max Risk per Trade: {self.config.get('risk_management', {}).get('max_risk_per_trade', 0.02):.1%}")
-        logger.info(f"⚡ Signal Generation: Every {self.config.get('signal_generation_interval', 300)} seconds")
-        logger.info(f"💾 Output Directory: signal_output/")
+        logger.info(f"📊 Symbols: {', '.join(config.get('trading.symbols', []))}")
+        logger.info(f"⏰ Timeframes: {', '.join(config.get('trading.timeframes', []))}")
+        logger.info(f"🎯 Primary Timeframe: {config.get('trading.primary_timeframe', 'H1')}")
+        logger.info(f"🤖 AI Models: {config.get('ai_models.ensemble_size', 5)} ensemble models")
+        logger.info(f"📈 Max Risk per Trade: {config.get('risk_management.max_risk_per_trade', 0.02):.1%}")
+        logger.info(f"⚡ Signal Generation: Every {config.get('trading.signal_generation_interval', 300)} seconds")
+        logger.info(f"💾 Output Directory: {config.get('spreadsheet.output_directory')}")
         logger.info("=" * 60)
 
 async def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description="GenX FX Trading System")
-    parser.add_argument('mode', choices=['live', 'train', 'backtest', 'test', 'sample'], 
+    parser.add_argument('mode', choices=['live', 'train', 'backtest', 'test', 'sample'],
                        help='System mode to run')
-    parser.add_argument('--config', default='config/trading_config.json', 
-                       help='Configuration file path')
-    parser.add_argument('--symbols', nargs='+', 
+    parser.add_argument('--symbols', nargs='+',
                        help='Symbols to trade (for training/backtesting)')
-    parser.add_argument('--timeframes', nargs='+', 
+    parser.add_argument('--timeframes', nargs='+',
                        help='Timeframes to use (for training)')
-    parser.add_argument('--start-date', type=str, 
+    parser.add_argument('--start-date', type=str,
                        help='Start date for backtesting (YYYY-MM-DD)')
-    parser.add_argument('--end-date', type=str, 
+    parser.add_argument('--end-date', type=str,
                        help='End date for backtesting (YYYY-MM-DD)')
-    parser.add_argument('--count', type=int, default=5, 
+    parser.add_argument('--count', type=int, default=5,
                        help='Number of sample signals to generate')
-    parser.add_argument('--log-level', default='INFO', 
+    parser.add_argument('--log-level', default='INFO',
                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
                        help='Logging level')
     
@@ -280,8 +309,11 @@ async def main():
     setup_logging(level=args.log_level)
     
     # Initialize system
-    system = GenXTradingSystem(args.config)
+    system = GenXTradingSystem()
     system.print_system_info()
+    
+    # Start health check server for Cloud Run
+    system.start_health_server(port=int(os.environ.get('PORT', 8080)))
     
     try:
         if args.mode == 'live':
