@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "fortress-notes-omrjz"
-  }
+    "default": "sample-firebase-ai-app-96331"
+  },
+  "targets": {},
+  "etags": {}
 }
