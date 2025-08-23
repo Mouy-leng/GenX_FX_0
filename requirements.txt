@@ -67,9 +67,9 @@ pmdarima>=2.0.0
 # Notification Support (Optional)
 # python-telegram-bot>=20.0
 # slack-sdk>=3.21.0
-fastapi
-pybit
-uvicorn
-httpx
-python-jose
-pydantic-settings
+fastapi==0.103.2
+pybit==5.11.0
+uvicorn==0.22.0
+httpx==0.24.1
+python-jose==3.4.0
+pydantic-settings==2.0.3
