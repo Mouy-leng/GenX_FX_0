@@ -962,6 +962,52 @@ def logs():
             border_style="dim"
         ))
 
+@genx_app.command("inspect-logs")
+def inspect_logs(
+    workflow_run_id: Optional[str] = typer.Option(None, "--workflow-run-id", help="The ID of the GitHub Actions workflow run.")
+):
+    """Inspect the logs from the last CI/CD build and deployment."""
+    console.print("🔍 [bold blue]Inspecting CI/CD logs...[/bold blue]")
+
+    # GitLab CI/CD command
+    console.print("\n[bold]GitLab CI/CD[/bold]")
+    try:
+        result = subprocess.run(["gitlab-runner", "job", "view", "--last-run", "--log"], capture_output=True, text=True)
+
+        if result.returncode == 0:
+            console.print("[green]✅ Last GitLab job log:[/green]")
+            console.print(Panel(result.stdout, title="GitLab Log", border_style="green"))
+        else:
+            console.print("[red]❌ Error fetching GitLab job log:[/red]")
+            console.print(Panel(result.stderr, title="GitLab Error", border_style="red"))
+
+    except FileNotFoundError:
+        console.print("[yellow]⚠️ gitlab-runner command not found. Is it installed and in your PATH?[/yellow]")
+    except Exception as e:
+        console.print(f"[red]❌ An error occurred: {e}[/red]")
+
+    # GitHub Actions command
+    console.print("\n[bold]GitHub Actions[/bold]")
+    if workflow_run_id:
+        try:
+            result = subprocess.run(["gh", "run", "view", workflow_run_id, "--log"], capture_output=True, text=True)
+
+            if result.returncode == 0:
+                console.print(f"[green]✅ GitHub Actions log for run {workflow_run_id}:[/green]")
+                console.print(Panel(result.stdout, title="GitHub Actions Log", border_style="green"))
+            else:
+                console.print(f"[red]❌ Error fetching GitHub Actions log for run {workflow_run_id}:[/red]")
+                console.print(Panel(result.stderr, title="GitHub Actions Error", border_style="red"))
+
+        except FileNotFoundError:
+            console.print("[yellow]⚠️ gh command not found. Is it installed and in your PATH?[/yellow]")
+        except Exception as e:
+            console.print(f"[red]❌ An error occurred: {e}[/red]")
+    else:
+        console.print("[yellow]⚠️ --workflow-run-id not provided. Skipping GitHub Actions log inspection.[/yellow]")
+        console.print("💡 To inspect a GitHub Actions log, provide the workflow run ID, e.g.:")
+        console.print("   [cyan]genx inspect-logs --workflow-run-id 123456789[/cyan]")
+
 @genx_app.command()
 def tree():
     """Show project structure tree"""
