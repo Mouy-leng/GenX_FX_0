@@ -40,7 +40,7 @@ services:
       - POSTGRES_DB=genx_trading
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     networks:
@@ -57,7 +57,6 @@ services:
       - MONGO_INITDB_DATABASE=genx_trading
     volumes:
       - mongo_data:/data/db
-      - ./database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     ports:
       - "27017:27017"
     networks:
