@@ -1,32 +1,51 @@
+# .github/workflows/ci-cd.yml
+
 name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    # Run on all branches
+    branches:
+      - '*'
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build:
+  # This job runs on all branches EXCEPT main
+  test:
+    # The 'if' condition ensures this job only runs on pushes to branches that are not 'main'
+    if: github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
+      # Setup Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Specify your Node.js version
+
+      # Install Node.js dependencies and run tests
+      - name: Install Node.js dependencies and run tests
+        run: |
+          npm install
+          npm test
+        working-directory: ./ # Adjust if your package.json is in a subdirectory
+
+      # Setup Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.7'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-
-      - name: Run tests
+      # Install Python dependencies and run tests
+      - name: Install Python dependencies and run tests
         env:
           PYTHONPATH: .
+          # Add other necessary environment variables for tests
+          # Using dummy values for secrets as in the original file
           EXNESS_LOGIN: "dummy_login"
           EXNESS_PASSWORD: "dummy_password"
           EXNESS_SERVER: "dummy_server"
@@ -52,4 +71,22 @@ jobs:
           JWT_SECRET_KEY: "test-secret-key"
           DATABASE_URL: "postgresql://amp_user:amp_password@localhost:5432/amp_trading"
         run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
           pytest
+
+  # This job runs ONLY on the main branch
+  deploy:
+    # The 'if' condition ensures this job only runs on pushes to the 'main' branch
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # This is a placeholder for your deployment script
+      - name: Simulate Deployment
+        run: |
+          echo "Deploying to production..."
+          echo "Deployment successful!"
