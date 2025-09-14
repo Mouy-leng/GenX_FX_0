@@ -31,7 +31,10 @@
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
-    }
+    },
+    "githubPullRequests.ignoredPullRequestBranches": [
+      "main"
+    ]
   },
   "extensions": {
     "recommendations": [
