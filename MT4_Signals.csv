@@ -1,0 +1,3 @@
+timestamp,symbol,action,entry_price,stop_loss,take_profit,confidence,reasoning,source
+2025-09-14T21:43:35.198407,XAUGBP,BUY,2067.0,2047.0,2107.0,55.16,Rule-based analysis for XAUGBP during quiet session,rule_based
+2025-09-14T21:43:35.202909,XAUAUD,SELL,2081.0,2101.0,2041.0,47.76,Rule-based analysis for XAUAUD during quiet session,rule_based
