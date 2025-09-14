@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Core ML and Data Science
 numpy>=1.24.0,<2.0.0
 pandas>=2.0.0,<3.0.0
@@ -26,43 +25,61 @@ asyncio-mqtt>=0.16.0,<1.0.0
 openpyxl>=3.1.0,<4.0.0
 xlsxwriter>=3.1.0,<4.0.0
 
+# Database and Storage
+sqlalchemy>=2.0.0,<3.0.0
+alembic>=1.12.0,<2.0.0
+redis>=4.6.0,<5.0.0
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
+
+# HTTP and Networking
+requests>=2.31.0,<3.0.0
+websockets>=11.0.0,<12.0.0
+
 # Configuration and Utilities
 pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
 python-dotenv>=1.0.0,<2.0.0
-pyyaml>=6.0,<7.0.0
+pyyaml>=6.0,<7.0
 click>=8.1.0,<9.0.0
-
-# Async and Concurrency
-uvloop>=0.17.0,<1.0.0; sys_platform != "win32"
-
-# Logging and Monitoring
 loguru>=0.7.0,<1.0.0
-psutil>=5.9.0,<8.0.0
+psutil>=5.9.0,<6.0.0
 
-# API and WebSocket Support
-websockets>=11.0.0,<16.0.0
-requests>=2.31.0,<3.0.0
+# Authentication and Security
+python-jose[cryptography]>=3.3.0,<4.0.0
+passlib[bcrypt]>=1.7.4,<2.0.0
 
-# Math and Statistics
+# Trading and Financial APIs
+ccxt>=4.0.0,<5.0.0
+python-binance>=1.0.0,<2.0.0
+
+# AI and ML Services
+google-generativeai>=0.7.0,<1.0.0
+
+# Data Sources
+praw>=7.7.1,<8.0.0
+newsapi-python>=0.2.7,<1.0.0
+finnhub-python>=2.4.19,<3.0.0
+alpha_vantage>=2.3.1,<3.0.0
+
+# Statistics and Analysis
 statsmodels>=0.14.0,<1.0.0
-pykalman>=0.9.5,<1.0.0
+typing-extensions>=4.7.1,<5.0.0
 
-# Optional: FXCM Trading (if using real broker)
-# fxcmpy>=1.3.0
-
-# Development and Testing
-pytest>=7.4.0,<9.0.0
+# Testing
+pytest>=7.4.0,<8.0.0
+pytest-cov>=4.1.0,<5.0.0
 pytest-asyncio>=0.21.0,<1.0.0
+
+# Code Quality
 black>=23.0.0,<24.0.0
-flake8>=6.0.0,<8.0.0
-
-# Time Series Analysis
-arch>=6.2.0,<8.0.0
-pmdarima>=2.0.0,<3.0.0
-
-# Risk Management
-pyfolio>=0.9.2,<1.0.0
-empyrical>=0.5.5,<1.0.0
+flake8>=6.0.0,<7.0.0
+isort>=5.12.0,<6.0.0
+bandit>=1.7.0,<2.0.0
+safety>=2.3.0,<3.0.0
 
 # Notification Support (Optional)
 # python-telegram-bot>=20.0
@@ -70,46 +87,3 @@ empyrical>=0.5.5,<1.0.0
 
 # Web server support for health checks
 # No additional web framework needed, using built-in http.server
-=======
-# Backend API runtime deps for Cloud Run (trimmed: no ta-lib, no pyfolio)
-
-# Web framework
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-gunicorn>=21.2.0
-
-# Core ML/data (wheels available)
-numpy>=1.24.0
-pandas>=2.0.0
-scikit-learn>=1.3.0
-xgboost>=1.7.0
-lightgbm>=4.0.0
-scipy>=1.11.0
-
-# Networking and async
-requests>=2.31.0
-aiohttp>=3.8.0
-aiofiles>=23.0.0
-websockets>=11.0.0
-
-# Config and utils
-pydantic>=2.0.0
-pydantic-settings>=2.0.0
-python-dotenv>=1.0.0
-pyyaml>=6.0
-click>=8.1.0
-loguru>=0.7.0
-psutil>=5.9.0
-
-# Optional services imported at module level
-google-generativeai>=0.7.0
-praw>=7.7.1
-newsapi-python>=0.2.7
-finnhub-python>=2.4.19
-alpha_vantage>=2.3.1
-python-jose[cryptography]>=3.3.0
-
-# Stats
-typing-extensions>=4.7.1
-statsmodels>=0.14.0
->>>>>>> Stashed changes
