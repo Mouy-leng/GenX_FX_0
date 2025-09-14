@@ -18,7 +18,7 @@ yfinance==0.2.65
 requests==2.32.4
 aiohttp==3.12.15
 python-dotenv==1.0.0
-pyyaml==6.0.1
+pyyaml==6.0.2
 
 # Web framework for health checks
 fastapi==0.116.1
