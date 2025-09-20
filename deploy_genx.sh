@@ -24,45 +24,46 @@ mkdir -p ~/GenX_FX
 cd ~/GenX_FX
 
 # Create .env file with your credentials
-echo "🔧 Creating .env file..."
+echo "⚠️  SECURITY WARNING: The following .env file contains placeholders."
+echo "Please replace them with your actual credentials before running the application."
 cat > .env << 'EOF'
 # === Docker Registry Credentials ===
-DOCKER_USERNAME=genxapitrading@gmail.com
-DOCKER_PASSWORD=Leng12345@#$01
-DOCKER_IMAGE=keamouyleng/genx_docker
+DOCKER_USERNAME=your-docker-username
+DOCKER_PASSWORD=your-docker-password
+DOCKER_IMAGE=your-docker-username/genx_docker
 DOCKER_TAG=latest
 
 # === API Keys ===
-GEMINI_API_KEY=AIzaSyDnjcaXnDpm1TzmIAV7EnoluI6w7wGBagM
-VANTAGE_ALPHAVANTAGE_API_KEY=B8E5RHKWZIE1JLK5
-NEWS_API_KEY=5919b24ab55d4ad0a71734fc2ef3542f
-NEWSDATA_API_KEY=pub_7b251a30c9634424b45bc966fc3356da
-FINNHUB_API_KEY=d1a1nh9r01qltimul4f0d1a1nh9r01qltimul4fg
+GEMINI_API_KEY=your-gemini-api-key
+VANTAGE_ALPHAVANTAGE_API_KEY=your-alphavantage-api-key
+NEWS_API_KEY=your-news-api-key
+NEWSDATA_API_KEY=your-newsdata-api-key
+FINNHUB_API_KEY=your-finnhub-api-key
 
 # === Telegram Credentials ===
-TELEGRAM_BOT_TOKEN=8193742894:AAHewpntyYzCaPLyP1yhPZda9eLcDDKBO8Y
-TELEGRAM_USER_ID=1725480922
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+TELEGRAM_USER_ID=your-telegram-user-id
 
 # === Gmail Credentials ===
-GMAIL_USER=lengkundee01@gmail.com
-GMAIL_PASSWORD=Leng12345@#$01
-GMAIL_APP_API_KEY=iwvb_zhme_jcga_qwks
+GMAIL_USER=your-gmail-user
+GMAIL_PASSWORD=your-gmail-password
+GMAIL_APP_API_KEY=your-gmail-app-api-key
 
 # === Reddit Credentials ===
-REDDIT_CLIENT_ID=gevc7tz7VJG-dFveG3QLJA
-REDDIT_CLIENT_SECRET=3ELg5NbaxAUJDpitlv_fPb7uFm7i3A
-REDDIT_USERNAME=Mysterious_Set1324
-REDDIT_PASSWORD=Leng12345@#$01
-REDDIT_USER_AGENT=GenX-Trading-Bot/1.0
+REDDIT_CLIENT_ID=your-reddit-client-id
+REDDIT_CLIENT_SECRET=your-reddit-client-secret
+REDDIT_USERNAME=your-reddit-username
+REDDIT_PASSWORD=your-reddit-password
+REDDIT_USER_AGENT=your-reddit-user-agent
 
 # === FXCM Credentials ===
-FXCM_USERNAME=D27739526
-FXCM_PASSWORD=cpsj1
+FXCM_USERNAME=your-fxcm-username
+FXCM_PASSWORD=your-fxcm-password
 FXCM_CONNECTION_TYPE=Demo
 FXCM_URL=www.fxcorporate.com/Hosts.jsp
 
 # === Security Keys ===
-JWT_SECRET_KEY=f1a6828476f6892bfc9fa6601810147c2a595ab08a0bd8b8263344921dc87102
+JWT_SECRET_KEY=your-jwt-secret-key
 
 # === Feature Flags ===
 ENABLE_NEWS_ANALYSIS=true

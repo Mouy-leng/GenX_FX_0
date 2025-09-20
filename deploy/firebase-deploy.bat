@@ -10,7 +10,8 @@ npm install -g firebase-tools
 
 :: Login to Firebase
 echo 🔐 Logging into Firebase...
-firebase login --token jmboQydL5KRqerZ6RAFRCABtkLp2
+echo ⚠️  Please login to Firebase manually or set the FIREBASE_TOKEN environment variable.
+firebase login --token %FIREBASE_TOKEN%
 
 :: Initialize Firebase project
 echo 🚀 Initializing Firebase project...

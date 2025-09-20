@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 class FirebaseDeployer:
     def __init__(self):
-        self.token = "jmboQydL5KRqerZ6RAFRCABtkLp2"
-        self.project_id = "genx-fx-trading"
+        self.token = os.environ.get("FIREBASE_TOKEN")
+        self.project_id = os.environ.get("FIREBASE_PROJECT_ID", "your-project-id")
         
     def run_command(self, cmd):
         """Run command and return result"""
@@ -96,7 +96,7 @@ class FirebaseDeployer:
         <div class="status success">
             <h3>✅ Deployment Status: LIVE</h3>
             <p class="timestamp">Deployed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-            <p>User: lengkundee01@gmail.com</p>
+            <p>User: your-email@example.com</p>
         </div>
         
         <div class="grid">

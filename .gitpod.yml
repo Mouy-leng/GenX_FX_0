@@ -10,8 +10,8 @@ env:
   PYTHONPATH: /workspace
   
   # Docker Configuration
-  DOCKER_USERNAME: lengkundee01@gmail.com
-  DOCKER_IMAGE: keamouyleng/genx-fx
+  DOCKER_USERNAME: your-docker-username
+  DOCKER_IMAGE: your-docker-username/genx-fx
   DOCKER_TAG: latest
   
   # Python Configuration

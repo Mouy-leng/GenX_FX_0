@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 class ContinuousFirebaseDeployer:
     def __init__(self):
-        self.project_id = "sample-firebase-ai-app-96331"
-        self.user_email = "lengkundee01@gmail.com"
+        self.project_id = os.environ.get("FIREBASE_PROJECT_ID", "your-project-id")
+        self.user_email = os.environ.get("FIREBASE_USER_EMAIL", "user@example.com")
         self.start_time = datetime.now()
         self.end_time = self.start_time + timedelta(hours=3, minutes=30)
         self.deployment_count = 0
