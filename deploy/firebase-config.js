@@ -16,15 +16,15 @@ const firebaseConfig = {
 const authConfig = {
   hashConfig: {
     algorithm: "SCRYPT",
-    base64SignerKey: "e2Iii842GAYWTag4u6n61P18DdL+sSLtgSm2fmPxAyGgYpiH5Y4C13m+LF++TF4zZ7a8TTEl3i8WT2PpAu/IKA==",
-    base64SaltSeparator: "Bw==",
+    base64SignerKey: "process.env.BASE64_SIGNER_KEY", // Replace with your key
+    base64SaltSeparator: "process.env.BASE64_SALT_SEPARATOR", // Replace with your salt
     rounds: 8,
     memCost: 14
   },
   // Test user configuration
   testUser: {
-    email: "lengkundee01@gmail.com",
-    token: "jmboQydL5KRqerZ6RAFRCABtkLp2"
+    email: "user@example.com",
+    token: "process.env.TEST_USER_TOKEN" // Replace with your test user token
   }
 };
 
