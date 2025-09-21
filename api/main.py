@@ -125,8 +125,8 @@ async def get_portfolio(current_user: dict = Depends(get_current_user)):
 async def get_prediction(symbol: str, current_user: dict = Depends(get_current_user)):
     """Get a prediction for a given symbol."""
     # In a real app, you'd pass real market data
-    market_data = await data_service.get_market_data(symbol)
-    if not market_data:
+    market_data = await data_service.get_realtime_data(symbol)
+    if market_data is None:
         raise HTTPException(status_code=404, detail="Market data not found for symbol")
         
     prediction = await ml_service.predict(symbol, market_data)
