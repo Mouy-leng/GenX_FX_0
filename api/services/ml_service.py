@@ -13,7 +13,7 @@ class MLService:
     """
     
     def __init__(self):
-        self.initialized = True
+        self.initialized = False
         
     async def initialize(self):
         """Initialize the ML service"""
@@ -27,11 +27,9 @@ class MLService:
         
         # Generate a random prediction for demonstration
         return {
-            'symbol': symbol,
-            'prediction': random.choice(['long', 'short', 'neutral']),
+            'signal': random.choice(['long', 'short', 'hold']),
             'confidence': random.uniform(0.5, 0.99),
-            'timestamp': datetime.now(),
-            'features_used': ['rsi', 'macd', 'volume', 'atr'],
+            'features': ['rsi', 'macd', 'volume', 'atr'],
             'model_version': '1.0.0-placeholder'
         }
     
