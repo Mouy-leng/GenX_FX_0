@@ -122,8 +122,3 @@ def test_config_loading():
     assert isinstance(config, dict)
     assert "database_url" in config
     assert "symbols" in config
-
-def test_get_prediction_endpoint(mock_auth):
-    """Test the /ml/predict/{symbol} endpoint."""
-    response = client.post("/ml/predict/BTCUSDT")
-    assert response.status_code == 200

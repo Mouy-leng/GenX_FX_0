@@ -9,7 +9,7 @@ class DataService:
     """Data Service for market data"""
     
     def __init__(self):
-        self.initialized = True
+        self.initialized = False
         
     async def initialize(self):
         """Initialize the data service"""
