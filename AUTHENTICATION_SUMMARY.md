@@ -8,20 +8,20 @@ Your session token has been successfully integrated into the AMP CLI system.
 
 ### **Token Parsed Successfully:**
 ```
-Original Token: sgamp_user_01K0R2TFXNAWZES7ATM3D84JZW_3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab
+Original Token: your-auth-token
 ```
 
 ### **Components Extracted:**
-- **User ID**: `01K0R2TFXNAWZES7ATM3D84JZW`
-- **Session Hash**: `3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab`
+- **User ID**: `your-user-id`
+- **Session Hash**: `your-session-hash`
 - **Authentication Status**: ✅ **ACTIVE**
-- **Session Expires**: `2025-07-27T04:38:19.747078`
+- **Session Expires**: `yyyy-mm-ddTHH:MM:SS.ffffff`
 
 ## 🚀 **Authentication Commands**
 
 ### **Authenticate with Token:**
 ```bash
-amp auth --token "sgamp_user_01K0R2TFXNAWZES7ATM3D84JZW_3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab"
+amp auth --token "your-auth-token"
 ```
 
 ### **Check Authentication Status:**
@@ -39,11 +39,11 @@ amp auth --logout
 ### **amp_auth.json** (Generated)
 ```json
 {
-  "user_id": "01K0R2TFXNAWZES7ATM3D84JZW",
-  "session_hash": "3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab",
-  "session_token": "sgamp_user_01K0R2TFXNAWZES7ATM3D84JZW_3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab",
-  "authenticated_at": "2025-07-26T04:38:19.747057",
-  "expires_at": "2025-07-27T04:38:19.747078"
+  "user_id": "your-user-id",
+  "session_hash": "your-session-hash",
+  "session_token": "your-auth-token",
+  "authenticated_at": "yyyy-mm-ddTHH:MM:SS.ffffff",
+  "expires_at": "yyyy-mm-ddTHH:MM:SS.ffffff"
 }
 ```
 
@@ -63,9 +63,9 @@ amp auth --logout
 ### **✅ API Headers Generation**
 ```python
 headers = {
-    "Authorization": "Bearer sgamp_user_01K0R2TFXNAWZES7ATM3D84JZW_3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab",
-    "X-User-ID": "01K0R2TFXNAWZES7ATM3D84JZW",
-    "X-Session-Hash": "3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab"
+    "Authorization": "Bearer your-auth-token",
+    "X-User-ID": "your-user-id",
+    "X-Session-Hash": "your-session-hash"
 }
 ```
 
@@ -79,7 +79,7 @@ headers = {
 ### **1. Authenticate and Run Job:**
 ```bash
 # Authenticate
-amp auth --token "sgamp_user_01K0R2TFXNAWZES7ATM3D84JZW_3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab"
+amp auth --token "your-auth-token"
 
 # Check status
 amp auth --status
