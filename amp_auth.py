@@ -13,11 +13,20 @@ from pathlib import Path
 
 class AMPAuth:
     def __init__(self):
-        self.auth_file = Path("amp_auth.json")
-        self.session_token = None
+        self.session_token = os.getenv("AMP_TOKEN")
         self.user_id = None
         self.session_hash = None
-        
+        if self.session_token:
+            self._parse_and_set_token(self.session_token)
+
+    def _parse_and_set_token(self, token: str):
+        """Helper to parse a token and set instance variables."""
+        token_data = self.parse_token(token)
+        if token_data:
+            self.user_id = token_data.get("user_id")
+            self.session_hash = token_data.get("session_hash")
+            self.session_token = token_data.get("full_token")
+
     def parse_token(self, token: str) -> Dict[str, str]:
         """Parse the session token into components"""
         try:
@@ -48,60 +57,20 @@ class AMPAuth:
         print(f"🔐 Authenticating with token...")
         
         # Parse the token
-        token_data = self.parse_token(token)
-        if not token_data:
+        self._parse_and_set_token(token)
+        if not self.user_id:
             print("❌ Invalid token format")
             return False
-        
-        # Store authentication data
-        self.session_token = token_data["full_token"]
-        self.user_id = token_data["user_id"]
-        self.session_hash = token_data["session_hash"]
-        
-        # Save to auth file
-        auth_data = {
-            "user_id": self.user_id,
-            "session_hash": self.session_hash,
-            "session_token": self.session_token,
-            "authenticated_at": datetime.now().isoformat(),
-            "expires_at": (datetime.now() + timedelta(hours=24)).isoformat()
-        }
-        
-        with open(self.auth_file, 'w') as f:
-            json.dump(auth_data, f, indent=2)
         
         print(f"✅ Authentication successful!")
         print(f"   User ID: {self.user_id}")
         print(f"   Session: {self.session_hash[:16]}...")
-        print(f"   Expires: {auth_data['expires_at']}")
         
         return True
     
     def is_authenticated(self) -> bool:
         """Check if user is currently authenticated"""
-        if not self.auth_file.exists():
-            return False
-        
-        try:
-            with open(self.auth_file, 'r') as f:
-                auth_data = json.load(f)
-            
-            # Check if session is expired
-            expires_at = datetime.fromisoformat(auth_data["expires_at"])
-            if datetime.now() > expires_at:
-                print("⚠️ Session expired")
-                return False
-            
-            # Load current session data
-            self.user_id = auth_data["user_id"]
-            self.session_hash = auth_data["session_hash"]
-            self.session_token = auth_data["session_token"]
-            
-            return True
-            
-        except Exception as e:
-            print(f"Error checking authentication: {e}")
-            return False
+        return bool(self.session_token)
     
     def get_auth_headers(self) -> Dict[str, str]:
         """Get authentication headers for API requests"""
@@ -116,9 +85,6 @@ class AMPAuth:
     
     def logout(self):
         """Logout and clear session"""
-        if self.auth_file.exists():
-            self.auth_file.unlink()
-        
         self.session_token = None
         self.user_id = None
         self.session_hash = None
@@ -133,7 +99,7 @@ class AMPAuth:
         return {
             "user_id": self.user_id,
             "session_hash": self.session_hash,
-            "authenticated": True
+            "authenticated": self.is_authenticated()
         }
 
 # Global auth instance

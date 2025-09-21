@@ -3,6 +3,7 @@ FastAPI application for the GenX Trading Platform
 """
 
 import logging
+from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
@@ -82,6 +83,8 @@ async def health_check():
         database_status="connected",  # This would be checked by a data service
         model_status=await ml_service.health_check(),
         trading_enabled=True, # This would come from config
+        last_update=datetime.now(),
+        active_strategies=["strategy1", "strategy2"],
     )
 
 

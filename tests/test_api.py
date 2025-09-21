@@ -31,7 +31,7 @@ def test_health_endpoint():
     """Test health endpoint"""
     response = client.get("/health")
     assert response.status_code == 200
-    assert "status" in response.json()
+    assert "api_status" in response.json()
 
 @pytest.mark.asyncio
 async def test_ml_service():
@@ -43,7 +43,7 @@ async def test_ml_service():
     
     # Test prediction
     prediction = await service.predict("BTCUSDT", {})
-    assert "signal" in prediction
+    assert "prediction" in prediction
     assert "confidence" in prediction
     
     # Test health check

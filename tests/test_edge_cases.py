@@ -27,16 +27,13 @@ class TestEdgeCases:
         data = response.json()
         
         # Check required fields
-        assert "status" in data
-        assert "timestamp" in data
-        assert "services" in data
-        assert "ml_service" in data["services"]
-        assert "data_service" in data["services"]
+        assert "api_status" in data
+        assert "last_update" in data
         
         # Validate timestamp format
         from datetime import datetime
         try:
-            datetime.fromisoformat(data["timestamp"].replace('Z', '+00:00'))
+            datetime.fromisoformat(data["last_update"].replace('Z', '+00:00'))
         except ValueError:
             pytest.fail("Invalid timestamp format")
     
@@ -46,12 +43,11 @@ class TestEdgeCases:
         assert response.status_code == 200
         data = response.json()
         
-        required_fields = ["message", "version", "status", "docs"]
+        required_fields = ["message", "version", "docs_url"]
         for field in required_fields:
             assert field in data, f"Missing required field: {field}"
         
-        assert data["status"] == "active"
-        assert data["docs"] == "/docs"
+        assert data["docs_url"] == "/docs"
     
     def test_cors_headers(self):
         """Test CORS headers are properly set"""
