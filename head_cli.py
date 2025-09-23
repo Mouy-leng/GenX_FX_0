@@ -39,7 +39,14 @@ app = typer.Typer(
 console = Console()
 
 class HeadCLI:
+    """
+    The main class for the Head CLI, which acts as a unified interface for
+    all other CLI tools in the GenX Trading Platform.
+    """
     def __init__(self):
+        """
+        Initializes the HeadCLI, defining the available CLI modules.
+        """
         self.project_root = Path.cwd()
         self.available_clis = {
             'amp': {
@@ -60,7 +67,17 @@ class HeadCLI:
         }
         
     def run_cli_command(self, cli_name: str, command: str, args: List[str] = None) -> int:
-        """Run a command from a specific CLI"""
+        """
+        Runs a command from a specific CLI module as a subprocess.
+
+        Args:
+            cli_name (str): The name of the CLI module to use.
+            command (str): The command to execute.
+            args (List[str], optional): A list of additional arguments for the command. Defaults to None.
+
+        Returns:
+            int: The exit code of the subprocess.
+        """
         if cli_name not in self.available_clis:
             console.print(f"❌ [red]Unknown CLI: {cli_name}[/red]")
             return 1
@@ -96,7 +113,10 @@ class HeadCLI:
             return 1
     
     def show_overview(self):
-        """Show system overview"""
+        """
+        Shows a system overview, including available CLI tools and a quick
+        status check.
+        """
         console.print(Panel.fit(
             "[bold blue]🚀 GenX Trading Platform - Head CLI[/bold blue]\n"
             "[dim]Unified interface for all trading system components[/dim]",
@@ -142,7 +162,9 @@ head_cli = HeadCLI()
 
 @app.command()
 def overview():
-    """Show system overview and status"""
+    """
+    Shows a system overview and status.
+    """
     head_cli.show_overview()
 
 @app.command()
@@ -150,7 +172,9 @@ def amp(
     command: str = typer.Argument(help="AMP command to run"),
     args: Optional[List[str]] = typer.Argument(None, help="Additional arguments")
 ):
-    """Run AMP CLI commands - AI models, authentication, monitoring"""
+    """
+    Runs AMP CLI commands for AI models, authentication, and monitoring.
+    """
     console.print(f"🤖 [blue]Running AMP command:[/blue] {command}")
     if args:
         console.print(f"   [dim]Args: {' '.join(args)}[/dim]")
@@ -164,7 +188,9 @@ def genx(
     command: str = typer.Argument(help="GenX command to run"),
     args: Optional[List[str]] = typer.Argument(None, help="Additional arguments")
 ):
-    """Run GenX CLI commands - system management, ForexConnect, Excel"""
+    """
+    Runs GenX CLI commands for system management, ForexConnect, and Excel.
+    """
     console.print(f"⚙️ [green]Running GenX command:[/green] {command}")
     if args:
         console.print(f"   [dim]Args: {' '.join(args)}[/dim]")
@@ -175,7 +201,9 @@ def genx(
 
 @app.command()
 def chat():
-    """Start interactive chat with AMP trading system"""
+    """
+    Starts an interactive chat with the AMP trading system.
+    """
     console.print("💬 [cyan]Starting AMP Chat...[/cyan]")
     exit_code = head_cli.run_cli_command('chat', 'interactive')
     if exit_code != 0:
@@ -183,7 +211,10 @@ def chat():
 
 @app.command()
 def status():
-    """Show comprehensive system status"""
+    """
+    Shows a comprehensive system status by running the status commands
+    from both the AMP and GenX CLIs.
+    """
     console.print("📊 [bold]System Status Report[/bold]")
     console.print("=" * 50)
     
@@ -200,7 +231,9 @@ def auth(
     action: str = typer.Option("status", help="Auth action: status, login, logout"),
     token: Optional[str] = typer.Option(None, help="Authentication token for login")
 ):
-    """Manage authentication (shortcut to AMP auth)"""
+    """
+    Manages authentication as a shortcut to the AMP auth commands.
+    """
     if action == "login" and token:
         head_cli.run_cli_command('amp', 'auth', ['--token', token])
     elif action == "logout":
@@ -210,7 +243,9 @@ def auth(
 
 @app.command()
 def init():
-    """Initialize the GenX trading system"""
+    """
+    Initializes the GenX trading system.
+    """
     console.print("🚀 [bold]Initializing GenX Trading System...[/bold]")
     head_cli.run_cli_command('genx', 'init')
 
@@ -218,7 +253,9 @@ def init():
 def logs(
     source: str = typer.Option("genx", help="Log source: genx, amp, all")
 ):
-    """View system logs"""
+    """
+    Views system logs from a specified source.
+    """
     if source == "all":
         console.print("📋 [yellow]All System Logs:[/yellow]")
         head_cli.run_cli_command('genx', 'logs')
@@ -231,19 +268,25 @@ def logs(
 
 @app.command()
 def monitor():
-    """Monitor system performance (AMP monitoring)"""
+    """
+    Monitors system performance using AMP monitoring.
+    """
     console.print("📊 [blue]System Monitoring:[/blue]")
     head_cli.run_cli_command('amp', 'monitor', ['--status'])
 
 @app.command()
 def tree():
-    """Show project structure tree"""
+    """
+    Shows the project structure tree.
+    """
     console.print("🌳 [green]Project Structure:[/green]")
     head_cli.run_cli_command('genx', 'tree')
 
 @app.command()
 def help_all():
-    """Show help for all available CLI tools"""
+    """
+    Shows a complete help guide for all available CLI tools.
+    """
     console.print(Panel.fit(
         "[bold]🆘 Complete Help Guide[/bold]\n"
         "[dim]Available commands across all CLI tools[/dim]",
@@ -277,19 +320,8 @@ def main(
     version: bool = typer.Option(False, "--version", help="Show version")
 ):
     """
-    🚀 GenX Trading Platform - Head CLI
-    
-    Unified command-line interface that wraps all trading system components:
-    • AMP (Automated Model Pipeline) - AI models and authentication
-    • GenX FX - Trading system management and ForexConnect
-    • Chat - Interactive communication with AMP
-    
-    Examples:
-      head_cli overview              # Show system overview
-      head_cli amp auth --status     # Check AMP authentication  
-      head_cli genx status           # GenX system status
-      head_cli chat                  # Start interactive chat
-      head_cli status                # Complete system status
+    The main callback for the Head CLI, which provides a unified interface
+    for all trading system components.
     """
     if version:
         console.print("GenX Trading Platform Head CLI v1.0.0")

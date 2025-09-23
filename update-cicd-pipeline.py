@@ -6,8 +6,13 @@ Update CI/CD Pipeline with proper secrets and environment management
 import yaml
 from pathlib import Path
 
-def create_enhanced_cicd():
-    """Create enhanced CI/CD pipeline with proper secrets management"""
+def create_enhanced_cicd() -> dict:
+    """
+    Creates an enhanced CI/CD pipeline configuration with proper secrets management.
+
+    Returns:
+        dict: A dictionary representing the CI/CD pipeline configuration.
+    """
     
     pipeline = {
         "name": "GenX FX CI/CD Pipeline",
@@ -250,7 +255,10 @@ def create_enhanced_cicd():
     return pipeline
 
 def main():
-    """Update CI/CD pipeline"""
+    """
+    The main function to update the CI/CD pipeline by creating the
+    configuration and writing it to YAML files.
+    """
     print("Updating CI/CD Pipeline...")
     
     # Create enhanced pipeline

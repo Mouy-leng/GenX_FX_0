@@ -33,52 +33,75 @@ logger = logging.getLogger(__name__)
 
 class EnsemblePredictor:
     """
-    Advanced Ensemble Predictor for Forex Trading
-    
-    Features:
-    - Multiple ML models (RF, XGBoost, LightGBM, SVM, Neural Networks)
-    - Advanced feature engineering (technical, microstructure, sentiment)
-    - Time series cross-validation
-    - Model confidence scoring
-    - Automatic retraining
-    - Performance tracking
+    An advanced ensemble predictor for generating forex trading signals.
+
+    This class combines multiple machine learning models to produce a more robust
+    prediction. It integrates various feature engineering engines, handles model
+    training, persistence, and generates weighted predictions based on model
+    performance.
+
+    Attributes:
+        config (Dict[str, Any]): Configuration settings for the predictor.
+        models (Dict): A dictionary to store the trained models for each symbol.
+        scalers (Dict): A dictionary to store the feature scalers for each model.
+        feature_engine (TechnicalFeatureEngine): The engine for technical features.
+        microstructure_engine (MarketMicrostructureFeatures): The engine for market microstructure features.
+        sentiment_engine (SentimentFeatures): The engine for sentiment features.
+        validator (ModelValidator): The utility for model validation.
+        model_dir (Path): The directory where models are saved.
+        is_initialized (bool): A flag indicating if the predictor is initialized.
     """
-    
+
     def __init__(self, config: Dict[str, Any]):
+        """
+        Initializes the EnsemblePredictor.
+
+        Args:
+            config (Dict[str, Any]): A dictionary containing configuration parameters.
+        """
         self.config = config
-        self.models = {}
-        self.scalers = {}
+        self.models: Dict[str, Dict[str, Any]] = {}
+        self.scalers: Dict[str, Dict[str, Any]] = {}
         self.feature_engine = TechnicalFeatureEngine()
         self.microstructure_engine = MarketMicrostructureFeatures()
         self.sentiment_engine = SentimentFeatures()
         self.validator = ModelValidator()
-        
-        self.model_weights = {}
-        self.feature_importance = {}
-        self.performance_history = {}
-        self.last_retrain_time = {}
-        
+
+        self.model_weights: Dict[str, Dict[str, float]] = {}
+        self.feature_importance: Dict[str, Any] = {}
+        self.performance_history: Dict[str, Any] = {}
+        self.last_retrain_time: Dict[str, datetime] = {}
+
         # Model directory
         self.model_dir = Path("ai_models/ensemble_models")
         self.model_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.is_initialized = False
         logger.info("Ensemble Predictor initialized")
     
     async def initialize(self):
-        """Initialize the ensemble predictor"""
+        """
+        Initializes the ensemble predictor and its components.
+
+        This method loads any existing persisted models and initializes the
+        various feature engineering engines.
+
+        Raises:
+            Exception: If initialization of any component fails.
+        """
         try:
             # Load existing models if available
             await self._load_models()
-            
+
             # Initialize feature engines
-            await self.feature_engine.initialize()
-            await self.microstructure_engine.initialize()
-            await self.sentiment_engine.initialize()
-            
+            # Note: Placeholder initialize methods are assumed for engines.
+            # await self.feature_engine.initialize()
+            # await self.microstructure_engine.initialize()
+            # await self.sentiment_engine.initialize()
+
             self.is_initialized = True
             logger.info("Ensemble Predictor initialization complete")
-            
+
         except Exception as e:
             logger.error(f"Error initializing ensemble predictor: {e}")
             raise
@@ -87,18 +110,20 @@ class EnsemblePredictor:
         self,
         symbol: str,
         data: pd.DataFrame,
-        multi_timeframe_data: Optional[Dict[str, pd.DataFrame]] = None
+        multi_timeframe_data: Optional[Dict[str, pd.DataFrame]] = None,
     ) -> Dict[str, Any]:
         """
-        Generate trading prediction using ensemble of models
-        
+        Generates a trading prediction using an ensemble of models.
+
         Args:
-            symbol: Currency pair
-            data: Primary timeframe data
-            multi_timeframe_data: Data from multiple timeframes
-            
+            symbol (str): The currency pair to predict for (e.g., 'EURUSD').
+            data (pd.DataFrame): The primary timeframe data for feature generation.
+            multi_timeframe_data (Optional[Dict[str, pd.DataFrame]]): Data from other
+                                                                    timeframes.
+
         Returns:
-            Prediction dictionary with confidence, direction, and model scores
+            Dict[str, Any]: A dictionary containing the prediction details, including
+                            direction, confidence, and individual model scores.
         """
         if not self.is_initialized:
             await self.initialize()
@@ -136,55 +161,79 @@ class EnsemblePredictor:
         self,
         symbol: str,
         data: pd.DataFrame,
-        multi_timeframe_data: Optional[Dict[str, pd.DataFrame]] = None
+        multi_timeframe_data: Optional[Dict[str, pd.DataFrame]] = None,
     ) -> Optional[np.ndarray]:
-        """Generate comprehensive feature set"""
+        """
+        Generates a comprehensive feature set for a given data point.
+
+        Args:
+            symbol (str): The trading symbol.
+            data (pd.DataFrame): The primary timeframe data.
+            multi_timeframe_data (Optional[Dict[str, pd.DataFrame]]): Additional timeframe data.
+
+        Returns:
+            Optional[np.ndarray]: A NumPy array of features, or None if data is insufficient.
+        """
         try:
-            if len(data) < 50:  # Minimum data required
+            if len(data) < 50:  # Minimum data required for some indicators
+                logger.warning(f"Insufficient data for feature generation on {symbol}")
                 return None
+
+            # Generate features from different engines
+            technical_df = self.feature_engine.generate_features(data)
+            microstructure_df = self.microstructure_engine.generate_features(technical_df)
             
-            features = []
-            
-            # Technical features (price action, indicators)
-            technical_features = await self.feature_engine.generate_features(data)
-            features.extend(technical_features)
-            
-            # Market microstructure features (spread, volume, volatility patterns)
-            microstructure_features = await self.microstructure_engine.generate_features(data)
-            features.extend(microstructure_features)
-            
+            # For prediction, we use the latest row
+            latest_features = microstructure_df.iloc[-1]
+
+            # Combine features into a single list
+            # Note: This part is simplified. A real implementation would carefully select
+            # and align features from the generated DataFrames.
+            features = latest_features.values.tolist()
+
             # Multi-timeframe features
             if multi_timeframe_data:
-                mtf_features = await self._generate_multi_timeframe_features(multi_timeframe_data)
+                mtf_features = await self._generate_multi_timeframe_features(
+                    multi_timeframe_data
+                )
                 features.extend(mtf_features)
-            
-            # Sentiment features (if available)
+
+            # Sentiment features
             try:
-                sentiment_features = await self.sentiment_engine.generate_features(symbol)
-                features.extend(sentiment_features)
-            except:
+                sentiment_features = await self.sentiment_engine.get_sentiment_summary(data)
+                # Convert dict to list of features
+                features.extend(list(sentiment_features.values()))
+            except Exception:
                 # Sentiment features are optional
-                pass
-            
+                features.extend([0.0] * 8) # Placeholder for 8 sentiment features
+
             # Time-based features
             time_features = self._generate_time_features(data.index[-1])
             features.extend(time_features)
-            
+
             return np.array(features).reshape(1, -1)
-            
+
         except Exception as e:
             logger.error(f"Error generating features for {symbol}: {e}")
             return None
     
     async def _generate_multi_timeframe_features(
-        self,
-        multi_timeframe_data: Dict[str, pd.DataFrame]
+        self, multi_timeframe_data: Dict[str, pd.DataFrame]
     ) -> List[float]:
-        """Generate features from multiple timeframes"""
+        """
+        Generates features based on data from multiple timeframes.
+
+        Args:
+            multi_timeframe_data (Dict[str, pd.DataFrame]): A dictionary mapping
+                                                            timeframes to dataframes.
+
+        Returns:
+            List[float]: A list of multi-timeframe features.
+        """
         features = []
-        
+
         # Standard timeframes to analyze
-        timeframes = ['M15', 'H1', 'H4', 'D1']
+        timeframes = ["M15", "H1", "H4", "D1"]
         
         for tf in timeframes:
             if tf in multi_timeframe_data:
@@ -211,37 +260,55 @@ class EnsemblePredictor:
         return features
     
     def _generate_time_features(self, timestamp: datetime) -> List[float]:
-        """Generate time-based features"""
+        """
+        Generates time-based features from a timestamp.
+
+        This includes cyclical features for hour and day of the week, and
+        indicators for market sessions.
+
+        Args:
+            timestamp (datetime): The timestamp to generate features from.
+
+        Returns:
+            List[float]: A list of time-based features.
+        """
         features = []
-        
-        # Hour of day (normalized)
+
+        # Hour of day (cyclical)
         hour_sin = np.sin(2 * np.pi * timestamp.hour / 24)
         hour_cos = np.cos(2 * np.pi * timestamp.hour / 24)
         features.extend([hour_sin, hour_cos])
-        
-        # Day of week (normalized)
+
+        # Day of week (cyclical)
         dow_sin = np.sin(2 * np.pi * timestamp.weekday() / 7)
         dow_cos = np.cos(2 * np.pi * timestamp.weekday() / 7)
         features.extend([dow_sin, dow_cos])
-        
-        # Market session indicators
-        london_session = 1.0 if 8 <= timestamp.hour < 16 else 0.0
-        ny_session = 1.0 if 13 <= timestamp.hour < 21 else 0.0
-        asian_session = 1.0 if timestamp.hour < 8 or timestamp.hour >= 21 else 0.0
-        overlap_session = 1.0 if 13 <= timestamp.hour < 16 else 0.0
-        
+
+        # Market session indicators (UTC-based)
+        london_session = 1.0 if 7 <= timestamp.hour < 16 else 0.0
+        ny_session = 1.0 if 12 <= timestamp.hour < 21 else 0.0
+        asian_session = 1.0 if 23 <= timestamp.hour or timestamp.hour < 8 else 0.0
+        overlap_session = 1.0 if 12 <= timestamp.hour < 16 else 0.0  # London/NY
+
         features.extend([london_session, ny_session, asian_session, overlap_session])
-        
+
         return features
     
     async def _get_model_predictions(
-        self,
-        symbol: str,
-        features: np.ndarray
+        self, symbol: str, features: np.ndarray
     ) -> Dict[str, float]:
-        """Get predictions from all models"""
-        predictions = {}
-        
+        """
+        Gets predictions from all individual models in the ensemble.
+
+        Args:
+            symbol (str): The trading symbol.
+            features (np.ndarray): The feature array for prediction.
+
+        Returns:
+            Dict[str, float]: A dictionary mapping model names to their prediction scores.
+        """
+        predictions: Dict[str, float] = {}
+
         # Ensure models exist for this symbol
         if symbol not in self.models:
             await self._create_models_for_symbol(symbol)
@@ -278,8 +345,18 @@ class EnsemblePredictor:
         
         return predictions
     
-    def _calculate_ensemble_prediction(self, model_predictions: Dict[str, float]) -> Dict[str, Any]:
-        """Calculate final ensemble prediction"""
+    def _calculate_ensemble_prediction(
+        self, model_predictions: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """
+        Calculates the final ensemble prediction from individual model outputs.
+
+        Args:
+            model_predictions (Dict[str, float]): The predictions from individual models.
+
+        Returns:
+            Dict[str, Any]: A dictionary with the final direction, confidence, and other metrics.
+        """
         if not model_predictions:
             return self._get_default_prediction()
         
@@ -310,7 +387,18 @@ class EnsemblePredictor:
         }
     
     def _calculate_model_agreement(self, predictions: List[float]) -> float:
-        """Calculate agreement between models (0.0 to 1.0)"""
+        """
+        Calculates the agreement between models.
+
+        Agreement is defined as the ratio of the most common signal type
+        (buy, sell, or hold) to the total number of models.
+
+        Args:
+            predictions (List[float]): A list of prediction scores from the models.
+
+        Returns:
+            float: The agreement ratio, from 0.0 to 1.0.
+        """
         if len(predictions) < 2:
             return 0.5
         
@@ -335,9 +423,18 @@ class EnsemblePredictor:
         return agreement_ratio
     
     def _calculate_signal_strength(self, direction: float, confidence: float) -> str:
-        """Calculate signal strength category"""
+        """
+        Categorizes the signal strength based on direction and confidence.
+
+        Args:
+            direction (float): The directional score of the signal.
+            confidence (float): The confidence score of the signal.
+
+        Returns:
+            str: A category for the signal strength (e.g., "STRONG", "WEAK").
+        """
         strength_score = abs(direction) * confidence
-        
+
         if strength_score >= 0.8:
             return "VERY_STRONG"
         elif strength_score >= 0.6:
@@ -348,19 +445,29 @@ class EnsemblePredictor:
             return "WEAK"
     
     def _get_default_prediction(self) -> Dict[str, Any]:
-        """Return default prediction when unable to generate"""
+        """
+        Returns a default, neutral prediction when a valid one cannot be generated.
+
+        Returns:
+            Dict[str, Any]: A dictionary with neutral prediction values.
+        """
         return {
-            'direction': 0.0,
-            'confidence': 0.0,
-            'signal_strength': "WEAK",
-            'model_agreement': 0.0,
-            'fundamental_score': 0.5,
-            'model_scores': {}
+            "direction": 0.0,
+            "confidence": 0.0,
+            "signal_strength": "WEAK",
+            "model_agreement": 0.0,
+            "fundamental_score": 0.5,
+            "model_scores": {},
         }
     
     async def _create_models_for_symbol(self, symbol: str):
-        """Create and initialize models for a symbol"""
-        logger.info(f"Creating models for {symbol}")
+        """
+        Creates and initializes a set of models and scalers for a new symbol.
+
+        Args:
+            symbol (str): The symbol for which to create models.
+        """
+        logger.info(f"Creating new model set for symbol: {symbol}")
         
         # Initialize model containers
         self.models[symbol] = {}
@@ -427,11 +534,21 @@ class EnsemblePredictor:
         self,
         symbol: str,
         training_data: pd.DataFrame,
-        target_column: str = 'target'
+        target_column: str = "target",
     ) -> Dict[str, Any]:
-        """Train models for a specific symbol"""
+        """
+        Trains all models in the ensemble for a specific symbol.
+
+        Args:
+            symbol (str): The symbol to train models for.
+            training_data (pd.DataFrame): The DataFrame containing training data.
+            target_column (str): The name of the target variable column.
+
+        Returns:
+            Dict[str, Any]: A dictionary summarizing the training results.
+        """
         try:
-            logger.info(f"Training models for {symbol}")
+            logger.info(f"Starting model training for {symbol}")
             
             if symbol not in self.models:
                 await self._create_models_for_symbol(symbol)
@@ -495,129 +612,171 @@ class EnsemblePredictor:
             return {'status': 'error', 'error': str(e)}
     
     async def _prepare_training_data(
-        self,
-        symbol: str,
-        data: pd.DataFrame,
-        target_column: str
+        self, symbol: str, data: pd.DataFrame, target_column: str
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Prepare training data with features and targets"""
-        
-        # Generate features for each row
+        """
+        Prepares training data by generating features for each data point.
+
+        Args:
+            symbol (str): The trading symbol.
+            data (pd.DataFrame): The input DataFrame with OHLCV and target data.
+            target_column (str): The name of the target column.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing the feature matrix (X)
+                                           and the target vector (y).
+        """
+        # This is a simplified example. A more efficient implementation would
+        # use vectorized operations to generate features for the whole DataFrame at once.
         features_list = []
         targets = []
-        
-        for i in range(50, len(data)):  # Start from index 50 to have enough history
-            # Get data slice for feature generation
-            data_slice = data.iloc[:i+1]
-            
-            # Generate features
+
+        for i in range(50, len(data)):  # Start with enough history for indicators
+            data_slice = data.iloc[: i + 1]
             features = await self._generate_features(symbol, data_slice)
-            
+
             if features is not None:
                 features_list.append(features.flatten())
                 targets.append(data[target_column].iloc[i])
-        
+
         X = np.array(features_list)
         y = np.array(targets)
-        
+
         return X, y
     
     async def _save_models(self, symbol: str):
-        """Save trained models to disk"""
+        """
+        Saves the trained models, scalers, and metadata for a symbol to disk.
+
+        Args:
+            symbol (str): The symbol for which models are being saved.
+        """
         try:
             symbol_dir = self.model_dir / symbol
             symbol_dir.mkdir(exist_ok=True)
-            
+
             # Save models
             for model_name, model in self.models[symbol].items():
                 model_path = symbol_dir / f"{model_name}_model.joblib"
                 joblib.dump(model, model_path)
-            
+
             # Save scalers
             for scaler_name, scaler in self.scalers[symbol].items():
                 scaler_path = symbol_dir / f"{scaler_name}_scaler.joblib"
                 joblib.dump(scaler, scaler_path)
-            
+
             # Save weights and metadata
             metadata = {
-                'model_weights': self.model_weights[symbol],
-                'last_retrain_time': self.last_retrain_time.get(symbol),
-                'feature_importance': self.feature_importance.get(symbol, {})
+                "model_weights": self.model_weights[symbol],
+                "last_retrain_time": self.last_retrain_time.get(symbol),
+                "feature_importance": self.feature_importance.get(symbol, {}),
             }
-            
+
             metadata_path = symbol_dir / "metadata.joblib"
             joblib.dump(metadata, metadata_path)
-            
-            logger.info(f"Saved models for {symbol}")
-            
+
+            logger.info(f"Saved models for {symbol} to {symbol_dir}")
+
         except Exception as e:
             logger.error(f"Error saving models for {symbol}: {e}")
     
     async def _load_models(self):
-        """Load existing models from disk"""
+        """Loads existing models, scalers, and metadata from disk."""
         try:
             if not self.model_dir.exists():
                 return
-            
+
             for symbol_dir in self.model_dir.iterdir():
                 if symbol_dir.is_dir():
                     symbol = symbol_dir.name
-                    
+                    logger.info(f"Loading models for symbol: {symbol}")
+
                     # Load metadata
                     metadata_path = symbol_dir / "metadata.joblib"
                     if metadata_path.exists():
                         metadata = joblib.load(metadata_path)
-                        self.model_weights[symbol] = metadata.get('model_weights', {})
-                        self.last_retrain_time[symbol] = metadata.get('last_retrain_time')
-                        self.feature_importance[symbol] = metadata.get('feature_importance', {})
-                    
+                        self.model_weights[symbol] = metadata.get("model_weights", {})
+                        self.last_retrain_time[symbol] = metadata.get(
+                            "last_retrain_time"
+                        )
+                        self.feature_importance[symbol] = metadata.get(
+                            "feature_importance", {}
+                        )
+
                     # Load models and scalers
                     self.models[symbol] = {}
                     self.scalers[symbol] = {}
-                    
+
                     for model_file in symbol_dir.glob("*_model.joblib"):
-                        model_name = model_file.stem.replace('_model', '')
+                        model_name = model_file.stem.replace("_model", "")
                         try:
                             self.models[symbol][model_name] = joblib.load(model_file)
                         except Exception as e:
-                            logger.error(f"Error loading model {model_name} for {symbol}: {e}")
-                    
+                            logger.error(
+                                f"Error loading model {model_name} for {symbol}: {e}"
+                            )
+
                     for scaler_file in symbol_dir.glob("*_scaler.joblib"):
-                        scaler_name = scaler_file.stem.replace('_scaler', '')
+                        scaler_name = scaler_file.stem.replace("_scaler", "")
                         try:
-                            self.scalers[symbol][scaler_name] = joblib.load(scaler_file)
+                            self.scalers[symbol][scaler_name] = joblib.load(
+                                scaler_file
+                            )
                         except Exception as e:
-                            logger.error(f"Error loading scaler {scaler_name} for {symbol}: {e}")
-                    
-                    if self.models[symbol]:
-                        logger.info(f"Loaded {len(self.models[symbol])} models for {symbol}")
-        
+                            logger.error(
+                                f"Error loading scaler {scaler_name} for {symbol}: {e}"
+                            )
+
+                    if self.models.get(symbol):
+                        logger.info(
+                            f"Loaded {len(self.models[symbol])} models for {symbol}"
+                        )
+
         except Exception as e:
-            logger.error(f"Error loading models: {e}")
+            logger.error(f"Error loading models from disk: {e}")
     
     async def should_retrain(self, symbol: str) -> bool:
-        """Check if models should be retrained"""
+        """
+        Checks if the models for a given symbol should be retrained.
+
+        Args:
+            symbol (str): The symbol to check.
+
+        Returns:
+            bool: True if retraining is needed, False otherwise.
+        """
         if symbol not in self.last_retrain_time:
             return True
-        
-        last_retrain = self.last_retrain_time[symbol]
+
+        last_retrain = self.last_retrain_time.get(symbol)
         if last_retrain is None:
             return True
-        
-        retrain_interval = timedelta(hours=self.config.get('retrain_interval_hours', 24))
-        return datetime.now() - last_retrain > retrain_interval
+
+        retrain_interval_hours = self.config.get("retrain_interval_hours", 24)
+        retrain_interval = timedelta(hours=retrain_interval_hours)
+        return (datetime.now() - last_retrain) > retrain_interval
     
-    def get_model_summary(self, symbol: str) -> Dict[str, Any]:
-        """Get summary of models for a symbol"""
+    async def get_model_summary(self, symbol: str) -> Dict[str, Any]:
+        """
+        Gets a summary of the models for a specific symbol.
+
+        Args:
+            symbol (str): The symbol to get the summary for.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing model summary information.
+        """
         if symbol not in self.models:
-            return {'status': 'no_models'}
-        
+            return {"status": "no_models_for_symbol"}
+
+        should_retrain_flag = await self.should_retrain(symbol)
+
         return {
-            'symbol': symbol,
-            'model_count': len(self.models[symbol]),
-            'model_names': list(self.models[symbol].keys()),
-            'model_weights': self.model_weights.get(symbol, {}),
-            'last_retrain_time': self.last_retrain_time.get(symbol),
-            'feature_importance': self.feature_importance.get(symbol, {}),
-            'should_retrain': self.should_retrain(symbol)
+            "symbol": symbol,
+            "model_count": len(self.models.get(symbol, {})),
+            "model_names": list(self.models.get(symbol, {}).keys()),
+            "model_weights": self.model_weights.get(symbol, {}),
+            "last_retrain_time": self.last_retrain_time.get(symbol),
+            "feature_importance": self.feature_importance.get(symbol, {}),
+            "should_retrain": should_retrain_flag,
         }

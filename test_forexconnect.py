@@ -4,8 +4,14 @@ ForexConnect API Test Script
 This script tests the ForexConnect installation and shows basic usage examples.
 """
 
-def test_forexconnect_import():
-    """Test if ForexConnect can be imported successfully."""
+def test_forexconnect_import() -> bool:
+    """
+    Tests if the ForexConnect module can be imported successfully and prints
+    version information if available.
+
+    Returns:
+        bool: True if the import is successful, False otherwise.
+    """
     try:
         import forexconnect as fx
         print("✓ ForexConnect imported successfully!")
@@ -27,7 +33,10 @@ def test_forexconnect_import():
         return False
 
 def show_basic_usage():
-    """Show basic ForexConnect usage examples."""
+    """
+    Shows basic usage examples for the ForexConnect API, including how to
+    create a session and set up connection parameters.
+    """
     try:
         import forexconnect as fx
         

@@ -11,13 +11,29 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 REPO_OWNER = 'Mouy-leng'
 REPO_NAME = 'GenX_FX'
 
-def get_public_key():
+def get_public_key() -> dict:
+    """
+    Retrieves the public key for the repository from the GitHub API.
+
+    Returns:
+        dict: A dictionary containing the public key and its ID.
+    """
     url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/secrets/public-key'
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}
     response = requests.get(url, headers=headers)
     return response.json()
 
-def encrypt_secret(public_key, secret_value):
+def encrypt_secret(public_key: str, secret_value: str) -> str:
+    """
+    Encrypts a secret using the repository's public key.
+
+    Args:
+        public_key (str): The public key to use for encryption.
+        secret_value (str): The secret value to encrypt.
+
+    Returns:
+        str: The encrypted secret, base64-encoded.
+    """
     public_key_obj = serialization.load_pem_public_key(public_key.encode())
     encrypted_bytes = public_key_obj.encrypt(
         secret_value.encode(),
@@ -25,7 +41,19 @@ def encrypt_secret(public_key, secret_value):
     )
     return base64.b64encode(encrypted_bytes).decode()
 
-def set_secret(name, value, key_id, public_key):
+def set_secret(name: str, value: str, key_id: str, public_key: str) -> bool:
+    """
+    Sets a secret in the GitHub repository.
+
+    Args:
+        name (str): The name of the secret.
+        value (str): The value of the secret.
+        key_id (str): The ID of the public key used for encryption.
+        public_key (str): The public key to use for encryption.
+
+    Returns:
+        bool: True if the secret was set successfully, False otherwise.
+    """
     encrypted_value = encrypt_secret(public_key, value)
     url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/secrets/{name}'
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}

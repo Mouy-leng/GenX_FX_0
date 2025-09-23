@@ -9,11 +9,25 @@ from datetime import datetime
 from amp_auth import check_auth, get_user_info
 
 class SimpleAMPChat:
+    """
+    A simple, mock chat interface for the AMP (Automated Model Pipeline) system.
+    """
     def __init__(self):
+        """
+        Initializes the SimpleAMPChat, setting up an empty conversation history.
+        """
         self.conversation_history = []
         
     def send_message(self, message: str) -> dict:
-        """Send a message to AMP (mock implementation)"""
+        """
+        Sends a message to the mock AMP system and returns a response.
+
+        Args:
+            message (str): The user's message.
+
+        Returns:
+            dict: A dictionary containing the response and other metadata.
+        """
         
         # Check authentication
         if not check_auth():
@@ -52,7 +66,15 @@ class SimpleAMPChat:
         }
     
     def _generate_response(self, message: str) -> str:
-        """Generate a mock AMP response"""
+        """
+        Generates a mock AMP response based on the user's message.
+
+        Args:
+            message (str): The user's message.
+
+        Returns:
+            str: A mock response from the AMP system.
+        """
         message_lower = message.lower()
         
         if "hello" in message_lower or "hi" in message_lower:
@@ -134,15 +156,24 @@ Could you be more specific about what trading information you'd like? For exampl
 - "Give me EUR/USD analysis" """
     
     def get_conversation_history(self) -> list:
-        """Get the conversation history"""
+        """
+        Gets the current conversation history.
+
+        Returns:
+            list: A list of conversation entries.
+        """
         return self.conversation_history
     
     def clear_history(self):
-        """Clear conversation history"""
+        """
+        Clears the conversation history.
+        """
         self.conversation_history = []
 
 def main():
-    """Interactive chat interface"""
+    """
+    The main function for the interactive chat interface.
+    """
     chat = SimpleAMPChat()
     
     print("🤖 AMP Chat Interface")

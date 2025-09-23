@@ -9,13 +9,42 @@ from typing import Dict, Any, Optional
 from amp_auth import get_auth_headers, check_auth
 
 class AMPClient:
+    """
+    A simple client for communicating with AMP (Automated Model Pipeline) services.
+
+    This client handles making authenticated requests to the AMP API endpoints.
+
+    Attributes:
+        base_url (str): The base URL of the AMP API.
+    """
+
     def __init__(self, base_url: str = "http://localhost:8000"):
+        """
+        Initializes the AMPClient.
+
+        Args:
+            base_url (str): The base URL for the AMP API.
+        """
         self.base_url = base_url
-        
-    def _make_request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict[str, Any]:
-        """Make authenticated request to AMP API"""
+
+    def _make_request(
+        self, method: str, endpoint: str, data: Optional[Dict] = None
+    ) -> Dict[str, Any]:
+        """
+        Makes an authenticated request to a specified API endpoint.
+
+        Args:
+            method (str): The HTTP method to use (e.g., 'GET', 'POST').
+            endpoint (str): The API endpoint path.
+            data (Optional[Dict]): The JSON payload for POST or PUT requests.
+
+        Returns:
+            Dict[str, Any]: The JSON response from the API as a dictionary.
+        """
         if not check_auth():
-            return {"error": "Not authenticated. Please run: python3 amp_cli.py auth --token YOUR_TOKEN"}
+            return {
+                "error": "Not authenticated. Please run: python3 amp_cli.py auth --token YOUR_TOKEN"
+            }
         
         headers = get_auth_headers()
         headers["Content-Type"] = "application/json"
@@ -48,32 +77,66 @@ class AMPClient:
             return {"error": f"Request failed: {str(e)}"}
     
     def health(self) -> Dict[str, Any]:
-        """Check API health"""
+        """Checks the health of the API."""
         return self._make_request("GET", "/health")
-    
+
     def get_system_status(self) -> Dict[str, Any]:
-        """Get system status"""
+        """Gets the overall system status."""
         return self._make_request("GET", "/api/v1/system/status")
-    
+
     def get_predictions(self, symbol: str = "BTCUSDT") -> Dict[str, Any]:
-        """Get market predictions"""
+        """
+        Gets market predictions for a specific symbol.
+
+        Args:
+            symbol (str): The trading symbol.
+
+        Returns:
+            Dict[str, Any]: The prediction data.
+        """
         return self._make_request("GET", f"/api/v1/predictions/{symbol}")
-    
+
     def get_market_data(self, symbol: str = "BTCUSDT") -> Dict[str, Any]:
-        """Get market data"""
+        """
+        Gets market data for a specific symbol.
+
+        Args:
+            symbol (str): The trading symbol.
+
+        Returns:
+            Dict[str, Any]: The market data.
+        """
         return self._make_request("GET", f"/api/v1/market-data/{symbol}")
-    
+
     def chat(self, message: str) -> Dict[str, Any]:
-        """Send a chat message to AMP (if supported)"""
+        """
+        Sends a chat message to the AMP chat endpoint.
+
+        Args:
+            message (str): The message to send.
+
+        Returns:
+            Dict[str, Any]: The chat response.
+        """
         data = {"message": message, "user_id": "cli_user"}
         return self._make_request("POST", "/api/v1/chat", data)
-    
+
     def get_trading_signals(self, symbol: str = "BTCUSDT") -> Dict[str, Any]:
-        """Get trading signals"""
+        """
+        Gets trading signals for a specific symbol.
+
+        Args:
+            symbol (str): The trading symbol.
+
+        Returns:
+            Dict[str, Any]: The trading signal data.
+        """
         return self._make_request("GET", f"/api/v1/trading/signals/{symbol}")
 
 def main():
-    """Interactive AMP client"""
+    """
+    Runs an interactive command-line client for the AMP API.
+    """
     client = AMPClient()
     
     print("🤖 AMP Client - Interactive Mode")

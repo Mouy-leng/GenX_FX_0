@@ -13,8 +13,13 @@ REPO_OWNER = "Mouy-leng"
 REPO_NAME = "GenX_FX"
 BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
 
-def check_token_permissions():
-    """Check if token has required permissions"""
+def check_token_permissions() -> tuple:
+    """
+    Checks if the provided GitHub token has the required permissions.
+
+    Returns:
+        tuple: A tuple containing a boolean indicating success and a message.
+    """
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     
     # Test repository access
@@ -29,8 +34,13 @@ def check_token_permissions():
     
     return True, "Token has required permissions"
 
-def list_repository_secrets():
-    """List all repository secrets"""
+def list_repository_secrets() -> list:
+    """
+    Lists all repository secrets.
+
+    Returns:
+        list: A list of secret names.
+    """
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     response = requests.get(f"{BASE_URL}/actions/secrets", headers=headers)
     
@@ -38,8 +48,13 @@ def list_repository_secrets():
         return [secret["name"] for secret in response.json().get("secrets", [])]
     return []
 
-def list_repository_variables():
-    """List all repository variables"""
+def list_repository_variables() -> list:
+    """
+    Lists all repository variables.
+
+    Returns:
+        list: A list of variable names.
+    """
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     response = requests.get(f"{BASE_URL}/actions/variables", headers=headers)
     
@@ -47,8 +62,13 @@ def list_repository_variables():
         return [var["name"] for var in response.json().get("variables", [])]
     return []
 
-def list_environments():
-    """List all environments"""
+def list_environments() -> list:
+    """
+    Lists all environments for the repository.
+
+    Returns:
+        list: A list of environment names.
+    """
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     response = requests.get(f"{BASE_URL}/environments", headers=headers)
     
@@ -57,7 +77,10 @@ def list_environments():
     return []
 
 def main():
-    """Main validation function"""
+    """
+    The main validation function, which checks for token permissions,
+    required secrets, variables, and environments.
+    """
     print("GitHub Secrets Validation")
     print("=" * 40)
     

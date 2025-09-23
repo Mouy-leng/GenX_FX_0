@@ -2,6 +2,16 @@
 import { db } from './db.js';
 import { users, tradingAccounts, positions, notifications, educationalResources } from '../shared/schema.js';
 
+/**
+ * @file This file contains functions for testing database connections and seeding test data.
+ */
+import { db } from './db.js';
+import { users, tradingAccounts, positions, notifications, educationalResources } from '../shared/schema.js';
+
+/**
+ * Tests the database connections by attempting to query each table.
+ * @returns {Promise<boolean>} A promise that resolves to true if all connections are successful, false otherwise.
+ */
 export async function testDatabaseConnections() {
   console.log('🧪 Testing database connections...');
   
@@ -35,6 +45,10 @@ export async function testDatabaseConnections() {
   }
 }
 
+/**
+ * Seeds the database with test data.
+ * @returns {Promise<boolean>} A promise that resolves to true if the data is seeded successfully, false otherwise.
+ */
 export async function seedTestData() {
   console.log('🌱 Seeding test data...');
   

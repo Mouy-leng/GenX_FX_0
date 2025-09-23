@@ -30,9 +30,15 @@ from utils.logger_setup import setup_logging
 logger = logging.getLogger(__name__)
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
-    """Simple health check handler for Cloud Run"""
+    """
+    A simple HTTP request handler for responding to health checks,
+    primarily for use with services like Cloud Run.
+    """
     
     def do_GET(self):
+        """
+        Handles GET requests. Responds with a 200 OK status for the /health path.
+        """
         if self.path == '/health':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -43,21 +49,27 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
             self.end_headers()
     
     def log_message(self, format, *args):
+        """
+        Suppresses the default logging of HTTP requests.
+        """
         # Suppress default HTTP server logs
         pass
 
 class GenXTradingSystem:
     """
-    Main GenX Trading System Controller
-    
-    Modes:
-    - live: Live trading signal generation
-    - train: Train AI models with historical data
-    - backtest: Backtest strategies
-    - test: Test system components
+    The main controller for the GenX Trading System. This class orchestrates
+    the different modes of operation, including live trading, model training,
+    backtesting, and system tests.
     """
     
     def __init__(self, config_path: str = "config/trading_config.json"):
+        """
+        Initializes the GenXTradingSystem.
+
+        Args:
+            config_path (str, optional): The path to the configuration file.
+                                         Defaults to "config/trading_config.json".
+        """
         self.config_manager = ConfigManager(config_path)
         self.config = self.config_manager.get_config()
         self.trading_engine = None
@@ -71,14 +83,21 @@ class GenXTradingSystem:
         logger.info("GenX Trading System initialized")
     
     def _signal_handler(self, signum, frame):
-        """Handle shutdown signals gracefully"""
+        """
+        Handles shutdown signals gracefully to ensure a clean exit.
+        """
         logger.info(f"Received signal {signum}, shutting down...")
         self.is_running = False
         if self.health_server:
             self.health_server.shutdown()
     
     def start_health_server(self, port=8080):
-        """Start health check server for Cloud Run"""
+        """
+        Starts a simple health check server in a separate thread.
+
+        Args:
+            port (int, optional): The port for the health check server. Defaults to 8080.
+        """
         try:
             self.health_server = HTTPServer(('', port), HealthCheckHandler)
             health_thread = Thread(target=self.health_server.serve_forever, daemon=True)
@@ -88,7 +107,9 @@ class GenXTradingSystem:
             logger.warning(f"Could not start health server: {e}")
     
     async def run_live_trading(self):
-        """Run live trading signal generation"""
+        """
+        Runs the system in live trading mode, generating signals continuously.
+        """
         logger.info("🚀 Starting Live Trading Mode")
         
         try:
@@ -119,7 +140,13 @@ class GenXTradingSystem:
             logger.info("Live trading stopped")
     
     async def run_training_mode(self, symbols: list = None, timeframes: list = None):
-        """Run AI model training"""
+        """
+        Runs the system in AI model training mode.
+
+        Args:
+            symbols (list, optional): A list of symbols to train models for. Defaults to None.
+            timeframes (list, optional): A list of timeframes to use for training. Defaults to None.
+        """
         logger.info("🎯 Starting Training Mode")
         
         try:
@@ -151,7 +178,13 @@ class GenXTradingSystem:
             logger.error(f"Error in training mode: {e}")
     
     async def run_backtesting(self, start_date: str = None, end_date: str = None):
-        """Run backtesting"""
+        """
+        Runs the system in backtesting mode.
+
+        Args:
+            start_date (str, optional): The start date for the backtest (YYYY-MM-DD). Defaults to None.
+            end_date (str, optional): The end date for the backtest (YYYY-MM-DD). Defaults to None.
+        """
         logger.info("📈 Starting Backtesting Mode")
         
         try:
@@ -186,7 +219,9 @@ class GenXTradingSystem:
             logger.error(f"Error in backtesting mode: {e}")
     
     async def run_test_mode(self):
-        """Run system tests"""
+        """
+        Runs a series of system tests to verify component functionality.
+        """
         logger.info("🧪 Starting Test Mode")
         
         try:
@@ -237,7 +272,12 @@ class GenXTradingSystem:
             logger.error(f"Error in test mode: {e}")
     
     async def generate_sample_signals(self, count: int = 5):
-        """Generate sample signals for testing MT4/5 integration"""
+        """
+        Generates a specified number of sample signals for testing MT4/5 integration.
+
+        Args:
+            count (int, optional): The number of sample signals to generate. Defaults to 5.
+        """
         logger.info(f"🎲 Generating {count} sample signals")
         
         try:
@@ -272,7 +312,9 @@ class GenXTradingSystem:
             logger.error(f"Error generating sample signals: {e}")
     
     def print_system_info(self):
-        """Print system information"""
+        """
+        Prints key information about the system configuration.
+        """
         logger.info("=" * 60)
         logger.info("🚀 GenX FX Trading System")
         logger.info("   Advanced AI-Powered Forex Signal Generator")
@@ -287,7 +329,10 @@ class GenXTradingSystem:
         logger.info("=" * 60)
 
 async def main():
-    """Main entry point"""
+    """
+    The main entry point for the application. Parses command-line arguments
+    and runs the system in the specified mode.
+    """
     parser = argparse.ArgumentParser(description="GenX FX Trading System")
     parser.add_argument('mode', choices=['live', 'train', 'backtest', 'test', 'sample'], 
                        help='System mode to run')

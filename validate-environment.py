@@ -11,8 +11,13 @@ import importlib
 import os
 from pathlib import Path
 
-def check_python_version():
-    """Check Python version compatibility"""
+def check_python_version() -> bool:
+    """
+    Checks for Python version compatibility.
+
+    Returns:
+        bool: True if the Python version is 3.8 or higher, False otherwise.
+    """
     print("Python Version Check:")
     print(f"   Current: {sys.version}")
     
@@ -23,8 +28,13 @@ def check_python_version():
         print("   [OK] Python version OK")
         return True
 
-def check_pip():
-    """Check pip installation and version"""
+def check_pip() -> bool:
+    """
+    Checks for pip installation and version.
+
+    Returns:
+        bool: True if pip is installed and accessible, False otherwise.
+    """
     print("\nPip Check:")
     try:
         result = subprocess.run([sys.executable, "-m", "pip", "--version"], 
@@ -36,8 +46,13 @@ def check_pip():
         print(f"   [ERROR] Pip error: {e}")
         return False
 
-def check_required_packages():
-    """Check if required packages are installed"""
+def check_required_packages() -> list:
+    """
+    Checks if all required Python packages are installed.
+
+    Returns:
+        list: A list of missing packages.
+    """
     print("\nRequired Packages Check:")
     
     required_packages = [
@@ -61,8 +76,13 @@ def check_required_packages():
     
     return missing_packages
 
-def check_gcloud():
-    """Check Google Cloud CLI"""
+def check_gcloud() -> bool:
+    """
+    Checks for the Google Cloud CLI installation.
+
+    Returns:
+        bool: True if the gcloud CLI is found, False otherwise.
+    """
     print("\nGoogle Cloud CLI Check:")
     try:
         # Try different gcloud paths
@@ -89,8 +109,13 @@ def check_gcloud():
         print(f"   [ERROR] GCloud CLI error: {e}")
         return False
 
-def check_vscode_settings():
-    """Check VS Code settings"""
+def check_vscode_settings() -> bool:
+    """
+    Checks for the presence of VS Code settings files.
+
+    Returns:
+        bool: True if the settings files are found, False otherwise.
+    """
     print("\nVS Code Settings Check:")
     
     vscode_dir = Path(".vscode")
@@ -109,8 +134,13 @@ def check_vscode_settings():
         print("   [ERROR] settings.json missing")
         return False
 
-def check_workspace_structure():
-    """Check workspace structure"""
+def check_workspace_structure() -> list:
+    """
+    Checks the workspace for the required directory structure.
+
+    Returns:
+        list: A list of missing directories.
+    """
     print("\nWorkspace Structure Check:")
     
     required_dirs = ['api', 'core', 'utils', 'expert-advisors']
@@ -126,7 +156,9 @@ def check_workspace_structure():
     return missing_dirs
 
 def main():
-    """Main validation function"""
+    """
+    The main function to run all environment validation checks and print a summary.
+    """
     print("GenX FX Environment Validation")
     print("=" * 40)
     

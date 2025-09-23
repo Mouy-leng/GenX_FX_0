@@ -46,7 +46,13 @@ app = typer.Typer(
 console = Console()
 
 class CursorAliJulesCLI:
+    """
+    A class to manage the Cursor AI Collaboration CLI, enhanced by Ali and Jules.
+    """
     def __init__(self):
+        """
+        Initializes the CLI, setting up paths and contribution details.
+        """
         self.project_root = Path.cwd()
         self.logs_dir = self.project_root / "logs"
         self.cursor_dir = self.project_root / ".cursor"
@@ -104,7 +110,9 @@ class CursorAliJulesCLI:
         }
 
     def display_collaboration_banner(self):
-        """Display Cursor AI collaboration banner with Ali & Jules credits"""
+        """
+        Displays the Cursor AI collaboration banner with Ali & Jules credits.
+        """
         banner = """
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                         🤖 Cursor AI Collaboration CLI                            ║
@@ -119,7 +127,12 @@ class CursorAliJulesCLI:
         console.print(Panel(banner, style="bold cyan"))
 
     def check_cursor_environment(self) -> Dict[str, Any]:
-        """Check Cursor AI environment and collaboration status"""
+        """
+        Checks the Cursor AI environment and collaboration status.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the status of various components.
+        """
         status = {
             'cursor_installed': False,
             'collaboration_active': False,
@@ -143,7 +156,9 @@ class CursorAliJulesCLI:
         return status
 
     def create_collaboration_workspace(self):
-        """Create enhanced collaboration workspace with Ali & Jules contributions"""
+        """
+        Creates an enhanced collaboration workspace with Ali & Jules contributions.
+        """
         console.print("\n🔧 [bold]Creating Collaboration Workspace[/bold]")
         
         # Create directory structure
@@ -193,7 +208,14 @@ class CursorAliJulesCLI:
         console.print("✅ Collaboration workspace created successfully!", style="green")
 
     def track_contribution(self, contributor: str, contribution_type: str, description: str):
-        """Track contributions from Ali and Jules"""
+        """
+        Tracks contributions from Ali and Jules.
+
+        Args:
+            contributor (str): The name of the contributor (e.g., 'ali', 'jules').
+            contribution_type (str): The type of contribution (e.g., 'enhancement', 'deployment').
+            description (str): A description of the contribution.
+        """
         contribution_log = {
             'contributor': contributor,
             'type': contribution_type,
@@ -213,12 +235,17 @@ cursor_cli = CursorAliJulesCLI()
 
 @app.callback()
 def main():
-    """Cursor AI Collaboration CLI with Ali & Jules Enhancements"""
+    """
+    Cursor AI Collaboration CLI with Ali & Jules Enhancements.
+    This callback is run before any command.
+    """
     cursor_cli.display_collaboration_banner()
 
 @app.command()
 def init():
-    """Initialize Cursor AI collaboration environment"""
+    """
+    Initializes the Cursor AI collaboration environment, checking status and setting up the workspace.
+    """
     cursor_cli.display_collaboration_banner()
     
     console.print("\n🚀 [bold]Initializing Cursor AI Collaboration[/bold]")
@@ -265,7 +292,13 @@ def ali_enhance(
     component: str = typer.Argument(help="Component to enhance: commands, ui, errors, all"),
     interactive: bool = typer.Option(True, "--interactive", "-i", help="Interactive enhancement mode")
 ):
-    """Apply Ali's CLI enhancements to specified components"""
+    """
+    Applies Ali's CLI enhancements to specified components.
+
+    Args:
+        component (str): The component to enhance (commands, ui, errors, or all).
+        interactive (bool): Whether to use interactive enhancement mode.
+    """
     console.print(f"\n⚡ [bold]Applying Ali's Enhancements to {component}[/bold]")
     
     if component == "all":
@@ -315,7 +348,14 @@ def jules_deploy(
     environment: str = typer.Option("production", help="Environment: development, staging, production"),
     auto_confirm: bool = typer.Option(False, "--yes", "-y", help="Auto-confirm deployment steps")
 ):
-    """Execute Jules' automated deployment scripts"""
+    """
+    Executes Jules' automated deployment scripts for various targets.
+
+    Args:
+        target (str): The deployment target (aws, docker, vps, local, or all).
+        environment (str): The deployment environment.
+        auto_confirm (bool): If True, skips confirmation prompts.
+    """
     console.print(f"\n🚀 [bold]Executing Jules' Deployment to {target}[/bold]")
     
     if target == "all":
@@ -422,7 +462,14 @@ def cursor_assist(
     file_path: str = typer.Option(None, help="Specific file to analyze"),
     interactive: bool = typer.Option(True, "--interactive", "-i", help="Interactive AI assistance")
 ):
-    """Get Cursor AI assistance for development tasks"""
+    """
+    Gets Cursor AI assistance for various development tasks.
+
+    Args:
+        task (str): The AI assistance task to perform.
+        file_path (str, optional): The specific file to analyze. Defaults to None.
+        interactive (bool): Whether to use interactive AI assistance mode.
+    """
     console.print(f"\n🤖 [bold]Cursor AI Assistance - {task.replace('_', ' ').title()}[/bold]")
     
     ai_tasks = {
@@ -514,7 +561,9 @@ def cursor_assist(
 
 @app.command()
 def collaboration_status():
-    """Show comprehensive collaboration status with Ali, Jules, and Cursor AI"""
+    """
+    Shows a comprehensive collaboration status dashboard including Ali, Jules, and Cursor AI.
+    """
     cursor_cli.display_collaboration_banner()
     
     console.print("\n📊 [bold]Collaboration Status Dashboard[/bold]")

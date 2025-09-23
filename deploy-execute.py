@@ -2,7 +2,17 @@ import os
 import subprocess
 import shutil
 
-def execute_deployment():
+def execute_deployment() -> bool:
+    """
+    Executes the full deployment process for the GenX-FX application.
+
+    This includes building the frontend, testing the backend, creating a
+    deployment package, uploading to Google Drive, and preparing for production
+    deployment.
+
+    Returns:
+        bool: True if the deployment process completes successfully, False otherwise.
+    """
     print("=== GenX-FX Deployment Execution ===")
     
     # 1. Build frontend

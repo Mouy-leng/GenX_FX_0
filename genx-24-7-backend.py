@@ -37,9 +37,16 @@ logger = logging.getLogger(__name__)
 
 
 class GenX24_7Backend:
-    """24/7 GenX FX Backend Service"""
+    """
+    The main class for the GenX FX 24/7 backend service, responsible for
+    running the trading backend continuously, generating gold signals, and
+    communicating with the VPS and EAs.
+    """
 
     def __init__(self):
+        """
+        Initializes the GenX24_7Backend service.
+        """
         self.running = False
         self.vps_url = "http://34.71.143.222:8080"
         self.gemini_service = None
@@ -55,8 +62,14 @@ class GenX24_7Backend:
         self.min_confidence = 75.0
         self.max_signals_per_hour = 10
 
-    async def initialize(self):
-        """Initialize all services"""
+    async def initialize(self) -> bool:
+        """
+        Initializes all necessary services for the backend, including the
+        Gemini AI service, trading service, and EA communication server.
+
+        Returns:
+            bool: True if initialization is successful, False otherwise.
+        """
         try:
             logger.info("🚀 Initializing GenX 24/7 Backend Service...")
 
@@ -89,8 +102,13 @@ class GenX24_7Backend:
             logger.error(f"❌ Failed to initialize backend service: {e}")
             return False
 
-    async def test_vps_connection(self):
-        """Test connection to VPS"""
+    async def test_vps_connection(self) -> bool:
+        """
+        Tests the connection to the VPS.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         try:
             response = requests.get(f"{self.vps_url}/health", timeout=10)
             if response.status_code == 200:
@@ -104,7 +122,13 @@ class GenX24_7Backend:
             return False
 
     async def generate_gold_signals(self) -> List[Dict[str, Any]]:
-        """Generate gold trading signals using AI"""
+        """
+        Generates gold trading signals using the Gemini AI service.
+        Falls back to mock signals if the AI service is unavailable.
+
+        Returns:
+            List[Dict[str, Any]]: A list of generated signals.
+        """
         signals = []
 
         if not self.gemini_service:
@@ -166,7 +190,12 @@ class GenX24_7Backend:
         return signals
 
     def generate_mock_signals(self) -> List[Dict[str, Any]]:
-        """Generate mock signals when AI service is unavailable"""
+        """
+        Generates mock signals when the AI service is unavailable.
+
+        Returns:
+            List[Dict[str, Any]]: A list containing a single mock signal.
+        """
         signals = []
         current_time = datetime.now()
 
@@ -197,7 +226,15 @@ class GenX24_7Backend:
         return signals
 
     async def send_signals_to_vps(self, signals: List[Dict[str, Any]]) -> bool:
-        """Send signals to VPS for EA consumption"""
+        """
+        Sends generated signals to the VPS and broadcasts them to connected EAs.
+
+        Args:
+            signals (List[Dict[str, Any]]): A list of signals to send.
+
+        Returns:
+            bool: True if the signals were sent successfully, False otherwise.
+        """
         if not signals:
             return True
 
@@ -253,7 +290,9 @@ class GenX24_7Backend:
             return False
 
     async def run_signal_generation_loop(self):
-        """Main signal generation loop"""
+        """
+        The main loop for continuously generating and sending trading signals.
+        """
         logger.info("🔄 Starting signal generation loop...")
 
         while self.running:
@@ -283,7 +322,10 @@ class GenX24_7Backend:
                 await asyncio.sleep(10)  # Wait before retrying
 
     async def start(self):
-        """Start the 24/7 backend service"""
+        """
+        Starts the 24/7 backend service, including the signal generation loop
+        and the FastAPI server.
+        """
         logger.info("🚀 Starting GenX 24/7 Backend Service...")
 
         # Initialize services
@@ -316,7 +358,9 @@ class GenX24_7Backend:
             await self.stop()
 
     async def stop(self):
-        """Stop the 24/7 backend service"""
+        """
+        Stops the 24/7 backend service gracefully, shutting down all running services.
+        """
         logger.info("🛑 Stopping GenX 24/7 Backend Service...")
 
         self.running = False
@@ -331,13 +375,17 @@ class GenX24_7Backend:
 
 
 def signal_handler(signum, frame):
-    """Handle shutdown signals"""
+    """
+    Handles shutdown signals (SIGINT, SIGTERM) to ensure graceful shutdown.
+    """
     logger.info(f"🛑 Received signal {signum}, shutting down...")
     sys.exit(0)
 
 
 async def main():
-    """Main entry point"""
+    """
+    The main entry point for the backend service.
+    """
     # Set up signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)

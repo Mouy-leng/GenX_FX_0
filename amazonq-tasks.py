@@ -1,4 +1,9 @@
-# Amazon Q Task 4: Project organization and monitoring
+"""
+Amazon Q Task 4: Project organization and monitoring.
+
+This script outlines the tasks required for setting up project organization
+and monitoring for the application.
+"""
 import os
 
 print("Amazon Q: Project organization and monitoring setup")

@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react'
 
+/**
+ * The main application component.
+ * It fetches and displays the health status of the Node.js server and the Python API.
+ * @returns {JSX.Element} The rendered application component.
+ */
 function App() {
   const [health, setHealth] = useState<any>(null)
   const [apiHealth, setApiHealth] = useState<any>(null)

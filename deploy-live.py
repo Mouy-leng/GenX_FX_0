@@ -1,7 +1,16 @@
 import subprocess
 import os
 
-def deploy_to_github_pages():
+def deploy_to_github_pages() -> bool:
+    """
+    Deploys the application to GitHub Pages.
+
+    This function builds the frontend, creates a 'gh-pages' branch,
+    and pushes the 'dist' directory to it.
+
+    Returns:
+        bool: True if deployment is successful, False otherwise.
+    """
     # Create GitHub Pages deployment
     try:
         # Build for GitHub Pages
@@ -26,7 +35,13 @@ def deploy_to_github_pages():
         print(f"❌ GitHub Pages deployment failed: {e}")
         return False
 
-def deploy_to_netlify():
+def deploy_to_netlify() -> bool:
+    """
+    Prepares the application for deployment to Netlify by creating a 'netlify.toml' file.
+
+    Returns:
+        bool: True after creating the configuration file.
+    """
     # Create netlify.toml
     netlify_config = '''
 [build]
@@ -50,6 +65,9 @@ def deploy_to_netlify():
     return True
 
 def start_local_production():
+    """
+    Starts the production server locally for testing.
+    """
     # Start production server locally
     try:
         print("🚀 Starting local production server...")

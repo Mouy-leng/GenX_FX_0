@@ -31,10 +31,16 @@ logger = logging.getLogger(__name__)
 
 
 class GenXAPIHandler(BaseHTTPRequestHandler):
-    """HTTP request handler for GenX FX API"""
+    """
+    An HTTP request handler for the GenX FX API, responsible for routing
+    and handling GET and POST requests.
+    """
 
     def do_GET(self):
-        """Handle GET requests"""
+        """
+        Handles GET requests for various endpoints, including health checks,
+        predictions, signals, and documentation.
+        """
         try:
             parsed_path = urlparse(self.path)
             path = parsed_path.path
@@ -55,7 +61,9 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
             self.send_error(500, "Internal Server Error")
 
     def do_POST(self):
-        """Handle POST requests"""
+        """
+        Handles POST requests for submitting signals.
+        """
         try:
             parsed_path = urlparse(self.path)
             path = parsed_path.path
@@ -70,7 +78,9 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
             self.send_error(500, "Internal Server Error")
 
     def send_health_response(self):
-        """Send health check response"""
+        """
+        Sends a JSON response for the health check endpoint.
+        """
         response = {
             "message": "GenX-FX Trading Platform API",
             "version": "1.0.0",
@@ -87,7 +97,9 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response).encode())
 
     def send_predictions_response(self):
-        """Send predictions response"""
+        """
+        Sends a JSON response for the predictions endpoint.
+        """
         response = {
             "predictions": [],
             "status": "ready",
@@ -101,7 +113,9 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response).encode())
 
     def send_signals_response(self):
-        """Send signals response"""
+        """
+        Sends a JSON response containing signals read from a CSV file.
+        """
         # Read signals from CSV file if it exists
         signals = []
         if os.path.exists("MT4_Signals.csv"):
@@ -143,7 +157,9 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response).encode())
 
     def send_docs_response(self):
-        """Send API documentation"""
+        """
+        Sends an HTML response with API documentation.
+        """
         docs = """
         <!DOCTYPE html>
         <html>
@@ -194,7 +210,9 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
         self.wfile.write(docs.encode())
 
     def handle_signal_post(self):
-        """Handle signal submission"""
+        """
+        Handles the submission of trading signals via a POST request.
+        """
         try:
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
@@ -225,21 +243,37 @@ class GenXAPIHandler(BaseHTTPRequestHandler):
             self.send_error(400, "Bad Request")
 
     def log_message(self, format, *args):
-        """Override to use our logger"""
+        """
+        Overrides the default log_message to use the application's logger.
+        """
         logger.info(f"{self.address_string()} - {format % args}")
 
 
 class GenXAPIServer:
-    """GenX FX API Server"""
+    """
+    A class to manage the GenX FX API server.
+    """
 
     def __init__(self, host="0.0.0.0", port=8080):
+        """
+        Initializes the API server.
+
+        Args:
+            host (str, optional): The host to bind the server to. Defaults to "0.0.0.0".
+            port (int, optional): The port to run the server on. Defaults to 8080.
+        """
         self.host = host
         self.port = port
         self.server = None
         self.running = False
 
-    def start(self):
-        """Start the API server"""
+    def start(self) -> bool:
+        """
+        Starts the API server in a separate thread.
+
+        Returns:
+            bool: True if the server starts successfully, False otherwise.
+        """
         try:
             self.server = HTTPServer((self.host, self.port), GenXAPIHandler)
             self.running = True
@@ -261,7 +295,9 @@ class GenXAPIServer:
             return False
 
     def stop(self):
-        """Stop the API server"""
+        """
+        Stops the API server.
+        """
         if self.server:
             self.server.shutdown()
             self.running = False
@@ -269,7 +305,9 @@ class GenXAPIServer:
 
 
 def main():
-    """Main entry point"""
+    """
+    The main entry point for the simple API server.
+    """
     logger.info("Starting GenX FX Simple API Server...")
 
     # Create API server

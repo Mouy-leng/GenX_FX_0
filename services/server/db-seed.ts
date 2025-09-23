@@ -7,6 +7,10 @@ import {
   educationalResources 
 } from '../shared/schema.js';
 
+/**
+ * Seeds the database with initial data, including a demo user, trading account,
+ * trading bots, and educational resources.
+ */
 async function seed() {
   console.log('🌱 Seeding database...');
 

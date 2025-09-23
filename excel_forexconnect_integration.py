@@ -26,7 +26,14 @@ except ImportError:
     print("⚠️ ForexConnect module not found - will use mock data")
 
 class ForexConnectExcelGenerator:
+    """
+    Connects to the ForexConnect API to fetch live market data, generate trading signals,
+    and create an Excel dashboard. Falls back to mock data if the API is unavailable.
+    """
     def __init__(self):
+        """
+        Initializes the generator, setting up API credentials, paths, and pairs.
+        """
         self.pairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD', 'NZD/USD']
         self.signal_output_dir = 'signal_output'
         self.session = None
@@ -43,8 +50,13 @@ class ForexConnectExcelGenerator:
         # Create output directory
         os.makedirs(self.signal_output_dir, exist_ok=True)
         
-    def connect_forexconnect(self):
-        """Connect to ForexConnect API"""
+    def connect_forexconnect(self) -> bool:
+        """
+        Connects to the ForexConnect API using credentials from environment variables.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         if not FOREXCONNECT_AVAILABLE:
             print("⚠️ ForexConnect not available - using mock data")
             return False
@@ -84,8 +96,13 @@ class ForexConnectExcelGenerator:
             print(f"❌ ForexConnect connection error: {e}")
             return False
     
-    def get_live_prices(self):
-        """Get live market prices from ForexConnect"""
+    def get_live_prices(self) -> dict:
+        """
+        Gets live market prices from ForexConnect. Falls back to mock data if not connected.
+
+        Returns:
+            dict: A dictionary of prices for each symbol.
+        """
         if not self.connected:
             return self.get_mock_prices()
             
@@ -120,8 +137,13 @@ class ForexConnectExcelGenerator:
             print(f"⚠️ Error getting live prices: {e}")
             return self.get_mock_prices()
     
-    def get_mock_prices(self):
-        """Fallback mock prices when ForexConnect unavailable"""
+    def get_mock_prices(self) -> dict:
+        """
+        Generates fallback mock prices when ForexConnect is unavailable.
+
+        Returns:
+            dict: A dictionary of mock prices for each symbol.
+        """
         print("📊 Using mock price data...")
         
         base_prices = {
@@ -151,8 +173,17 @@ class ForexConnectExcelGenerator:
         
         return prices
     
-    def generate_signals_from_prices(self, prices, num_signals=10):
-        """Generate trading signals based on live market data"""
+    def generate_signals_from_prices(self, prices: dict, num_signals: int = 10) -> pd.DataFrame:
+        """
+        Generates trading signals based on live or mock market data.
+
+        Args:
+            prices (dict): A dictionary of market prices.
+            num_signals (int, optional): The number of signals to generate. Defaults to 10.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the generated signals.
+        """
         signals = []
         
         for i in range(num_signals):
@@ -205,8 +236,18 @@ class ForexConnectExcelGenerator:
         
         return pd.DataFrame(signals)
     
-    def determine_signal_type(self, price, symbol):
-        """Simple signal logic - replace with your actual strategy"""
+    def determine_signal_type(self, price: float, symbol: str) -> str:
+        """
+        Determines the signal type (BUY/SELL) based on a simple logic.
+        This is a placeholder and should be replaced with an actual trading strategy.
+
+        Args:
+            price (float): The current price of the symbol.
+            symbol (str): The financial instrument symbol.
+
+        Returns:
+            str: The signal type, either 'BUY' or 'SELL'.
+        """
         # Simple random with slight bias based on time
         hour = datetime.now().hour
         
@@ -219,8 +260,18 @@ class ForexConnectExcelGenerator:
         else:
             return np.random.choice(['BUY', 'SELL'])
     
-    def calculate_atr_distance(self, symbol, price):
-        """Calculate ATR-based distance for stops - simplified version"""
+    def calculate_atr_distance(self, symbol: str, price: float) -> float:
+        """
+        Calculates a simplified ATR-based distance for stop loss.
+        This is a placeholder for a real ATR calculation.
+
+        Args:
+            symbol (str): The financial instrument symbol.
+            price (float): The current price of the symbol.
+
+        Returns:
+            float: The calculated distance for the stop loss.
+        """
         # Simplified ATR calculation - replace with actual ATR
         base_atr = {
             'EUR/USD': 0.0015, 'GBP/USD': 0.0020, 'USD/JPY': 0.15,
@@ -233,8 +284,18 @@ class ForexConnectExcelGenerator:
         else:
             return base_atr.get(symbol, 0.0015) * np.random.uniform(0.8, 1.2)
     
-    def calculate_confidence(self, symbol, spread, price):
-        """Calculate signal confidence based on market conditions"""
+    def calculate_confidence(self, symbol: str, spread: float, price: float) -> float:
+        """
+        Calculates signal confidence based on market conditions like spread and time.
+
+        Args:
+            symbol (str): The financial instrument symbol.
+            spread (float): The current spread.
+            price (float): The current price.
+
+        Returns:
+            float: The calculated confidence score between 0.55 and 0.95.
+        """
         # Higher confidence for tighter spreads
         spread_score = max(0.5, 1.0 - (spread * 10000))  # Convert to pips
         
@@ -252,8 +313,17 @@ class ForexConnectExcelGenerator:
         
         return round(np.clip(final_confidence, 0.55, 0.95), 2)
     
-    def create_excel_dashboard(self, df, prices):
-        """Create Excel dashboard with live market data"""
+    def create_excel_dashboard(self, df: pd.DataFrame, prices: dict) -> str:
+        """
+        Creates an Excel dashboard with live market data and generated signals.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing the generated signals.
+            prices (dict): Dictionary of live market prices.
+
+        Returns:
+            str: The file path of the created Excel dashboard.
+        """
         file_path = os.path.join(self.signal_output_dir, 'genx_live_signals.xlsx')
         
         # Create workbook
@@ -358,7 +428,9 @@ class ForexConnectExcelGenerator:
         return file_path
     
     def disconnect(self):
-        """Disconnect from ForexConnect"""
+        """
+        Disconnects from the ForexConnect session if it's active.
+        """
         if self.session and self.connected:
             try:
                 self.session.logout()
@@ -366,8 +438,17 @@ class ForexConnectExcelGenerator:
             except Exception as e:
                 print(f"⚠️ Disconnect error: {e}")
     
-    def run_live_demo(self, num_signals=10):
-        """Run live demo with ForexConnect data"""
+    def run_live_demo(self, num_signals: int = 10) -> tuple:
+        """
+        Runs the live demo, connecting to ForexConnect, generating signals,
+        and creating all output files.
+
+        Args:
+            num_signals (int, optional): The number of signals to generate. Defaults to 10.
+
+        Returns:
+            tuple: A tuple containing the file paths of the created output files.
+        """
         print("🚀 GenX FX - Live ForexConnect Demo")
         print("=" * 50)
         

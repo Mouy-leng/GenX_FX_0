@@ -22,14 +22,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class SystemTester:
-    """Comprehensive system testing and cleanup"""
+    """
+    A class for performing comprehensive system testing and cleanup for the
+    GenX Trading Platform.
+    """
     
     def __init__(self):
+        """
+        Initializes the SystemTester.
+        """
         self.project_root = Path.cwd()
         self.test_results = {}
         
     def run_command(self, command: str, cwd: str = None) -> dict:
-        """Run a shell command and return results"""
+        """
+        Runs a shell command and returns the results.
+
+        Args:
+            command (str): The command to run.
+            cwd (str, optional): The working directory for the command. Defaults to None.
+
+        Returns:
+            dict: A dictionary containing the success status, stdout, stderr,
+                  and return code of the command.
+        """
         try:
             result = subprocess.run(
                 command.split(),
@@ -58,8 +74,13 @@ class SystemTester:
                 'returncode': -1
             }
     
-    def test_python_imports(self):
-        """Test if all Python modules can be imported"""
+    def test_python_imports(self) -> dict:
+        """
+        Tests if all critical and optional Python modules can be imported.
+
+        Returns:
+            dict: A dictionary of results for each tested module.
+        """
         logger.info("🐍 Testing Python imports...")
         
         critical_modules = [
@@ -90,8 +111,13 @@ class SystemTester:
         
         return results
     
-    def test_cli_tools(self):
-        """Test all CLI tools"""
+    def test_cli_tools(self) -> dict:
+        """
+        Tests all available CLI tools.
+
+        Returns:
+            dict: A dictionary of results for each tested CLI tool.
+        """
         logger.info("🎮 Testing CLI tools...")
         
         cli_tests = {
@@ -115,8 +141,13 @@ class SystemTester:
         
         return results
     
-    def test_amp_system(self):
-        """Test AMP system functionality"""
+    def test_amp_system(self) -> dict:
+        """
+        Tests the functionality of the AMP system.
+
+        Returns:
+            dict: A dictionary of results for each AMP system test.
+        """
         logger.info("🤖 Testing AMP system...")
         
         amp_tests = {
@@ -140,8 +171,13 @@ class SystemTester:
         
         return results
     
-    def test_file_structure(self):
-        """Test project file structure"""
+    def test_file_structure(self) -> dict:
+        """
+        Tests the project's file and directory structure.
+
+        Returns:
+            dict: A dictionary containing the results of the file structure tests.
+        """
         logger.info("📁 Testing file structure...")
         
         required_files = [
@@ -195,8 +231,13 @@ class SystemTester:
         
         return results
     
-    def cleanup_repository(self):
-        """Clean up repository by removing unnecessary files"""
+    def cleanup_repository(self) -> dict:
+        """
+        Cleans up the repository by removing unnecessary files and directories.
+
+        Returns:
+            dict: A dictionary containing a list of removed items and their count.
+        """
         logger.info("🧹 Cleaning up repository...")
         
         cleanup_patterns = [
@@ -246,8 +287,13 @@ class SystemTester:
         logger.info(f"🧹 Cleanup completed: {len(removed_items)} items removed")
         return {'removed_items': removed_items, 'count': len(removed_items)}
     
-    def run_comprehensive_tests(self):
-        """Run all tests"""
+    def run_comprehensive_tests(self) -> dict:
+        """
+        Runs all system tests and generates a summary report.
+
+        Returns:
+            dict: A dictionary containing the results of all tests and a summary.
+        """
         logger.info("🚀 Starting Comprehensive System Tests...")
         
         # Run all tests
@@ -276,7 +322,15 @@ class SystemTester:
         return test_results
     
     def generate_test_summary(self, test_results: dict) -> dict:
-        """Generate test summary"""
+        """
+        Generates a summary of the test results.
+
+        Args:
+            test_results (dict): A dictionary containing the results of all tests.
+
+        Returns:
+            dict: A dictionary summarizing the test results.
+        """
         summary = {
             'overall_status': 'PASS',
             'critical_failures': 0,
@@ -321,8 +375,13 @@ class SystemTester:
         
         return summary
 
-def main():
-    """Main testing function"""
+def main() -> int:
+    """
+    The main function for the test and cleanup script.
+
+    Returns:
+        int: 0 if all tests pass, 1 otherwise.
+    """
     logger.info("🧪 GenX Trading Platform - System Testing & Cleanup")
     logger.info("=" * 60)
     

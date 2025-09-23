@@ -45,13 +45,27 @@ app = typer.Typer(
 console = Console()
 
 class AutomatedDeploymentJob:
+    """
+    Manages the automated deployment process for the GenX FX Platform.
+
+    This class defines deployment targets, creates deployment plans, and
+    executes the necessary scripts for deployment.
+
+    Attributes:
+        project_root (Path): The root directory of the project.
+        logs_dir (Path): The directory for storing logs.
+        deploy_dir (Path): The directory containing deployment scripts.
+        backup_dir (Path): The directory for storing backups.
+        deployment_targets (Dict): A dictionary of deployment configurations.
+    """
+
     def __init__(self):
+        """Initializes the AutomatedDeploymentJob."""
         self.project_root = Path.cwd()
         self.logs_dir = self.project_root / "logs"
         self.deploy_dir = self.project_root / "deploy"
         self.backup_dir = self.project_root / "backups"
-        
-        # Ensure directories exist
+
         self.logs_dir.mkdir(exist_ok=True)
         self.backup_dir.mkdir(exist_ok=True)
         
@@ -85,8 +99,9 @@ class AutomatedDeploymentJob:
         }
 
     def display_deployment_banner(self):
-        """Display deployment job banner"""
+        """Displays a banner for the deployment job."""
         banner = """
+        [bold blue]
 ╔══════════════════════════════════════════════════════════════════════════════════════╗
 ║                        🚀 GenX FX Automated Deployment Job                          ║
 ║                                                                                      ║
@@ -94,39 +109,60 @@ class AutomatedDeploymentJob:
 ║                                                                                      ║
 ║  🛡️ Safe Rollback  📊 Real-Time Monitoring  🔍 Health Checks  ⏱️ Progress Tracking ║
 ╚══════════════════════════════════════════════════════════════════════════════════════╝
+        [/bold blue]
         """
-        console.print(Panel(banner, style="bold blue"))
+        console.print(Panel(banner, border_style="blue"))
 
-    def create_deployment_plan(self, target: str, environment: str = "production") -> Dict[str, Any]:
-        """Create comprehensive deployment plan"""
+    def create_deployment_plan(
+        self, target: str, environment: str = "production"
+    ) -> Dict[str, Any]:
+        """
+        Creates a comprehensive deployment plan.
+
+        Args:
+            target (str): The deployment target (e.g., 'aws-free').
+            environment (str): The deployment environment (e.g., 'production').
+
+        Returns:
+            Dict[str, Any]: A dictionary representing the deployment plan.
+
+        Raises:
+            ValueError: If the deployment target is unknown.
+        """
         if target not in self.deployment_targets:
             raise ValueError(f"Unknown deployment target: {target}")
-        
-        config = self.deployment_targets[target]
-        
-        plan = {
-            'deployment_id': f"genx-fx-{target}-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
-            'target': target,
-            'environment': environment,
-            'config': config,
-            'created_at': datetime.now().isoformat(),
-            'estimated_duration': config['estimated_time'],
-            'status': 'created'
-        }
-        
-        return plan
 
-    def execute_deployment_script(self, config: Dict[str, Any]) -> Tuple[bool, str]:
-        """Execute deployment script"""
+        config = self.deployment_targets[target]
+        return {
+            "deployment_id": f"genx-fx-{target}-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+            "target": target,
+            "environment": environment,
+            "config": config,
+            "created_at": datetime.now().isoformat(),
+            "estimated_duration": config["estimated_time"],
+            "status": "created",
+        }
+
+    def execute_deployment_script(
+        self, config: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Executes a deployment script.
+
+        Args:
+            config (Dict[str, Any]): The configuration for the deployment target.
+
+        Returns:
+            Tuple[bool, str]: A tuple containing a success flag and the output
+                              (stdout or stderr) of the script.
+        """
         console.print(f"\n🚀 [bold]Executing Deployment: {config['name']}[/bold]")
-        
-        script_path = self.project_root / config['script']
+        script_path = self.project_root / config["script"]
         if not script_path.exists():
             return False, f"Deployment script not found: {config['script']}"
-        
-        # Make script executable
+
         os.chmod(script_path, 0o755)
-        
+
         try:
             with console.status(f"[bold green]Deploying {config['name']}..."):
                 result = subprocess.run(
@@ -134,16 +170,14 @@ class AutomatedDeploymentJob:
                     cwd=self.project_root,
                     capture_output=True,
                     text=True,
-                    timeout=config['estimated_time'] * 60
+                    timeout=config["estimated_time"] * 60,
                 )
-            
             if result.returncode == 0:
                 console.print("✅ Deployment script completed successfully", style="green")
                 return True, result.stdout
             else:
                 console.print("❌ Deployment script failed", style="red")
                 return False, result.stderr
-                
         except subprocess.TimeoutExpired:
             return False, f"Deployment timed out after {config['estimated_time']} minutes"
         except Exception as e:

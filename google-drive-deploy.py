@@ -9,6 +9,13 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 CLIENT_SECRET_FILE = 'client_secret_723463751699-ukpjrov1tcb3eas5982g4cmvljt33ut4.apps.googleusercontent.com.json'
 
 def authenticate_google_drive():
+    """
+    Authenticates with the Google Drive API using OAuth 2.0.
+    It handles token creation and refreshing.
+
+    Returns:
+        A Google Drive API service object.
+    """
     creds = None
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
@@ -27,7 +34,14 @@ def authenticate_google_drive():
     
     return build('drive', 'v3', credentials=creds)
 
-def get_drive_info():
+def get_drive_info() -> dict:
+    """
+    Retrieves information about the user's Google Drive, including user details,
+    storage quota, and a list of files.
+
+    Returns:
+        dict: A dictionary containing user, storage, and file information.
+    """
     service = authenticate_google_drive()
     
     # Get user info
@@ -43,7 +57,13 @@ def get_drive_info():
         'files': files
     }
 
-def deploy_to_drive():
+def deploy_to_drive() -> bool:
+    """
+    Deploys the application to Google Drive by creating a deployment folder.
+
+    Returns:
+        bool: True if the deployment is successful, False otherwise.
+    """
     try:
         info = get_drive_info()
         print(f"Connected to Google Drive: {info['user']['emailAddress']}")

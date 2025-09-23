@@ -46,7 +46,15 @@ app = typer.Typer(
 console = Console()
 
 class GenXMasterCLI:
+    """
+    The main class for the GenX Master CLI, which integrates all other CLI
+    components and provides a unified interface for managing the trading platform.
+    """
     def __init__(self):
+        """
+        Initializes the GenXMasterCLI, setting up paths and defining the
+        available CLI modules and quick actions.
+        """
         self.project_root = Path.cwd()
         self.logs_dir = self.project_root / "logs"
         self.logs_dir.mkdir(exist_ok=True)
@@ -110,7 +118,9 @@ class GenXMasterCLI:
         }
 
     def display_master_banner(self):
-        """Display the master CLI banner"""
+        """
+        Displays the master CLI banner.
+        """
         banner = """
 ╔════════════════════════════════════════════════════════════════════════════════════════════╗
 ║                                🚀 GenX Master CLI v2.0                                    ║
@@ -126,7 +136,12 @@ class GenXMasterCLI:
         console.print(Panel(banner, style="bold blue"))
 
     def check_cli_availability(self) -> Dict[str, bool]:
-        """Check which CLI modules are available"""
+        """
+        Checks which of the defined CLI modules are available in the project.
+
+        Returns:
+            Dict[str, bool]: A dictionary mapping module names to their availability status.
+        """
         availability = {}
         for name, info in self.cli_modules.items():
             file_path = self.project_root / info['file']
@@ -134,7 +149,17 @@ class GenXMasterCLI:
         return availability
 
     def execute_cli_command(self, module: str, command: str, args: List[str] = None) -> bool:
-        """Execute command from a specific CLI module"""
+        """
+        Executes a command from a specific CLI module.
+
+        Args:
+            module (str): The name of the CLI module to use.
+            command (str): The command to execute.
+            args (List[str], optional): A list of additional arguments for the command. Defaults to None.
+
+        Returns:
+            bool: True if the command executes successfully, False otherwise.
+        """
         if module not in self.cli_modules:
             console.print(f"❌ Unknown CLI module: {module}", style="red")
             return False
@@ -172,7 +197,9 @@ class GenXMasterCLI:
             return False
 
     def show_cli_overview(self):
-        """Show overview of all available CLI modules"""
+        """
+        Shows an overview of all available CLI modules and quick actions.
+        """
         console.print("\n🛠️ [bold]Available CLI Modules[/bold]")
         
         availability = self.check_cli_availability()
@@ -215,7 +242,10 @@ class GenXMasterCLI:
         console.print(actions_table)
 
     def create_project_summary(self):
-        """Create comprehensive project summary"""
+        """
+        Creates and displays a comprehensive summary of the project, including
+        its structure and the status of its components.
+        """
         console.print("\n📊 [bold]GenX FX Platform Summary[/bold]")
         
         # Project structure
@@ -276,12 +306,17 @@ master_cli = GenXMasterCLI()
 
 @app.callback()
 def main():
-    """GenX Master CLI - Complete Trading Platform Management"""
+    """
+    The main callback for the GenX Master CLI, which displays the banner.
+    """
     master_cli.display_master_banner()
 
 @app.command()
 def overview():
-    """Show comprehensive platform overview"""
+    """
+    Shows a comprehensive overview of the trading platform, including all
+    available CLI modules and a project summary.
+    """
     master_cli.display_master_banner()
     master_cli.show_cli_overview()
     master_cli.create_project_summary()
@@ -291,7 +326,9 @@ def unified(
     command: str = typer.Argument(help="Unified CLI command: status, setup, deploy, monitor, etc."),
     args: List[str] = typer.Argument(None, help="Additional arguments for the command")
 ):
-    """Execute unified CLI commands"""
+    """
+    Executes commands from the unified CLI module.
+    """
     master_cli.execute_cli_command('unified', command, args)
 
 @app.command()
@@ -299,7 +336,9 @@ def cursor(
     command: str = typer.Argument(help="Cursor CLI command: init, ali_enhance, jules_deploy, etc."),
     args: List[str] = typer.Argument(None, help="Additional arguments for the command")
 ):
-    """Execute Cursor AI collaboration commands"""
+    """
+    Executes commands from the Cursor AI collaboration CLI module.
+    """
     master_cli.execute_cli_command('cursor', command, args)
 
 @app.command()
@@ -307,7 +346,9 @@ def deployment(
     command: str = typer.Argument(help="Deployment command: deploy, status, list_deployments"),
     args: List[str] = typer.Argument(None, help="Additional arguments for the command")
 ):
-    """Execute automated deployment commands"""
+    """
+    Executes commands from the automated deployment CLI module.
+    """
     master_cli.execute_cli_command('deployment', command, args)
 
 @app.command()
@@ -315,7 +356,9 @@ def genx(
     command: str = typer.Argument(help="GenX CLI command: setup, start, stop, status, etc."),
     args: List[str] = typer.Argument(None, help="Additional arguments for the command")
 ):
-    """Execute original GenX CLI commands"""
+    """
+    Executes commands from the original GenX CLI module.
+    """
     master_cli.execute_cli_command('genx', command, args)
 
 @app.command()
@@ -323,7 +366,9 @@ def head(
     command: str = typer.Argument(help="Head CLI command: overview, deploy, monitor, logs"),
     args: List[str] = typer.Argument(None, help="Additional arguments for the command")
 ):
-    """Execute Head CLI commands"""
+    """
+    Executes commands from the Head CLI module.
+    """
     master_cli.execute_cli_command('head', command, args)
 
 @app.command()
@@ -331,42 +376,56 @@ def amp(
     command: str = typer.Argument(help="AMP CLI command: auth, update, deploy, schedule, monitor"),
     args: List[str] = typer.Argument(None, help="Additional arguments for the command")
 ):
-    """Execute AMP CLI commands"""
+    """
+    Executes commands from the AMP CLI module.
+    """
     master_cli.execute_cli_command('amp', command, args)
 
 @app.command()
 def quick_setup():
-    """Quick setup for local development"""
+    """
+    Runs a quick setup for local development.
+    """
     console.print("\n⚡ [bold]Quick Setup - Local Development[/bold]")
     master_cli.execute_cli_command('unified', 'setup', ['local'])
 
 @app.command()
 def quick_deploy_aws():
-    """Quick deploy to AWS free tier"""
+    """
+    Runs a quick deployment to the AWS free tier.
+    """
     console.print("\n⚡ [bold]Quick Deploy - AWS Free Tier[/bold]")
     master_cli.execute_cli_command('deployment', 'deploy', ['aws-free', '--yes'])
 
 @app.command()
 def quick_deploy_vps():
-    """Quick deploy to VPS"""
+    """
+    Runs a quick deployment to a VPS.
+    """
     console.print("\n⚡ [bold]Quick Deploy - VPS[/bold]")
     master_cli.execute_cli_command('deployment', 'deploy', ['exness-vps', '--yes'])
 
 @app.command()
 def quick_status():
-    """Show comprehensive system status"""
+    """
+    Shows a comprehensive system status.
+    """
     console.print("\n⚡ [bold]Quick Status Check[/bold]")
     master_cli.execute_cli_command('unified', 'status')
 
 @app.command()
 def quick_monitor():
-    """Start system monitoring"""
+    """
+    Starts system monitoring.
+    """
     console.print("\n⚡ [bold]Quick Monitor[/bold]")
     master_cli.execute_cli_command('unified', 'monitor')
 
 @app.command()
 def init_collaboration():
-    """Initialize Cursor AI collaboration workspace"""
+    """
+    Initializes the Cursor AI collaboration workspace.
+    """
     console.print("\n🤖 [bold]Initializing Collaboration[/bold]")
     master_cli.execute_cli_command('cursor', 'init')
 
@@ -375,7 +434,10 @@ def full_deploy(
     target: str = typer.Argument("aws-free", help="Deployment target: aws-free, aws-full, exness-vps, local"),
     environment: str = typer.Option("production", help="Environment: development, staging, production")
 ):
-    """Execute full deployment with all enhancements"""
+    """
+    Executes a full deployment with all enhancements, including collaboration
+    initialization, environment setup, and monitoring.
+    """
     console.print(f"\n🚀 [bold]Full Deployment to {target}[/bold]")
     
     with Progress(
@@ -416,7 +478,10 @@ def full_deploy(
 
 @app.command()
 def health_check():
-    """Comprehensive health check of the entire platform"""
+    """
+    Performs a comprehensive health check of the entire platform, including
+    CLI modules, system dependencies, and project structure.
+    """
     console.print("\n🏥 [bold]Platform Health Check[/bold]")
     
     health_checks = [

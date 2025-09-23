@@ -4,101 +4,126 @@ from datetime import datetime
 from enum import Enum
 
 class OrderType(str, Enum):
+    """Enumeration for the type of an order."""
     BUY = "buy"
     SELL = "sell"
 
+
 class OrderStatus(str, Enum):
+    """Enumeration for the status of an order."""
     PENDING = "pending"
     FILLED = "filled"
     CANCELLED = "cancelled"
     REJECTED = "rejected"
 
+
 class SignalType(str, Enum):
+    """Enumeration for the type of a trading signal."""
     LONG = "long"
     SHORT = "short"
     NEUTRAL = "neutral"
 
+
 # Market Data Schemas
 class MarketData(BaseModel):
-    symbol: str
-    price: float
-    volume: float
-    timestamp: datetime
-    high: float
-    low: float
-    open: float
-    close: float
+    """Schema for representing market data for a specific symbol and time."""
+    symbol: str = Field(..., description="The trading symbol (e.g., 'XAUUSD').")
+    price: float = Field(..., description="The current price of the asset.")
+    volume: float = Field(..., description="The trading volume.")
+    timestamp: datetime = Field(..., description="The timestamp of the data point.")
+    high: float = Field(..., description="The highest price in the interval.")
+    low: float = Field(..., description="The lowest price in the interval.")
+    open: float = Field(..., description="The opening price of the interval.")
+    close: float = Field(..., description="The closing price of the interval.")
+
 
 class PredictionRequest(BaseModel):
-    symbol: str
-    timeframe: str = "1h"
-    use_ensemble: bool = True
+    """Schema for requesting a market prediction."""
+    symbol: str = Field(..., description="The symbol to get a prediction for.")
+    timeframe: str = Field("1h", description="The timeframe for the prediction (e.g., '1h', '4h').")
+    use_ensemble: bool = Field(True, description="Whether to use an ensemble of models for prediction.")
+
 
 class PredictionResponse(BaseModel):
-    symbol: str
-    prediction: SignalType
-    confidence: float
-    timestamp: datetime
-    features_used: List[str]
-    model_version: str
+    """Schema for the response of a market prediction."""
+    symbol: str = Field(..., description="The symbol for which the prediction was made.")
+    prediction: SignalType = Field(..., description="The predicted signal type (long, short, or neutral).")
+    confidence: float = Field(..., description="The confidence level of the prediction (0.0 to 1.0).")
+    timestamp: datetime = Field(..., description="The timestamp of when the prediction was generated.")
+    features_used: List[str] = Field(..., description="A list of features used to make the prediction.")
+    model_version: str = Field(..., description="The version of the model that made the prediction.")
+
 
 # Trading Schemas
 class TradeSignal(BaseModel):
-    symbol: str
-    signal_type: SignalType
-    entry_price: float
-    stop_loss: float
-    take_profit: float
-    confidence: float
-    risk_reward_ratio: float
-    timestamp: datetime
+    """Schema for a complete trading signal."""
+    symbol: str = Field(..., description="The trading symbol.")
+    signal_type: SignalType = Field(..., description="The type of signal (long or short).")
+    entry_price: float = Field(..., description="The suggested entry price for the trade.")
+    stop_loss: float = Field(..., description="The suggested stop-loss price.")
+    take_profit: float = Field(..., description="The suggested take-profit price.")
+    confidence: float = Field(..., description="The confidence level of the signal.")
+    risk_reward_ratio: float = Field(..., description="The risk/reward ratio of the trade.")
+    timestamp: datetime = Field(..., description="The timestamp when the signal was generated.")
+
 
 class OrderRequest(BaseModel):
-    symbol: str
-    order_type: OrderType
-    quantity: float
-    price: Optional[float] = None
-    stop_loss: Optional[float] = None
-    take_profit: Optional[float] = None
+    """Schema for requesting a new trade order."""
+    symbol: str = Field(..., description="The symbol to trade.")
+    order_type: OrderType = Field(..., description="The type of order (buy or sell).")
+    quantity: float = Field(..., description="The quantity to trade (e.g., lot size).")
+    price: Optional[float] = Field(None, description="The price for limit or stop orders.")
+    stop_loss: Optional[float] = Field(None, description="The stop-loss price for the order.")
+    take_profit: Optional[float] = Field(None, description="The take-profit price for the order.")
+
 
 class OrderResponse(BaseModel):
-    order_id: str
-    symbol: str
-    order_type: OrderType
-    quantity: float
-    price: float
-    status: OrderStatus
-    timestamp: datetime
+    """Schema for the response after placing an order."""
+    order_id: str = Field(..., description="The unique identifier for the order.")
+    symbol: str = Field(..., description="The symbol traded.")
+    order_type: OrderType = Field(..., description="The type of order placed.")
+    quantity: float = Field(..., description="The quantity of the order.")
+    price: float = Field(..., description="The price at which the order was placed/filled.")
+    status: OrderStatus = Field(..., description="The current status of the order.")
+    timestamp: datetime = Field(..., description="The timestamp of the order response.")
+
 
 # Portfolio Schemas
 class PortfolioStatus(BaseModel):
-    total_balance: float
-    available_balance: float
-    unrealized_pnl: float
-    realized_pnl: float
-    positions: List[Dict[str, Any]]
-    open_orders: List[Dict[str, Any]]
+    """Schema for representing the current status of the trading portfolio."""
+    total_balance: float = Field(..., description="The total account balance.")
+    available_balance: float = Field(..., description="The balance available for new trades.")
+    unrealized_pnl: float = Field(..., description="The profit or loss on open positions.")
+    realized_pnl: float = Field(..., description="The profit or loss from closed positions.")
+    positions: List[Dict[str, Any]] = Field(..., description="A list of currently open positions.")
+    open_orders: List[Dict[str, Any]] = Field(..., description="A list of pending orders.")
+
 
 # AI Model Schemas
 class ModelMetrics(BaseModel):
-    accuracy: float
-    precision: float
-    recall: float
-    f1_score: float
-    last_updated: datetime
+    """Schema for representing the performance metrics of an AI model."""
+    accuracy: float = Field(..., description="The accuracy of the model.")
+    precision: float = Field(..., description="The precision score of the model.")
+    recall: float = Field(..., description="The recall score of the model.")
+    f1_score: float = Field(..., description="The F1-score of the model.")
+    last_updated: datetime = Field(..., description="When the metrics were last calculated.")
+
 
 class ModelRetraining(BaseModel):
-    model_name: str
-    data_start_date: datetime
-    data_end_date: datetime
-    symbols: List[str]
-    features: List[str]
+    """Schema for initiating a model retraining process."""
+    model_name: str = Field(..., description="The name of the model to be retrained.")
+    data_start_date: datetime = Field(..., description="The start date for the training data.")
+    data_end_date: datetime = Field(..., description="The end date for the training data.")
+    symbols: List[str] = Field(..., description="The list of symbols to use for training.")
+    features: List[str] = Field(..., description="The list of features to use for training.")
+
 
 # System Status
 class SystemStatus(BaseModel):
-    api_status: str
-    database_status: str
-    model_status: str
-    trading_enabled: bool
-    last_update: datetime
-    active_strategies: List[str]
+    """Schema for representing the overall status of the trading system."""
+    api_status: str = Field(..., description="The status of the main API (e.g., 'online', 'offline').")
+    database_status: str = Field(..., description="The status of the database connection.")
+    model_status: str = Field(..., description="The status of the AI prediction model.")
+    trading_enabled: bool = Field(..., description="Whether automated trading is currently enabled.")
+    last_update: datetime = Field(..., description="The timestamp of the last status update.")
+    active_strategies: List[str] = Field(..., description="A list of currently active trading strategies.")
