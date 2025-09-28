@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from typing import Dict, Tuple
 from .moving_average import MovingAverage
 
 class MACD:
