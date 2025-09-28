@@ -29,16 +29,25 @@ logger = logging.getLogger(__name__)
 
 class FXCMSpreadsheetIntegrationTest:
     """
-    Test suite for FXCM ForexConnect to Spreadsheet integration
+    A test suite for the integration between the FXCM ForexConnect API and
+    spreadsheet output functionality.
     """
     
     def __init__(self):
+        """
+        Initializes the test suite.
+        """
         self.config = self._load_config()
         self.data_provider = None
         self.spreadsheet_manager = None
         
     def _load_config(self) -> Dict[str, Any]:
-        """Load configuration with environment variable substitution"""
+        """
+        Loads the configuration for the test, with environment variable substitution.
+
+        Returns:
+            Dict[str, Any]: The configuration dictionary.
+        """
         config = {
             "fxcm_forexconnect": {
                 "enabled": True,
@@ -76,7 +85,16 @@ class FXCMSpreadsheetIntegrationTest:
         return config
     
     async def setup_data_provider(self, use_mock: bool = None):
-        """Setup FXCM data provider (real or mock)"""
+        """
+        Sets up the FXCM data provider, either real or mock.
+
+        Args:
+            use_mock (bool, optional): Whether to use the mock provider.
+                                       Defaults to the value in the config.
+
+        Returns:
+            bool: True if the setup is successful, False otherwise.
+        """
         try:
             if use_mock is None:
                 use_mock = self.config["fxcm_forexconnect"]["use_mock"]
@@ -105,7 +123,12 @@ class FXCMSpreadsheetIntegrationTest:
             return False
     
     async def setup_spreadsheet_manager(self):
-        """Setup spreadsheet manager"""
+        """
+        Sets up the spreadsheet manager.
+
+        Returns:
+            bool: True if the setup is successful, False otherwise.
+        """
         try:
             from core.spreadsheet_manager import SpreadsheetManager
             
@@ -119,8 +142,13 @@ class FXCMSpreadsheetIntegrationTest:
             logger.error(f"Error setting up spreadsheet manager: {e}")
             return False
     
-    async def test_live_data_retrieval(self):
-        """Test live data retrieval"""
+    async def test_live_data_retrieval(self) -> bool:
+        """
+        Tests the retrieval of live market data.
+
+        Returns:
+            bool: True if data is retrieved successfully, False otherwise.
+        """
         try:
             logger.info("\n--- Testing Live Data Retrieval ---")
             
@@ -140,8 +168,13 @@ class FXCMSpreadsheetIntegrationTest:
             logger.error(f"Error testing live data retrieval: {e}")
             return False
     
-    async def test_historical_data_retrieval(self):
-        """Test historical data retrieval"""
+    async def test_historical_data_retrieval(self) -> bool:
+        """
+        Tests the retrieval of historical market data.
+
+        Returns:
+            bool: True if data is retrieved successfully, False otherwise.
+        """
         try:
             logger.info("\n--- Testing Historical Data Retrieval ---")
             
@@ -164,8 +197,13 @@ class FXCMSpreadsheetIntegrationTest:
             logger.error(f"Error testing historical data retrieval: {e}")
             return False
     
-    async def test_account_summary(self):
-        """Test account summary retrieval"""
+    async def test_account_summary(self) -> bool:
+        """
+        Tests the retrieval of the account summary.
+
+        Returns:
+            bool: True if the summary is retrieved successfully, False otherwise.
+        """
         try:
             logger.info("\n--- Testing Account Summary ---")
             
@@ -191,7 +229,12 @@ class FXCMSpreadsheetIntegrationTest:
             return False
     
     async def generate_mock_signals(self) -> List[Dict[str, Any]]:
-        """Generate mock trading signals for testing"""
+        """
+        Generates a list of mock trading signals for testing purposes.
+
+        Returns:
+            List[Dict[str, Any]]: A list of mock signals.
+        """
         signals = []
         symbols = self.config["data_provider"]["symbols"]
         
@@ -222,8 +265,13 @@ class FXCMSpreadsheetIntegrationTest:
         logger.info(f"Generated {len(signals)} mock trading signals")
         return signals
     
-    async def test_spreadsheet_output(self):
-        """Test spreadsheet output generation"""
+    async def test_spreadsheet_output(self) -> bool:
+        """
+        Tests the generation of spreadsheet output files.
+
+        Returns:
+            bool: True if at least one output file is created, False otherwise.
+        """
         try:
             logger.info("\n--- Testing Spreadsheet Output ---")
             
@@ -277,8 +325,13 @@ class FXCMSpreadsheetIntegrationTest:
             logger.error(f"Error testing spreadsheet output: {e}")
             return False
     
-    async def test_market_data_to_spreadsheet_flow(self):
-        """Test complete flow from market data to spreadsheet"""
+    async def test_market_data_to_spreadsheet_flow(self) -> bool:
+        """
+        Tests the complete flow from retrieving market data to updating the spreadsheet.
+
+        Returns:
+            bool: True if the flow completes successfully, False otherwise.
+        """
         try:
             logger.info("\n--- Testing Complete Market Data to Spreadsheet Flow ---")
             
@@ -335,8 +388,16 @@ class FXCMSpreadsheetIntegrationTest:
             logger.error(f"Error testing complete flow: {e}")
             return False
     
-    async def run_comprehensive_test(self, use_mock: bool = True):
-        """Run comprehensive integration test"""
+    async def run_comprehensive_test(self, use_mock: bool = True) -> bool:
+        """
+        Runs a comprehensive integration test of the entire system.
+
+        Args:
+            use_mock (bool, optional): Whether to use the mock provider. Defaults to True.
+
+        Returns:
+            bool: True if the test is successful, False otherwise.
+        """
         logger.info("=== FXCM ForexConnect to Spreadsheet Integration Test ===")
         logger.info(f"Test mode: {'Mock' if use_mock else 'Real'} FXCM connection")
         logger.info(f"Test time: {datetime.now()}")
@@ -407,7 +468,9 @@ class FXCMSpreadsheetIntegrationTest:
             return False
 
 async def main():
-    """Main test function"""
+    """
+    The main function for the integration test script.
+    """
     parser = argparse.ArgumentParser(description='FXCM ForexConnect Spreadsheet Integration Test')
     parser.add_argument('--real', action='store_true', help='Use real FXCM connection (requires valid credentials)')
     parser.add_argument('--mock', action='store_true', help='Use mock FXCM connection (default)')

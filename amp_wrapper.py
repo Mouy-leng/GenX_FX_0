@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-AMP CLI Wrapper - Simple wrapper to run AMP CLI commands
+AMP CLI Wrapper - A simple wrapper to execute the AMP CLI.
+
+This script ensures that the current directory is in the Python path and then
+imports and runs the main Typer application from 'amp_cli.py'.
 """
 
 import sys

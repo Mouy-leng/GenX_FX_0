@@ -16,8 +16,13 @@ from pathlib import Path
 import requests
 
 
-def check_python_version():
-    """Check Python version"""
+def check_python_version() -> bool:
+    """
+    Checks if the current Python version is 3.8 or higher.
+
+    Returns:
+        bool: True if the Python version is compatible, False otherwise.
+    """
     print("🐍 Checking Python version...")
     version = sys.version_info
     if version.major >= 3 and version.minor >= 8:
@@ -30,8 +35,13 @@ def check_python_version():
         return False
 
 
-def check_python_packages():
-    """Check required Python packages"""
+def check_python_packages() -> bool:
+    """
+    Checks if all required Python packages are installed.
+
+    Returns:
+        bool: True if all packages are installed, False otherwise.
+    """
     print("\n📦 Checking Python packages...")
     required_packages = ["requests", "fastapi", "uvicorn", "google-generativeai"]
 
@@ -51,8 +61,13 @@ def check_python_packages():
     return True
 
 
-def check_firewall_rules():
-    """Check Windows Firewall rules"""
+def check_firewall_rules() -> bool:
+    """
+    Checks for the presence of specific Windows Firewall rules for the application.
+
+    Returns:
+        bool: True if the checks could be performed, False on error.
+    """
     print("\n🔥 Checking Windows Firewall...")
     try:
         # Check if port 8080 is open
@@ -99,15 +114,20 @@ def check_firewall_rules():
         return False
 
 
-def check_network_connectivity():
-    """Check network connectivity"""
+def check_network_connectivity() -> bool:
+    """
+    Checks for internet, VPS, and local API connectivity.
+
+    Returns:
+        bool: True if internet connectivity is OK, False otherwise.
+    """
     print("\n🌐 Checking network connectivity...")
 
     # Test internet connection
     try:
-        response = requests.get("http://8.8.8.8", timeout=5)
+        requests.get("http://8.8.8.8", timeout=5)
         print("✅ Internet connectivity - OK")
-    except:
+    except requests.exceptions.RequestException:
         print("❌ Internet connectivity - Failed")
         return False
 
@@ -118,7 +138,7 @@ def check_network_connectivity():
             print("✅ VPS connection - OK")
         else:
             print(f"⚠️ VPS connection - Status {response.status_code}")
-    except:
+    except requests.exceptions.RequestException:
         print("⚠️ VPS connection - Failed (this may be normal if VPS is down)")
 
     # Test local API
@@ -128,14 +148,19 @@ def check_network_connectivity():
             print("✅ Local API - Running")
         else:
             print(f"⚠️ Local API - Status {response.status_code}")
-    except:
+    except requests.exceptions.RequestException:
         print("❌ Local API - Not running")
 
     return True
 
 
-def check_file_structure():
-    """Check file structure and permissions"""
+def check_file_structure() -> bool:
+    """
+    Checks if the required file and directory structure is in place.
+
+    Returns:
+        bool: True if all required files/directories exist, False otherwise.
+    """
     print("\n📁 Checking file structure...")
 
     required_files = [
@@ -166,8 +191,13 @@ def check_file_structure():
     return all_good
 
 
-def check_environment_variables():
-    """Check environment variables"""
+def check_environment_variables() -> bool:
+    """
+    Checks if essential environment variables are configured.
+
+    Returns:
+        bool: True if at least one variable is configured, False otherwise.
+    """
     print("\n🔧 Checking environment variables...")
 
     env_vars = [
@@ -197,8 +227,13 @@ def check_environment_variables():
     return configured > 0
 
 
-def check_system_resources():
-    """Check system resources"""
+def check_system_resources() -> bool:
+    """
+    Checks system resources like CPU, memory, and disk usage.
+
+    Returns:
+        bool: True if psutil is available and checks are run, False otherwise.
+    """
     print("\n💻 Checking system resources...")
 
     try:
@@ -231,8 +266,13 @@ def check_system_resources():
         return False
 
 
-def check_logs():
-    """Check log files"""
+def check_logs() -> bool:
+    """
+    Checks for the existence and size of log files.
+
+    Returns:
+        bool: Always returns True after performing checks.
+    """
     print("\n📋 Checking log files...")
 
     log_files = ["genx-backend.log", "api-server.log", "gold-signals.log"]
@@ -247,8 +287,13 @@ def check_logs():
     return True
 
 
-def generate_report():
-    """Generate system report"""
+def generate_report() -> dict:
+    """
+    Generates and prints a comprehensive system status report.
+
+    Returns:
+        dict: A dictionary containing the results of all checks.
+    """
     print("\n" + "=" * 50)
     print("GenX FX System Status Report")
     print("=" * 50)
@@ -300,11 +345,13 @@ def generate_report():
 
 
 def main():
-    """Main entry point"""
+    """
+    Main entry point for the system status checker script.
+    """
     print("GenX FX System Status Checker")
     print("=" * 40)
 
-    results = generate_report()
+    generate_report()
 
     print("\nPress Enter to exit...")
     input()

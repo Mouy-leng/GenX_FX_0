@@ -1,4 +1,8 @@
-
+/**
+ * @file This is the main entry point for the server. It sets up an Express server,
+ * configures middleware, defines a health check endpoint, registers API routes,
+ * and sets up a WebSocket server.
+ */
 import express from 'express';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';

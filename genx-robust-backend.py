@@ -33,9 +33,16 @@ logger = logging.getLogger(__name__)
 
 
 class GenXRobustBackend:
-    """Robust 24/7 GenX FX Backend Service with proper error handling"""
+    """
+    A robust 24/7 backend service for GenX FX that handles encoding issues
+    and provides reliable gold signal generation with proper error handling.
+    """
 
     def __init__(self):
+        """
+        Initializes the robust backend service, setting up configuration,
+        and connection status.
+        """
         self.running = False
         self.vps_url = "http://34.71.143.222:8080"
         self.local_api_url = "http://localhost:8080"
@@ -60,8 +67,13 @@ class GenXRobustBackend:
         self.vps_connected = False
         self.local_api_connected = False
 
-    async def initialize(self):
-        """Initialize the backend service"""
+    async def initialize(self) -> bool:
+        """
+        Initializes the backend service by testing connections and creating necessary directories.
+
+        Returns:
+            bool: True if initialization is successful, False otherwise.
+        """
         try:
             logger.info("Starting GenX FX Robust Backend Service...")
 
@@ -79,7 +91,9 @@ class GenXRobustBackend:
             return False
 
     async def test_connections(self):
-        """Test VPS and local API connections"""
+        """
+        Tests the connections to the VPS and the local API.
+        """
         # Test VPS connection
         try:
             response = requests.get(f"{self.vps_url}/health", timeout=5)
@@ -105,7 +119,15 @@ class GenXRobustBackend:
             logger.warning(f"Local API connection failed: {e}")
 
     def generate_gold_signal(self, pair: str) -> Dict[str, Any]:
-        """Generate gold trading signal using rule-based analysis"""
+        """
+        Generates a gold trading signal for a given pair using rule-based analysis.
+
+        Args:
+            pair (str): The trading pair to generate a signal for.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the generated signal.
+        """
         current_time = datetime.now()
 
         # Market session analysis
@@ -146,7 +168,12 @@ class GenXRobustBackend:
         }
 
     async def generate_gold_signals(self) -> List[Dict[str, Any]]:
-        """Generate gold trading signals"""
+        """
+        Generates gold trading signals for all configured pairs, respecting hourly limits.
+
+        Returns:
+            List[Dict[str, Any]]: A list of generated signals.
+        """
         signals = []
         current_time = datetime.now()
 
@@ -184,7 +211,15 @@ class GenXRobustBackend:
         return signals
 
     async def send_signals(self, signals: List[Dict[str, Any]]) -> bool:
-        """Send signals to VPS and local API"""
+        """
+        Sends the generated signals to the VPS and local API, and saves them to a CSV file.
+
+        Args:
+            signals (List[Dict[str, Any]]): A list of signals to send.
+
+        Returns:
+            bool: True if the signals were sent successfully, False otherwise.
+        """
         if not signals:
             return True
 
@@ -260,7 +295,9 @@ class GenXRobustBackend:
             return False
 
     async def run_signal_loop(self):
-        """Main signal generation loop"""
+        """
+        The main loop for continuously generating and sending trading signals.
+        """
         logger.info("Starting gold signal generation loop...")
 
         while self.running:
@@ -290,7 +327,9 @@ class GenXRobustBackend:
                 await asyncio.sleep(10)
 
     async def start(self):
-        """Start the robust backend service"""
+        """
+        Starts the robust backend service and the signal generation loop.
+        """
         logger.info("Starting GenX FX Robust Backend Service...")
 
         if not await self.initialize():
@@ -315,13 +354,17 @@ class GenXRobustBackend:
         await self.run_signal_loop()
 
     async def stop(self):
-        """Stop the backend service"""
+        """
+        Stops the backend service.
+        """
         logger.info("Stopping GenX FX Backend Service...")
         self.running = False
 
 
 async def main():
-    """Main entry point"""
+    """
+    The main entry point for the robust backend service.
+    """
     backend = GenXRobustBackend()
 
     try:

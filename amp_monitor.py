@@ -15,102 +15,127 @@ from amp_auth import check_auth, get_user_info
 from amp_scheduler import get_scheduler_status
 
 class AMPMonitor:
+    """
+    A class for monitoring the real-time status and health of the AMP system.
+
+    This class provides methods to check authentication, scheduler status,
+    job history, performance metrics, and active alerts. It can also generate
+    reports and display a live dashboard in the console.
+
+    Attributes:
+        logs_dir (Path): The directory where logs are stored.
+        reports_dir (Path): The directory where reports are saved.
+        monitor_config (Path): The path to the monitor's configuration file.
+        config (Dict): The loaded monitoring configuration.
+    """
+
     def __init__(self):
+        """Initializes the AMPMonitor."""
         self.logs_dir = Path("logs")
         self.reports_dir = Path("reports")
         self.monitor_config = Path("amp_monitor_config.json")
-        
-        # Ensure directories exist
+
         self.logs_dir.mkdir(exist_ok=True)
         self.reports_dir.mkdir(exist_ok=True)
-        
+
+        self.config: Dict[str, Any] = {}
         self.load_config()
-    
+
     def load_config(self):
-        """Load monitoring configuration"""
+        """Loads the monitoring configuration from a JSON file, or creates a default."""
         default_config = {
             "refresh_interval": 30,
             "retention_days": 7,
             "alerts_enabled": True,
-            "metrics_enabled": True
+            "metrics_enabled": True,
         }
-        
+
         if self.monitor_config.exists():
             try:
-                with open(self.monitor_config, 'r', encoding='utf-8') as f:
+                with open(self.monitor_config, "r", encoding="utf-8") as f:
                     self.config = json.load(f)
-            except Exception:
+            except json.JSONDecodeError:
                 self.config = default_config
         else:
             self.config = default_config
             self.save_config()
-    
+
     def save_config(self):
-        """Save monitoring configuration"""
+        """Saves the current monitoring configuration to a JSON file."""
         try:
-            with open(self.monitor_config, 'w', encoding='utf-8') as f:
+            with open(self.monitor_config, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, indent=2)
         except Exception as e:
             print(f"Error saving monitor config: {e}")
     
     def get_system_status(self) -> Dict[str, Any]:
-        """Get comprehensive system status"""
-        status = {
+        """
+        Gets a comprehensive snapshot of the system's current status.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the status of all major components.
+        """
+        return {
             "timestamp": datetime.now().isoformat(),
             "authentication": self.get_auth_status(),
             "scheduler": self.get_scheduler_status(),
             "jobs": self.get_job_status(),
             "performance": self.get_performance_metrics(),
-            "alerts": self.get_active_alerts()
+            "alerts": self.get_active_alerts(),
         }
-        return status
     
     def get_auth_status(self) -> Dict[str, Any]:
-        """Get authentication status"""
+        """
+        Gets the current authentication status.
+
+        Returns:
+            Dict[str, Any]: A dictionary with authentication status details.
+        """
         try:
             if check_auth():
                 user_info = get_user_info()
                 return {
                     "status": "authenticated",
                     "user_id": user_info.get("user_id"),
-                    "session_active": True
+                    "session_active": True,
                 }
             else:
                 return {
                     "status": "not_authenticated",
                     "user_id": None,
-                    "session_active": False
+                    "session_active": False,
                 }
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e),
-                "session_active": False
-            }
+            return {"status": "error", "error": str(e), "session_active": False}
     
     def get_scheduler_status(self) -> Dict[str, Any]:
-        """Get scheduler status"""
+        """
+        Gets the current status of the job scheduler.
+
+        Returns:
+            Dict[str, Any]: A dictionary with scheduler status details.
+        """
         try:
             return get_scheduler_status()
         except Exception as e:
-            return {
-                "error": str(e),
-                "is_running": False
-            }
+            return {"error": str(e), "is_running": False}
     
     def get_job_status(self) -> Dict[str, Any]:
-        """Get job execution status"""
+        """
+        Gets the status of job executions by analyzing recent job reports.
+
+        Returns:
+            Dict[str, Any]: A dictionary summarizing the job history and success rate.
+        """
         try:
-            # Get recent job reports
-            job_reports = list(self.logs_dir.glob("amp_job_report_*.json"))
-            job_reports.sort(key=lambda x: x.stat().st_mtime, reverse=True)
-            
+            job_reports = sorted(
+                self.logs_dir.glob("amp_job_report_*.json"),
+                key=lambda x: x.stat().st_mtime,
+                reverse=True,
+            )
+
             if not job_reports:
-                return {
-                    "total_jobs": 0,
-                    "last_job": None,
-                    "success_rate": 0.0
-                }
+                return {"total_jobs": 0, "last_job": None, "success_rate": 0.0}
             
             # Analyze recent jobs
             recent_jobs = []
@@ -150,95 +175,107 @@ class AMPMonitor:
             }
     
     def get_performance_metrics(self) -> Dict[str, Any]:
-        """Get performance metrics"""
+        """
+        Gets system performance metrics like uptime and disk usage.
+
+        Returns:
+            Dict[str, Any]: A dictionary with performance metrics.
+        """
         try:
-            # Calculate system uptime
+            uptime = timedelta(0)
             uptime_file = Path("logs/amp_startup.log")
             if uptime_file.exists():
-                with open(uptime_file, 'r') as f:
-                    lines = f.readlines()
-                    if lines:
-                        start_time = lines[0].strip()
+                with open(uptime_file, "r") as f:
+                    start_time_str = f.readline().strip()
+                    if start_time_str:
                         try:
-                            start_dt = datetime.fromisoformat(start_time)
+                            start_dt = datetime.fromisoformat(start_time_str)
                             uptime = datetime.now() - start_dt
-                        except:
-                            uptime = timedelta(0)
-            else:
-                uptime = timedelta(0)
-            
-            # Get disk usage
-            logs_size = sum(f.stat().st_size for f in self.logs_dir.rglob('*') if f.is_file())
-            
+                        except ValueError:
+                            pass  # Ignore if timestamp is invalid
+
+            logs_size = sum(
+                f.stat().st_size for f in self.logs_dir.rglob("*") if f.is_file()
+            )
+
             return {
                 "uptime_seconds": int(uptime.total_seconds()),
                 "logs_size_bytes": logs_size,
-                "logs_size_mb": round(logs_size / (1024 * 1024), 2)
+                "logs_size_mb": round(logs_size / (1024 * 1024), 2),
             }
-            
         except Exception as e:
-            return {
-                "error": str(e)
-            }
+            return {"error": str(e)}
     
     def get_active_alerts(self) -> List[Dict[str, Any]]:
-        """Get active system alerts"""
+        """
+        Checks for and returns a list of active system alerts.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries, each representing an alert.
+        """
         alerts = []
-        
         try:
-            # Check authentication
             if not check_auth():
-                alerts.append({
-                    "level": "critical",
-                    "message": "User not authenticated",
-                    "timestamp": datetime.now().isoformat()
-                })
-            
-            # Check scheduler status
+                alerts.append(
+                    {
+                        "level": "critical",
+                        "message": "User not authenticated",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+
             scheduler_status = get_scheduler_status()
             if not scheduler_status.get("is_running", False):
-                alerts.append({
-                    "level": "warning",
-                    "message": "Scheduler not running",
-                    "timestamp": datetime.now().isoformat()
-                })
-            
-            # Check job success rate
+                alerts.append(
+                    {
+                        "level": "warning",
+                        "message": "Scheduler not running",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+
             job_status = self.get_job_status()
-            success_rate = job_status.get("success_rate", 0.0)
+            success_rate = job_status.get("success_rate", 100.0)
             if success_rate < 80.0 and job_status.get("total_jobs", 0) > 5:
-                alerts.append({
-                    "level": "warning",
-                    "message": f"Low job success rate: {success_rate:.1f}%",
-                    "timestamp": datetime.now().isoformat()
-                })
-            
+                alerts.append(
+                    {
+                        "level": "warning",
+                        "message": f"Low job success rate: {success_rate:.1f}%",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
         except Exception as e:
-            alerts.append({
-                "level": "error",
-                "message": f"Monitoring error: {str(e)}",
-                "timestamp": datetime.now().isoformat()
-            })
-        
+            alerts.append(
+                {
+                    "level": "error",
+                    "message": f"Monitoring error: {str(e)}",
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
         return alerts
     
     def generate_report(self) -> str:
-        """Generate a comprehensive monitoring report"""
+        """
+        Generates a comprehensive monitoring report and saves it to a JSON file.
+
+        Returns:
+            str: The path to the generated report file, or an empty string on failure.
+        """
         status = self.get_system_status()
-        
-        report_file = self.reports_dir / f"amp_monitor_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        
+        report_file = (
+            self.reports_dir
+            / f"amp_monitor_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
         try:
-            with open(report_file, 'w', encoding='utf-8') as f:
+            with open(report_file, "w", encoding="utf-8") as f:
                 json.dump(status, f, indent=2)
-            
             return str(report_file)
         except Exception as e:
             print(f"Error generating report: {e}")
             return ""
     
     def display_dashboard(self):
-        """Display real-time monitoring dashboard"""
+        """Displays a real-time monitoring dashboard in the console."""
         print("=" * 60)
         print("🚀 AMP SYSTEM MONITORING DASHBOARD")
         print("=" * 60)

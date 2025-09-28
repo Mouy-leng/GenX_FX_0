@@ -14,7 +14,13 @@ import random
 import os
 
 class ForexSignalGenerator:
+    """
+    A class to generate and export demo forex trading signals to various formats.
+    """
     def __init__(self):
+        """
+        Initializes the ForexSignalGenerator, setting up pairs, timeframes, and output directory.
+        """
         self.pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD',
                       'XAUUSD', 'XAUEUR', 'XAUGBP', 'XAUAUD', 'XAUCAD', 'XAUCHF']
         self.timeframes = ['M15', 'H1', 'H4', 'D1']
@@ -23,8 +29,16 @@ class ForexSignalGenerator:
         # Create output directory
         os.makedirs(self.signal_output_dir, exist_ok=True)
         
-    def generate_price_data(self, symbol):
-        """Generate realistic price data for a symbol"""
+    def generate_price_data(self, symbol: str) -> float:
+        """
+        Generates realistic price data for a given symbol.
+
+        Args:
+            symbol (str): The financial instrument symbol (e.g., 'EURUSD').
+
+        Returns:
+            float: A randomly generated price for the symbol.
+        """
         base_prices = {
             'EURUSD': 1.10500, 'GBPUSD': 1.27000, 'USDJPY': 149.50,
             'USDCHF': 0.88200, 'AUDUSD': 0.65800, 'USDCAD': 1.36500, 'NZDUSD': 0.58900,
@@ -40,8 +54,16 @@ class ForexSignalGenerator:
         
         return round(current_price, 5)
     
-    def generate_signal_data(self, num_signals=10):
-        """Generate sample trading signals"""
+    def generate_signal_data(self, num_signals: int = 10) -> pd.DataFrame:
+        """
+        Generates a DataFrame of sample trading signals.
+
+        Args:
+            num_signals (int, optional): The number of signals to generate. Defaults to 10.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the generated signal data.
+        """
         signals = []
         
         for i in range(num_signals):
@@ -88,8 +110,16 @@ class ForexSignalGenerator:
         
         return pd.DataFrame(signals)
     
-    def create_excel_dashboard(self, df):
-        """Create a professional Excel dashboard"""
+    def create_excel_dashboard(self, df: pd.DataFrame) -> str:
+        """
+        Creates a professional Excel dashboard from the signal data.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing signal data.
+
+        Returns:
+            str: The file path of the created Excel dashboard.
+        """
         file_path = os.path.join(self.signal_output_dir, 'genx_signals.xlsx')
         
         # Create workbook and worksheets
@@ -201,8 +231,16 @@ class ForexSignalGenerator:
         print(f"✅ Excel dashboard created: {file_path}")
         return file_path
     
-    def create_mt4_csv(self, df):
-        """Create MT4-compatible CSV file"""
+    def create_mt4_csv(self, df: pd.DataFrame) -> str:
+        """
+        Creates a MT4-compatible CSV file from the signal data.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing signal data.
+
+        Returns:
+            str: The file path of the created MT4 CSV file.
+        """
         file_path = os.path.join(self.signal_output_dir, 'MT4_Signals.csv')
         
         mt4_data = df[['Magic_Number', 'Symbol', 'Signal', 'Entry_Price', 
@@ -217,8 +255,16 @@ class ForexSignalGenerator:
         print(f"✅ MT4 CSV created: {file_path}")
         return file_path
     
-    def create_mt5_csv(self, df):
-        """Create MT5-compatible CSV file"""
+    def create_mt5_csv(self, df: pd.DataFrame) -> str:
+        """
+        Creates a MT5-compatible CSV file from the signal data.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing signal data.
+
+        Returns:
+            str: The file path of the created MT5 CSV file.
+        """
         file_path = os.path.join(self.signal_output_dir, 'MT5_Signals.csv')
         
         mt5_data = df.copy()
@@ -233,8 +279,16 @@ class ForexSignalGenerator:
         print(f"✅ MT5 CSV created: {file_path}")
         return file_path
     
-    def create_json_output(self, df):
-        """Create JSON API output"""
+    def create_json_output(self, df: pd.DataFrame) -> str:
+        """
+        Creates a JSON output file from the signal data.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing signal data.
+
+        Returns:
+            str: The file path of the created JSON file.
+        """
         file_path = os.path.join(self.signal_output_dir, 'genx_signals.json')
         
         # Convert timestamps to strings for JSON serialization
@@ -255,8 +309,16 @@ class ForexSignalGenerator:
         print(f"✅ JSON output created: {file_path}")
         return file_path
     
-    def run_demo(self, num_signals=15):
-        """Run the complete demo"""
+    def run_demo(self, num_signals: int = 15) -> tuple:
+        """
+        Runs the complete demo, generating signals and creating all output files.
+
+        Args:
+            num_signals (int, optional): The number of signals to generate. Defaults to 15.
+
+        Returns:
+            tuple: A tuple containing the file paths of the created Excel, MT4, MT5, and JSON files.
+        """
         print("🚀 GenX FX Trading System - Excel Demo")
         print("=" * 50)
         

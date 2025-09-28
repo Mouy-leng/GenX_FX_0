@@ -30,9 +30,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class AMPTrainingManager:
-    """Training manager for the AMP (Automated Model Pipeline) system"""
+    """
+    A training manager for the Automated Model Pipeline (AMP) system.
+    This class handles data generation, feature engineering, model training,
+    and validation.
+    """
     
     def __init__(self):
+        """
+        Initializes the AMPTrainingManager, setting up directories and components.
+        """
         self.models_dir = Path("ai_models")
         self.data_dir = Path("data")
         self.logs_dir = Path("logs")
@@ -56,7 +63,16 @@ class AMPTrainingManager:
         logger.info("AMP Training Manager initialized")
     
     def generate_sample_data(self, symbol: str, periods: int = 1000) -> pd.DataFrame:
-        """Generate sample market data for training"""
+        """
+        Generates sample market data for training purposes.
+
+        Args:
+            symbol (str): The symbol to generate data for.
+            periods (int, optional): The number of periods to generate. Defaults to 1000.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the generated sample data.
+        """
         logger.info(f"Generating sample data for {symbol}")
         
         # Generate realistic OHLCV data
@@ -102,7 +118,16 @@ class AMPTrainingManager:
         return df
     
     def prepare_training_labels(self, df: pd.DataFrame, lookahead: int = 5) -> np.ndarray:
-        """Prepare training labels (future price direction)"""
+        """
+        Prepares training labels based on future price direction.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame with price data.
+            lookahead (int, optional): The number of periods to look ahead. Defaults to 5.
+
+        Returns:
+            np.ndarray: An array of labels (0=SELL, 1=HOLD, 2=BUY).
+        """
         logger.info("Preparing training labels...")
         
         labels = []
@@ -126,8 +151,13 @@ class AMPTrainingManager:
         
         return np.array(labels)
     
-    async def train_individual_models(self):
-        """Train individual AI models"""
+    async def train_individual_models(self) -> dict:
+        """
+        Trains individual AI models for each symbol.
+
+        Returns:
+            dict: A dictionary of training results for each symbol.
+        """
         logger.info("🧠 Training Individual AI Models...")
         
         training_results = {}
@@ -166,8 +196,18 @@ class AMPTrainingManager:
         
         return training_results
     
-    async def train_market_predictor(self, df: pd.DataFrame, labels: np.ndarray, symbol: str):
-        """Train the market predictor model"""
+    async def train_market_predictor(self, df: pd.DataFrame, labels: np.ndarray, symbol: str) -> dict:
+        """
+        Trains the market predictor model for a given symbol.
+
+        Args:
+            df (pd.DataFrame): The training data.
+            labels (np.ndarray): The training labels.
+            symbol (str): The symbol being trained.
+
+        Returns:
+            dict: A dictionary of training results for the market predictor.
+        """
         logger.info(f"Training Market Predictor for {symbol}")
         
         try:
@@ -192,8 +232,18 @@ class AMPTrainingManager:
             logger.error(f"Error training market predictor: {e}")
             return {'error': str(e)}
     
-    async def train_ensemble_model(self, df: pd.DataFrame, labels: np.ndarray, symbol: str):
-        """Train the ensemble model"""
+    async def train_ensemble_model(self, df: pd.DataFrame, labels: np.ndarray, symbol: str) -> dict:
+        """
+        Trains the ensemble model for a given symbol.
+
+        Args:
+            df (pd.DataFrame): The training data.
+            labels (np.ndarray): The training labels.
+            symbol (str): The symbol being trained.
+
+        Returns:
+            dict: A dictionary of training results for the ensemble model.
+        """
         logger.info(f"Training Ensemble Model for {symbol}")
         
         try:
@@ -222,8 +272,13 @@ class AMPTrainingManager:
             logger.error(f"Error training ensemble model: {e}")
             return {'error': str(e)}
     
-    async def train_ensemble_predictor(self):
-        """Train the advanced ensemble predictor"""
+    async def train_ensemble_predictor(self) -> dict:
+        """
+        Trains the advanced ensemble predictor using data from multiple symbols.
+
+        Returns:
+            dict: A dictionary of training results for the ensemble predictor.
+        """
         logger.info("🚀 Training Advanced Ensemble Predictor...")
         
         try:
@@ -265,8 +320,13 @@ class AMPTrainingManager:
             logger.error(f"Error training ensemble predictor: {e}")
             return {'status': 'error', 'error': str(e)}
     
-    async def validate_trained_models(self):
-        """Validate all trained models"""
+    async def validate_trained_models(self) -> dict:
+        """
+        Validates all trained models in the models directory.
+
+        Returns:
+            dict: A dictionary of validation results for each model.
+        """
         logger.info("🔍 Validating Trained Models...")
         
         validation_results = {}
@@ -312,8 +372,17 @@ class AMPTrainingManager:
         
         return validation_results
     
-    async def generate_training_report(self, training_results: dict, validation_results: dict):
-        """Generate comprehensive training report"""
+    async def generate_training_report(self, training_results: dict, validation_results: dict) -> dict:
+        """
+        Generates a comprehensive training report.
+
+        Args:
+            training_results (dict): The results from the training process.
+            validation_results (dict): The results from the validation process.
+
+        Returns:
+            dict: A dictionary containing the comprehensive training report.
+        """
         logger.info("📊 Generating Training Report...")
         
         report = {
@@ -347,8 +416,13 @@ class AMPTrainingManager:
         
         return report
     
-    async def run_full_training_cycle(self):
-        """Run the complete AI training cycle"""
+    async def run_full_training_cycle(self) -> dict:
+        """
+        Runs the complete AI training cycle, including training, validation, and reporting.
+
+        Returns:
+            dict: The final training report.
+        """
         logger.info("🚀 Starting Full AMP Training Cycle...")
         
         try:
@@ -373,7 +447,9 @@ class AMPTrainingManager:
             raise
 
 async def main():
-    """Main training function"""
+    """
+    The main function to run the AI training system.
+    """
     logger.info("🤖 AMP AI Training System Starting...")
     
     try:

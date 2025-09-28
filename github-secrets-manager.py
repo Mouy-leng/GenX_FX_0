@@ -18,28 +18,60 @@ REPO_NAME = "GenX_FX"
 BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
 
 class GitHubSecretsManager:
+    """
+    A class to manage GitHub secrets and variables for a repository and its environments.
+    """
     def __init__(self):
+        """
+        Initializes the GitHubSecretsManager with authentication headers.
+        """
         self.headers = {
             "Authorization": f"token {GITHUB_TOKEN}",
             "Accept": "application/vnd.github.v3+json"
         }
     
-    def get_public_key(self):
-        """Get repository public key for encryption"""
+    def get_public_key(self) -> dict:
+        """
+        Gets the repository's public key for encrypting secrets.
+
+        Raises:
+            Exception: If the public key cannot be retrieved.
+
+        Returns:
+            dict: The public key data.
+        """
         response = requests.get(f"{BASE_URL}/actions/secrets/public-key", headers=self.headers)
         if response.status_code == 200:
             return response.json()
         raise Exception(f"Failed to get public key: {response.text}")
     
-    def encrypt_secret(self, public_key_b64, secret_value):
-        """Encrypt secret using repository public key"""
+    def encrypt_secret(self, public_key_b64: str, secret_value: str) -> str:
+        """
+        Encrypts a secret using the repository's public key.
+
+        Args:
+            public_key_b64 (str): The base64-encoded public key.
+            secret_value (str): The value of the secret to encrypt.
+
+        Returns:
+            str: The encrypted secret, base64-encoded.
+        """
         public_key = public.PublicKey(public_key_b64.encode("utf-8"), encoding.Base64Encoder())
         box = public.SealedBox(public_key)
         encrypted = box.encrypt(secret_value.encode("utf-8"))
         return base64.b64encode(encrypted).decode("utf-8")
     
-    def set_secret(self, name, value):
-        """Set a repository secret"""
+    def set_secret(self, name: str, value: str) -> bool:
+        """
+        Sets a secret for the repository.
+
+        Args:
+            name (str): The name of the secret.
+            value (str): The value of the secret.
+
+        Returns:
+            bool: True if the secret was set successfully, False otherwise.
+        """
         key_data = self.get_public_key()
         encrypted_value = self.encrypt_secret(key_data["key"], value)
         
@@ -52,8 +84,18 @@ class GitHubSecretsManager:
                               headers=self.headers, json=data)
         return response.status_code in [201, 204]
     
-    def set_environment_secret(self, env_name, secret_name, value):
-        """Set environment-specific secret"""
+    def set_environment_secret(self, env_name: str, secret_name: str, value: str) -> bool:
+        """
+        Sets a secret for a specific environment.
+
+        Args:
+            env_name (str): The name of the environment.
+            secret_name (str): The name of the secret.
+            value (str): The value of the secret.
+
+        Returns:
+            bool: True if the secret was set successfully, False otherwise.
+        """
         key_data = self.get_environment_public_key(env_name)
         encrypted_value = self.encrypt_secret(key_data["key"], value)
         
@@ -66,30 +108,63 @@ class GitHubSecretsManager:
                               headers=self.headers, json=data)
         return response.status_code in [201, 204]
     
-    def get_environment_public_key(self, env_name):
-        """Get environment public key"""
+    def get_environment_public_key(self, env_name: str) -> dict:
+        """
+        Gets the public key for a specific environment.
+
+        Args:
+            env_name (str): The name of the environment.
+
+        Raises:
+            Exception: If the public key cannot be retrieved.
+
+        Returns:
+            dict: The public key data for the environment.
+        """
         response = requests.get(f"{BASE_URL}/environments/{env_name}/secrets/public-key", 
                               headers=self.headers)
         if response.status_code == 200:
             return response.json()
         raise Exception(f"Failed to get environment public key: {response.text}")
     
-    def create_environment(self, env_name):
-        """Create environment if it doesn't exist"""
+    def create_environment(self, env_name: str) -> bool:
+        """
+        Creates a new environment if it doesn't already exist.
+
+        Args:
+            env_name (str): The name of the environment to create.
+
+        Returns:
+            bool: True if the environment was created or already exists, False otherwise.
+        """
         data = {"wait_timer": 0, "reviewers": [], "deployment_branch_policy": None}
         response = requests.put(f"{BASE_URL}/environments/{env_name}",
                               headers=self.headers, json=data)
         return response.status_code in [200, 201]
     
-    def set_variable(self, name, value):
-        """Set repository variable"""
+    def set_variable(self, name: str, value: str) -> bool:
+        """
+        Sets a variable for the repository.
+
+        Args:
+            name (str): The name of the variable.
+            value (str): The value of the variable.
+
+        Returns:
+            bool: True if the variable was set successfully, False otherwise.
+        """
         data = {"name": name, "value": value}
         response = requests.post(f"{BASE_URL}/actions/variables",
                                headers=self.headers, json=data)
         return response.status_code in [201, 204]
 
-def collect_secrets_from_files():
-    """Collect secrets from various configuration files"""
+def collect_secrets_from_files() -> dict:
+    """
+    Collects secret names from various configuration files.
+
+    Returns:
+        dict: A dictionary of secret names with empty values.
+    """
     secrets = {}
     
     # From .env.example
@@ -128,8 +203,13 @@ def collect_secrets_from_files():
     secrets.update(trading_secrets)
     return secrets
 
-def collect_variables():
-    """Collect non-sensitive variables"""
+def collect_variables() -> dict:
+    """
+    Collects non-sensitive variables for the repository.
+
+    Returns:
+        dict: A dictionary of non-sensitive variables.
+    """
     return {
         "NODE_ENV": "production",
         "LOG_LEVEL": "INFO",
@@ -150,7 +230,10 @@ def collect_variables():
     }
 
 def main():
-    """Main execution function"""
+    """
+    The main execution function for the GitHub Secrets Manager.
+    It creates environments, and sets repository and environment-specific secrets and variables.
+    """
     print("GenX FX GitHub Secrets Manager")
     print("=" * 50)
     

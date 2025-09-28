@@ -21,7 +21,11 @@ sys.path.append(str(Path(__file__).parent / "api"))
 
 
 class GenX24_7Service(win32serviceutil.ServiceFramework):
-    """Windows Service for GenX FX 24/7 Backend"""
+    """
+    A Windows Service class for the GenX FX 24/7 Backend.
+    This class handles the service lifecycle, including starting, stopping,
+    and running the main application logic.
+    """
 
     _svc_name_ = "GenX24_7Backend"
     _svc_display_name_ = "GenX FX 24/7 Trading Backend"
@@ -30,6 +34,12 @@ class GenX24_7Service(win32serviceutil.ServiceFramework):
     )
 
     def __init__(self, args):
+        """
+        Initializes the Windows service.
+
+        Args:
+            args: Command-line arguments passed to the service.
+        """
         win32serviceutil.ServiceFramework.__init__(self, args)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
         socket.setdefaulttimeout(60)
@@ -47,14 +57,18 @@ class GenX24_7Service(win32serviceutil.ServiceFramework):
         self.logger = logging.getLogger(__name__)
 
     def SvcStop(self):
-        """Stop the service"""
+        """
+        Called when the service is asked to stop.
+        """
         self.logger.info("🛑 Stopping GenX FX 24/7 Service...")
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
         win32event.SetEvent(self.hWaitStop)
         self.is_running = False
 
     def SvcDoRun(self):
-        """Run the service"""
+        """
+        Called when the service is asked to run.
+        """
         self.logger.info("🚀 Starting GenX FX 24/7 Service...")
         servicemanager.LogMsg(
             servicemanager.EVENTLOG_INFORMATION_TYPE,
@@ -66,7 +80,9 @@ class GenX24_7Service(win32serviceutil.ServiceFramework):
         self.main()
 
     def main(self):
-        """Main service loop"""
+        """
+        The main loop of the service, which runs the backend application.
+        """
         try:
             # Import and run the backend
             import asyncio
@@ -85,7 +101,9 @@ class GenX24_7Service(win32serviceutil.ServiceFramework):
 
 
 def install_service():
-    """Install the Windows service"""
+    """
+    Installs the Windows service.
+    """
     try:
         win32serviceutil.InstallService(
             GenX24_7Service._svc_reg_class_,
@@ -101,7 +119,9 @@ def install_service():
 
 
 def remove_service():
-    """Remove the Windows service"""
+    """
+    Removes the Windows service.
+    """
     try:
         win32serviceutil.RemoveService(GenX24_7Service._svc_name_)
         print("✅ GenX FX 24/7 Service removed successfully")

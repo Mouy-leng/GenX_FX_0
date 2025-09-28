@@ -21,79 +21,102 @@ logger = logging.getLogger(__name__)
 
 class SpreadsheetManager:
     """
-    Manages signal output to spreadsheets for MT4/5 EA consumption
-    
-    Features:
-    - Real-time signal updates
-    - Multiple output formats (Excel, CSV, JSON)
-    - MT4/5 optimized formatting
-    - Signal history tracking
-    - Performance metrics
-    - Automated backup
+    Manages the output of trading signals to various spreadsheet formats.
+
+    This class is designed to export trading signals to formats easily consumable
+    by MetaTrader 4/5 Expert Advisors (EAs), such as Excel, CSV, and JSON.
+
+    Attributes:
+        config (Dict[str, Any]): Configuration settings.
+        output_dir (Path): The directory for output files.
+        active_signals (Dict): A dictionary of currently active signals.
+        signal_history (List): A history of all processed signals.
+        excel_file (Path): The path to the main Excel output file.
+        csv_file (Path): The path to the main CSV output file.
+        json_file (Path): The path to the JSON output file.
+        mt4_file (Path): The path to the MT4-specific CSV file.
+        mt5_file (Path): The path to the MT5-specific CSV file.
     """
-    
+
     def __init__(self, config: Dict[str, Any]):
+        """
+        Initializes the SpreadsheetManager.
+
+        Args:
+            config (Dict[str, Any]): A dictionary of configuration parameters,
+                                     including 'output_directory'.
+        """
         self.config = config
-        self.output_dir = Path(config.get('output_directory', 'signal_output'))
+        self.output_dir = Path(config.get("output_directory", "signal_output"))
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Signal storage
-        self.active_signals = {}
-        self.signal_history = []
-        self.performance_data = {}
-        
+        self.active_signals: Dict[str, Any] = {}
+        self.signal_history: List[Dict[str, Any]] = []
+        self.performance_data: Dict[str, Any] = {}
+
         # File paths
         self.excel_file = self.output_dir / "genx_signals.xlsx"
         self.csv_file = self.output_dir / "genx_signals.csv"
         self.json_file = self.output_dir / "genx_signals.json"
         self.mt4_file = self.output_dir / "MT4_Signals.csv"
         self.mt5_file = self.output_dir / "MT5_Signals.csv"
-        
+
         # Backup directory
         self.backup_dir = self.output_dir / "backups"
         self.backup_dir.mkdir(exist_ok=True)
-        
-        self.last_update = None
-        self.update_interval = config.get('update_interval', 30)  # seconds
-        self.max_signals = config.get('max_signals', 50)
-        
+
+        self.last_update: Optional[datetime] = None
+        self.update_interval = config.get("update_interval", 30)  # seconds
+        self.max_signals = config.get("max_signals", 50)
+
         logger.info(f"Spreadsheet Manager initialized - Output: {self.output_dir}")
     
     async def initialize(self):
-        """Initialize the spreadsheet manager"""
+        """
+        Initializes the spreadsheet manager.
+
+        This involves creating the initial spreadsheet files if they don't exist
+        and loading any previously saved signals.
+
+        Raises:
+            Exception: If initialization fails.
+        """
         try:
-            # Create initial files if they don't exist
             await self._create_initial_files()
-            
-            # Load existing signals if available
             await self._load_existing_signals()
-            
             logger.info("Spreadsheet Manager initialization complete")
-            
         except Exception as e:
             logger.error(f"Error initializing spreadsheet manager: {e}")
             raise
     
     async def update_signals(self, signals: List[Any]):
-        """Update signals in all output formats"""
+        """
+        Updates and exports a list of new signals to all configured formats.
+
+        Args:
+            signals (List[Any]): A list of signal objects to be processed.
+        """
         try:
             current_time = datetime.now()
-            
-            # Process new signals
+
             for signal in signals:
-                signal_data = signal.to_mt4_format() if hasattr(signal, 'to_mt4_format') else signal
-                
-                # Add to active signals
-                signal_id = signal_data.get('Magic', str(hash(f"{signal_data['Symbol']}_{current_time}")))
+                signal_data = (
+                    signal.to_mt4_format()
+                    if hasattr(signal, "to_mt4_format")
+                    else signal
+                )
+                signal_id = signal_data.get(
+                    "Magic", str(hash(f"{signal_data.get('Symbol')}_{current_time}"))
+                )
+
                 self.active_signals[signal_id] = {
                     **signal_data,
-                    'ID': signal_id,
-                    'Status': 'ACTIVE',
-                    'CreatedTime': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'LastUpdate': current_time.strftime('%Y-%m-%d %H:%M:%S')
+                    "ID": signal_id,
+                    "Status": "ACTIVE",
+                    "CreatedTime": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "LastUpdate": current_time.strftime("%Y-%m-%d %H:%M:%S"),
                 }
-                
-                # Add to history
                 self.signal_history.append(self.active_signals[signal_id].copy())
             
             # Clean up old signals
@@ -116,9 +139,7 @@ class SpreadsheetManager:
             logger.error(f"Error updating signals: {e}")
     
     async def _create_initial_files(self):
-        """Create initial signal files with proper headers"""
-        
-        # Excel file
+        """Creates the initial signal files with headers if they don't exist."""
         if not self.excel_file.exists():
             await self._create_excel_template()
         
@@ -142,13 +163,14 @@ class SpreadsheetManager:
                 json.dump({'signals': [], 'last_update': None, 'metadata': {}}, f, indent=2)
     
     async def _create_excel_template(self):
-        """Create Excel template with formatting"""
+        """Creates a new Excel file with pre-formatted sheets and headers."""
         try:
             wb = openpyxl.Workbook()
-            
+
             # Main signals sheet
             ws_signals = wb.active
-            ws_signals.title = "Active Signals"
+            if ws_signals:
+                ws_signals.title = "Active Signals"
             
             # Headers
             headers = [
@@ -215,11 +237,9 @@ class SpreadsheetManager:
             logger.error(f"Error creating Excel template: {e}")
     
     async def _update_excel_file(self):
-        """Update Excel file with current signals"""
+        """Updates the Excel file with the current set of active signals and performance."""
         try:
             wb = openpyxl.load_workbook(self.excel_file)
-            
-            # Update Active Signals sheet
             ws_signals = wb["Active Signals"]
             
             # Clear existing data (keep headers)
@@ -284,13 +304,16 @@ class SpreadsheetManager:
         except Exception as e:
             logger.error(f"Error updating Excel file: {e}")
     
-    async def _update_performance_sheet(self, workbook):
-        """Update performance metrics in Excel"""
+    async def _update_performance_sheet(self, workbook: openpyxl.Workbook):
+        """
+        Updates the 'Performance' sheet in the Excel workbook.
+
+        Args:
+            workbook (openpyxl.Workbook): The workbook object to update.
+        """
         try:
             ws_perf = workbook["Performance"]
-            
-            # Clear existing data
-            ws_perf.delete_rows(2, ws_perf.max_row)
+            ws_perf.delete_rows(2, ws_perf.max_row + 1)  # Clear existing data
             
             # Calculate performance by symbol
             symbol_stats = {}
@@ -333,10 +356,9 @@ class SpreadsheetManager:
             logger.error(f"Error updating performance sheet: {e}")
     
     async def _update_csv_files(self):
-        """Update CSV files"""
+        """Updates the main CSV file with the current active signals."""
         try:
-            # Main CSV file
-            with open(self.csv_file, 'w', newline='') as f:
+            with open(self.csv_file, "w", newline="") as f:
                 writer = csv.writer(f)
                 
                 # Headers
@@ -378,10 +400,10 @@ class SpreadsheetManager:
             logger.error(f"Error updating CSV files: {e}")
     
     async def _update_mt4_mt5_files(self):
-        """Update MT4/MT5 specific files with simplified format"""
+        """Updates the simplified CSV files intended for MT4 and MT5 EAs."""
         try:
-            # MT4 format (simplified for EA consumption)
-            with open(self.mt4_file, 'w', newline='') as f:
+            # MT4 format
+            with open(self.mt4_file, "w", newline="") as f:
                 writer = csv.writer(f)
                 
                 # Simplified headers for MT4 EA
@@ -437,29 +459,29 @@ class SpreadsheetManager:
             logger.error(f"Error updating MT4/MT5 files: {e}")
     
     async def _update_json_file(self):
-        """Update JSON file"""
+        """Updates the JSON file with the current signals and metadata."""
         try:
             data = {
-                'signals': list(self.active_signals.values()),
-                'last_update': datetime.now().isoformat(),
-                'metadata': {
-                    'total_signals': len(self.active_signals),
-                    'signal_history_count': len(self.signal_history),
-                    'update_interval': self.update_interval,
-                    'max_signals': self.max_signals
-                }
+                "signals": list(self.active_signals.values()),
+                "last_update": datetime.now().isoformat(),
+                "metadata": {
+                    "total_signals": len(self.active_signals),
+                    "signal_history_count": len(self.signal_history),
+                    "update_interval": self.update_interval,
+                    "max_signals": self.max_signals,
+                },
             }
-            
-            with open(self.json_file, 'w') as f:
+
+            with open(self.json_file, "w") as f:
                 json.dump(data, f, indent=2, default=str)
-        
+
         except Exception as e:
             logger.error(f"Error updating JSON file: {e}")
     
     async def _cleanup_old_signals(self):
-        """Remove expired or old signals"""
+        """Removes expired or old signals from the active list."""
         current_time = datetime.now()
-        signals_to_remove = []
+        signals_to_remove: List[str] = []
         
         for signal_id, signal in self.active_signals.items():
             try:
@@ -502,59 +524,58 @@ class SpreadsheetManager:
             logger.info(f"Cleaned up {len(signals_to_remove)} expired signals")
     
     async def _create_backup_if_needed(self):
-        """Create backup files periodically"""
+        """Creates a daily backup of the main Excel signals file."""
         try:
             if not self.last_update:
                 return
-            
-            # Create daily backups
-            backup_date = datetime.now().strftime('%Y-%m-%d')
+
+            backup_date = datetime.now().strftime("%Y-%m-%d")
             backup_file = self.backup_dir / f"signals_backup_{backup_date}.xlsx"
-            
+
             if not backup_file.exists() and self.excel_file.exists():
-                # Copy current Excel file as backup
                 import shutil
+
                 shutil.copy2(self.excel_file, backup_file)
-                logger.info(f"Created backup: {backup_file}")
-        
+                logger.info(f"Created signals backup: {backup_file}")
+
         except Exception as e:
             logger.error(f"Error creating backup: {e}")
     
     async def _load_existing_signals(self):
-        """Load existing signals from files if available"""
+        """Loads existing active signals from the JSON file on initialization."""
         try:
             if self.json_file.exists():
-                with open(self.json_file, 'r') as f:
+                with open(self.json_file, "r") as f:
                     data = json.load(f)
-                    
-                signals = data.get('signals', [])
+
+                signals = data.get("signals", [])
                 for signal in signals:
-                    signal_id = signal.get('ID', '')
+                    signal_id = signal.get("ID")
                     if signal_id:
                         self.active_signals[signal_id] = signal
-                
-                logger.info(f"Loaded {len(signals)} existing signals")
-        
-        except Exception as e:
+
+                logger.info(f"Loaded {len(signals)} existing signals from JSON file")
+
+        except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Error loading existing signals: {e}")
     
     async def save_final_state(self):
-        """Save final state when shutting down"""
+        """Saves the final state of all signal files, intended for graceful shutdown."""
         try:
-            await self._update_excel_file()
-            await self._update_csv_files()
-            await self._update_json_file()
-            await self._update_mt4_mt5_files()
-            
-            logger.info("Saved final spreadsheet state")
-        
+            await self.update_signals([])  # Trigger an update with no new signals
+            logger.info("Saved final spreadsheet state.")
         except Exception as e:
             logger.error(f"Error saving final state: {e}")
     
     def get_signal_summary(self) -> Dict[str, Any]:
-        """Get summary of current signals"""
+        """
+        Gets a summary of the current signal status.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing a summary of active signals.
+        """
         if not self.active_signals:
-            return {'total_signals': 0}
+            return {"total_signals": 0}
         
         signals = list(self.active_signals.values())
         

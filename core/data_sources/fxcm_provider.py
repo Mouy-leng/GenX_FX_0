@@ -19,9 +19,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class FXCMConfig:
-    """FXCM configuration settings"""
+    """
+    Configuration settings for the FXCM REST API and WebSocket connection.
+
+    Attributes:
+        access_token (str): The bearer token for authentication.
+        environment (str): The trading environment, "demo" or "real".
+        server_url (str): The base URL for the REST API.
+        socket_url (str): The URL for the WebSocket connection.
+        timeout (int): The request timeout in seconds.
+        retry_attempts (int): The number of times to retry a failed connection.
+        rate_limit_delay (float): The delay in seconds between requests to respect rate limits.
+    """
+
     access_token: str
-    environment: str = "demo"  # "demo" or "real"
+    environment: str = "demo"
     server_url: str = "https://api-fxpractice.fxcm.com"
     socket_url: str = "wss://api-fxpractice.fxcm.com/socket.io/"
     timeout: int = 30
@@ -30,18 +42,34 @@ class FXCMConfig:
 
 class FXCMDataProvider:
     """
-    FXCM Data Provider for real-time and historical market data
-    Optimized for trading signal generation
+    Provides real-time and historical market data from FXCM via REST and WebSocket APIs.
+
+    This class handles connection, authentication, data fetching, and subscription
+    management for the FXCM platform.
+
+    Attributes:
+        config (FXCMConfig): The configuration for the provider.
+        session (Optional[aiohttp.ClientSession]): The aiohttp session for REST requests.
+        websocket (Optional[websockets.WebSocketClientProtocol]): The WebSocket connection.
+        is_connected (bool): True if the provider is connected and authenticated.
+        subscriptions (Dict): A dictionary of active symbol subscriptions.
+        data_cache (Dict): A cache for historical data.
     """
-    
+
     def __init__(self, config: Dict[str, Any]):
+        """
+        Initializes the FXCMDataProvider.
+
+        Args:
+            config (Dict[str, Any]): A dictionary of configuration settings.
+        """
         self.config = FXCMConfig(**config)
-        self.session = None
-        self.websocket = None
+        self.session: Optional[aiohttp.ClientSession] = None
+        self.websocket: Optional[websockets.client.WebSocketClientProtocol] = None
         self.is_connected = False
-        self.subscriptions = {}
-        self.data_cache = {}
-        self.last_request_time = 0
+        self.subscriptions: Dict[str, Any] = {}
+        self.data_cache: Dict[str, pd.DataFrame] = {}
+        self.last_request_time: float = 0
         
         # Symbol mapping (FXCM format to standard format)
         self.symbol_map = {
@@ -72,71 +100,83 @@ class FXCMDataProvider:
         logger.info(f"FXCM Data Provider initialized for {self.config.environment} environment")
     
     async def connect(self) -> bool:
-        """Establish connection to FXCM API"""
+        """
+        Establishes and authenticates the connection to the FXCM API.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         try:
             self.session = aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=self.config.timeout)
             )
-            
-            # Test authentication
+
             if await self._authenticate():
                 self.is_connected = True
                 logger.info("Successfully connected to FXCM API")
                 return True
             else:
                 logger.error("Failed to authenticate with FXCM API")
+                await self.session.close()
                 return False
-                
+
         except Exception as e:
             logger.error(f"Error connecting to FXCM: {e}")
+            if self.session:
+                await self.session.close()
             return False
     
     async def disconnect(self):
-        """Disconnect from FXCM API"""
+        """Disconnects from the FXCM API by closing the session and WebSocket."""
         try:
-            if self.websocket:
+            if self.websocket and not self.websocket.closed:
                 await self.websocket.close()
-            
-            if self.session:
+
+            if self.session and not self.session.closed:
                 await self.session.close()
-            
+
             self.is_connected = False
             logger.info("Disconnected from FXCM API")
-            
+
         except Exception as e:
             logger.error(f"Error disconnecting from FXCM: {e}")
     
     async def _authenticate(self) -> bool:
-        """Authenticate with FXCM API"""
+        """
+        Authenticates with the FXCM API by making a test request.
+
+        Returns:
+            bool: True if authentication is successful, False otherwise.
+        """
+        if not self.session:
+            return False
         try:
             headers = {
-                'Authorization': f'Bearer {self.config.access_token}',
-                'Content-Type': 'application/json'
+                "Authorization": f"Bearer {self.config.access_token}",
+                "Content-Type": "application/json",
             }
-            
             url = f"{self.config.server_url}/trading/get_model"
-            
+
             async with self.session.get(url, headers=headers) as response:
                 if response.status == 200:
-                    data = await response.json()
                     logger.info("FXCM authentication successful")
                     return True
                 else:
                     logger.error(f"FXCM authentication failed: {response.status}")
                     return False
-                    
+
         except Exception as e:
             logger.error(f"Error during FXCM authentication: {e}")
             return False
     
     async def _rate_limit(self):
-        """Implement rate limiting to avoid API limits"""
+        """Implements a simple rate-limiting mechanism to avoid API request limits."""
         current_time = time.time()
         time_since_last = current_time - self.last_request_time
-        
+
         if time_since_last < self.config.rate_limit_delay:
             await asyncio.sleep(self.config.rate_limit_delay - time_since_last)
-        
+
         self.last_request_time = time.time()
     
     async def get_historical_data(
@@ -144,22 +184,26 @@ class FXCMDataProvider:
         symbol: str,
         timeframe: str,
         periods: int = 100,
-        end_time: Optional[datetime] = None
+        end_time: Optional[datetime] = None,
     ) -> pd.DataFrame:
         """
-        Get historical market data from FXCM
-        
+        Gets historical market data from FXCM.
+
         Args:
-            symbol: Currency pair (e.g., 'EURUSD')
-            timeframe: Timeframe (e.g., 'H1', 'M15')
-            periods: Number of periods to retrieve
-            end_time: End time for historical data
-        
+            symbol (str): The standard currency pair (e.g., 'EURUSD').
+            timeframe (str): The candle timeframe (e.g., 'H1', 'M15').
+            periods (int): The number of historical periods to retrieve.
+            end_time (Optional[datetime]): The end time for the historical data.
+
         Returns:
-            DataFrame with OHLCV data
+            pd.DataFrame: A DataFrame containing the OHLCV data.
+
+        Raises:
+            ConnectionError: If the service is not connected.
+            Exception: If the API request fails.
         """
         if not self.is_connected:
-            raise Exception("Not connected to FXCM API")
+            raise ConnectionError("Not connected to FXCM API")
         
         await self._rate_limit()
         
@@ -206,12 +250,25 @@ class FXCMDataProvider:
             # Return empty DataFrame if no cached data
             return pd.DataFrame(columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     
-    def _process_historical_data(self, raw_data: Dict, symbol: str) -> pd.DataFrame:
-        """Process raw FXCM data into standardized DataFrame"""
+    def _process_historical_data(
+        self, raw_data: Dict, symbol: str
+    ) -> pd.DataFrame:
+        """
+        Processes raw historical data from FXCM into a standardized DataFrame.
+
+        Args:
+            raw_data (Dict): The raw JSON response from the API.
+            symbol (str): The symbol for which the data was fetched.
+
+        Returns:
+            pd.DataFrame: A formatted DataFrame with a timestamp index.
+        """
         try:
-            if 'candles' not in raw_data or not raw_data['candles']:
+            if "candles" not in raw_data or not raw_data["candles"]:
                 logger.warning(f"No candle data received for {symbol}")
-                return pd.DataFrame(columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+                return pd.DataFrame(
+                    columns=["timestamp", "open", "high", "low", "close", "volume"]
+                )
             
             candles = raw_data['candles']
             
@@ -244,9 +301,20 @@ class FXCMDataProvider:
             return pd.DataFrame(columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     
     async def get_current_price(self, symbol: str) -> Optional[Dict[str, float]]:
-        """Get current bid/ask prices for a symbol"""
+        """
+        Gets the current bid/ask price for a single symbol.
+
+        Args:
+            symbol (str): The standard symbol to fetch the price for.
+
+        Returns:
+            Optional[Dict[str, float]]: A dictionary with price data or None if not found.
+
+        Raises:
+            ConnectionError: If the service is not connected.
+        """
         if not self.is_connected:
-            raise Exception("Not connected to FXCM API")
+            raise ConnectionError("Not connected to FXCM API")
         
         await self._rate_limit()
         
@@ -285,9 +353,17 @@ class FXCMDataProvider:
             return None
     
     async def get_market_status(self) -> Dict[str, Any]:
-        """Get current market status and trading hours"""
+        """
+        Gets the current market status and account-related information.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing market and account status.
+
+        Raises:
+            ConnectionError: If the service is not connected.
+        """
         if not self.is_connected:
-            raise Exception("Not connected to FXCM API")
+            raise ConnectionError("Not connected to FXCM API")
         
         try:
             headers = {
@@ -316,9 +392,17 @@ class FXCMDataProvider:
             return {}
     
     async def get_available_symbols(self) -> List[str]:
-        """Get list of available trading symbols"""
+        """
+        Gets a list of all available trading symbols from the platform.
+
+        Returns:
+            List[str]: A list of standard-format symbols.
+
+        Raises:
+            ConnectionError: If the service is not connected.
+        """
         if not self.is_connected:
-            raise Exception("Not connected to FXCM API")
+            raise ConnectionError("Not connected to FXCM API")
         
         try:
             headers = {
@@ -356,10 +440,23 @@ class FXCMDataProvider:
             logger.error(f"Error getting available symbols: {e}")
             return list(self.symbol_map.keys())
     
-    async def subscribe_to_price_updates(self, symbols: List[str], callback=None):
-        """Subscribe to real-time price updates via WebSocket"""
+    async def subscribe_to_price_updates(
+        self, symbols: List[str], callback: Optional[Callable] = None
+    ):
+        """
+        Subscribes to real-time price updates for a list of symbols.
+
+        Note: This is a placeholder for a full WebSocket implementation.
+
+        Args:
+            symbols (List[str]): The symbols to subscribe to.
+            callback (Optional[Callable]): A function to call with price updates.
+
+        Raises:
+            ConnectionError: If the service is not connected.
+        """
         if not self.is_connected:
-            raise Exception("Not connected to FXCM API")
+            raise ConnectionError("Not connected to FXCM API")
         
         try:
             # This would implement WebSocket subscription for real-time data
@@ -378,21 +475,34 @@ class FXCMDataProvider:
             logger.error(f"Error subscribing to price updates: {e}")
     
     async def unsubscribe_from_price_updates(self, symbols: List[str]):
-        """Unsubscribe from real-time price updates"""
+        """
+        Unsubscribes from real-time price updates for a list of symbols.
+
+        Args:
+            symbols (List[str]): The symbols to unsubscribe from.
+        """
         try:
             for symbol in symbols:
                 if symbol in self.subscriptions:
                     del self.subscriptions[symbol]
-            
+
             logger.info(f"Unsubscribed from {len(symbols)} symbols")
-            
+
         except Exception as e:
             logger.error(f"Error unsubscribing from price updates: {e}")
     
     async def get_account_summary(self) -> Dict[str, Any]:
-        """Get account summary information"""
+        """
+        Gets a summary of the trading account.
+
+        Returns:
+            Dict[str, Any]: A dictionary with account summary details.
+
+        Raises:
+            ConnectionError: If the service is not connected.
+        """
         if not self.is_connected:
-            raise Exception("Not connected to FXCM API")
+            raise ConnectionError("Not connected to FXCM API")
         
         try:
             headers = {
@@ -424,40 +534,52 @@ class FXCMDataProvider:
             return {}
     
     def get_connection_status(self) -> Dict[str, Any]:
-        """Get current connection status"""
+        """
+        Gets the current status of the connection and provider.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing connection status details.
+        """
         return {
-            'connected': self.is_connected,
-            'environment': self.config.environment,
-            'server_url': self.config.server_url,
-            'last_request_time': self.last_request_time,
-            'cached_symbols': len(self.data_cache),
-            'active_subscriptions': len(self.subscriptions)
+            "connected": self.is_connected,
+            "environment": self.config.environment,
+            "server_url": self.config.server_url,
+            "last_request_time": self.last_request_time,
+            "cached_symbols": len(self.data_cache),
+            "active_subscriptions": len(self.subscriptions),
         }
     
     async def test_connection(self) -> bool:
-        """Test the connection to FXCM API"""
+        """
+        Tests the connection to the FXCM API by fetching account summary.
+
+        Returns:
+            bool: True if the connection is responsive, False otherwise.
+        """
         try:
             if not self.is_connected:
                 return False
-            
+
             # Try to get account summary as a connection test
             account_data = await self.get_account_summary()
             return bool(account_data)
-            
+
         except Exception as e:
             logger.error(f"Connection test failed: {e}")
             return False
 
 # Alternative data provider for when FXCM is not available
 class MockFXCMProvider(FXCMDataProvider):
-    """Mock FXCM provider for testing and development"""
-    
+    """A mock version of the FXCMDataProvider for testing and development."""
+
     def __init__(self, config: Dict[str, Any]):
+        """Initializes the MockFXCMProvider."""
         super().__init__(config)
         self.is_connected = True
         logger.info("Mock FXCM Provider initialized")
-    
+
     async def connect(self) -> bool:
+        """Simulates a successful connection."""
         self.is_connected = True
         logger.info("Mock FXCM connection established")
         return True
@@ -467,9 +589,20 @@ class MockFXCMProvider(FXCMDataProvider):
         symbol: str,
         timeframe: str,
         periods: int = 100,
-        end_time: Optional[datetime] = None
+        end_time: Optional[datetime] = None,
     ) -> pd.DataFrame:
-        """Generate mock historical data"""
+        """
+        Generates a DataFrame with mock historical data.
+
+        Args:
+            symbol (str): The symbol for which to generate data.
+            timeframe (str): The data timeframe.
+            periods (int): The number of periods to generate.
+            end_time (Optional[datetime]): The end time for the data series.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing mock OHLCV data.
+        """
         
         # Generate realistic forex data
         np.random.seed(42)  # For reproducible data
@@ -540,15 +673,23 @@ class MockFXCMProvider(FXCMDataProvider):
         return df
     
     async def get_current_price(self, symbol: str) -> Optional[Dict[str, float]]:
-        """Get mock current price"""
+        """
+        Generates a mock current price for a symbol.
+
+        Args:
+            symbol (str): The symbol to get a price for.
+
+        Returns:
+            Optional[Dict[str, float]]: A dictionary with mock price data.
+        """
         base_prices = {
-            'EURUSD': 1.1000,
-            'GBPUSD': 1.3000,
-            'USDJPY': 110.00,
-            'USDCHF': 0.9200,
-            'AUDUSD': 0.7500,
-            'USDCAD': 1.2500,
-            'NZDUSD': 0.7000
+            "EURUSD": 1.1000,
+            "GBPUSD": 1.3000,
+            "USDJPY": 110.00,
+            "USDCHF": 0.9200,
+            "AUDUSD": 0.7500,
+            "USDCAD": 1.2500,
+            "NZDUSD": 0.7000,
         }
         
         base_price = base_prices.get(symbol, 1.0000)

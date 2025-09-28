@@ -4,12 +4,21 @@ import webbrowser
 from threading import Thread
 
 def start_backend():
+    """
+    Starts the backend server using the main.py script in the api directory.
+    """
     subprocess.run(['python', 'api/main.py'], cwd='D:/GenX_FX')
 
 def start_frontend():
+    """
+    Starts the frontend server using 'npx serve' on the 'dist' directory.
+    """
     subprocess.run(['npx', 'serve', 'dist', '-p', '3000'], cwd='D:/GenX_FX')
 
 def start_local_servers():
+    """
+    Starts both the backend and frontend servers in separate threads for local development.
+    """
     print("🚀 Starting GenX-FX Local Servers...")
     
     # Start backend in thread

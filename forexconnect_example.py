@@ -15,12 +15,23 @@ import time
 import sys
 
 class ForexConnectExample:
+    """
+    A class to demonstrate the basic functionalities of the ForexConnect API.
+    """
     def __init__(self):
+        """
+        Initializes the ForexConnectExample class.
+        """
         self.session = None
         self.login_descriptor = None
         
-    def create_session(self):
-        """Create and configure a ForexConnect session."""
+    def create_session(self) -> bool:
+        """
+        Creates and configures a ForexConnect session.
+
+        Returns:
+            bool: True if the session is created successfully, False otherwise.
+        """
         try:
             # Create session
             self.session = fx.O2GSession()
@@ -35,8 +46,19 @@ class ForexConnectExample:
             print(f"✗ Error creating session: {e}")
             return False
     
-    def configure_connection(self, url, username, password, connection_type="Demo"):
-        """Configure connection parameters."""
+    def configure_connection(self, url: str, username: str, password: str, connection_type: str = "Demo") -> bool:
+        """
+        Configures the connection parameters for the ForexConnect session.
+
+        Args:
+            url (str): The server URL for the connection.
+            username (str): The username for authentication.
+            password (str): The password for authentication.
+            connection_type (str, optional): The type of connection (e.g., "Demo"). Defaults to "Demo".
+
+        Returns:
+            bool: True if configuration is successful, False otherwise.
+        """
         try:
             self.login_descriptor.setUrl(url)
             self.login_descriptor.setUser(username)
@@ -50,8 +72,13 @@ class ForexConnectExample:
             print(f"✗ Error configuring connection: {e}")
             return False
     
-    def connect(self):
-        """Connect to FXCM servers."""
+    def connect(self) -> bool:
+        """
+        Simulates connecting to FXCM servers and provides instructions for a real connection.
+
+        Returns:
+            bool: True if the connection setup is successful, False otherwise.
+        """
         try:
             # Note: This is just the connection setup
             # Actual login would require valid credentials
@@ -67,7 +94,9 @@ class ForexConnectExample:
             return False
     
     def get_market_data_info(self):
-        """Show information about market data access."""
+        """
+        Shows information and example code for accessing market data.
+        """
         print("\n=== Market Data Access ===")
         print("With a connected session, you can:")
         print("- Get real-time prices")
@@ -91,7 +120,9 @@ for i in range(offers_table.size()):
         print(example_code)
     
     def get_account_info(self):
-        """Show information about account access."""
+        """
+        Shows information and example code for accessing account information.
+        """
         print("\n=== Account Information Access ===")
         print("With a connected session, you can:")
         print("- Get account balance")
@@ -120,7 +151,9 @@ for i in range(accounts_table.size()):
         print(example_code)
     
     def show_trading_example(self):
-        """Show trading operation examples."""
+        """
+        Shows examples of trading operations, such as placing orders.
+        """
         print("\n=== Trading Operations ===")
         print("With a connected session, you can:")
         print("- Place market orders")
@@ -147,7 +180,9 @@ order_request.setAccountID("your_account_id")
         print(example_code)
     
     def cleanup(self):
-        """Clean up session resources."""
+        """
+        Cleans up session resources. In a real implementation, this would log out.
+        """
         try:
             if self.session:
                 # In a real implementation, you would logout here
@@ -158,7 +193,9 @@ order_request.setAccountID("your_account_id")
             print(f"✗ Error during cleanup: {e}")
 
 def main():
-    """Main example function."""
+    """
+    Main function to run the ForexConnect API example.
+    """
     print("=== ForexConnect API Example ===\n")
     
     # Create example instance

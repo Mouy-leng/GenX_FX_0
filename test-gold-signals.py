@@ -10,8 +10,13 @@ from datetime import datetime
 import requests
 
 
-def test_vps_connection():
-    """Test VPS connection"""
+def test_vps_connection() -> bool:
+    """
+    Tests the connection to the VPS.
+
+    Returns:
+        bool: True if the connection is successful, False otherwise.
+    """
     print("🔍 Testing VPS connection...")
     try:
         response = requests.get("http://34.71.143.222:8080/health", timeout=10)
@@ -26,8 +31,13 @@ def test_vps_connection():
         return False
 
 
-def test_local_api():
-    """Test local API"""
+def test_local_api() -> bool:
+    """
+    Tests the connection to the local API.
+
+    Returns:
+        bool: True if the connection is successful, False otherwise.
+    """
     print("🔍 Testing local API...")
     try:
         response = requests.get("http://localhost:8080/health", timeout=5)
@@ -42,8 +52,13 @@ def test_local_api():
         return False
 
 
-def test_signal_generation():
-    """Test signal generation"""
+def test_signal_generation() -> bool:
+    """
+    Tests the signal generation and submission process.
+
+    Returns:
+        bool: Always returns True after attempting the tests.
+    """
     print("🔍 Testing signal generation...")
 
     # Test signal data
@@ -104,7 +119,9 @@ def test_signal_generation():
 
 
 def main():
-    """Run all tests"""
+    """
+    Runs all tests for the gold signal generator and prints a summary of the results.
+    """
     print("🧪 GenX FX Gold Signal Generator Test")
     print("=" * 40)
 

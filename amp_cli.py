@@ -42,154 +42,232 @@ app = typer.Typer(help="AMP CLI - Automated Model Pipeline for GenX Trading Plat
 console = Console()
 
 class AMPCLI:
+    """
+    A class to encapsulate the functionality of the AMP CLI.
+
+    This class handles loading and saving configuration, managing plugins,
+    and running various commands like updating, verifying, and testing.
+
+    Attributes:
+        project_root (Path): The root directory of the project.
+        config_file (Path): The path to the main AMP configuration file.
+        plugins_dir (Path): The directory where plugins are stored.
+        env_file (Path): The path to the .env file.
+    """
+
     def __init__(self):
+        """Initializes the AMPCLI class."""
         self.project_root = Path.cwd()
         self.config_file = self.project_root / "amp_config.json"
         self.plugins_dir = self.project_root / "amp-plugins"
         self.env_file = self.project_root / ".env"
-        
+
     def load_config(self) -> Dict:
-        """Load AMP configuration"""
+        """
+        Loads the AMP configuration from 'amp_config.json'.
+
+        Returns:
+            Dict: The loaded configuration, or a default config if the file doesn't exist.
+        """
         if self.config_file.exists():
-            with open(self.config_file, 'r', encoding='utf-8') as f:
+            with open(self.config_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         return {
             "api_provider": "gemini",
             "plugins": [],
             "services": [],
             "dependencies": [],
-            "env_vars": {}
+            "env_vars": {},
         }
-    
+
     def save_config(self, config: Dict):
-        """Save AMP configuration"""
-        with open(self.config_file, 'w', encoding='utf-8') as f:
+        """
+        Saves the AMP configuration to 'amp_config.json'.
+
+        Args:
+            config (Dict): The configuration dictionary to save.
+        """
+        with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
     
-    def update(self, env_file: Optional[str] = None, set_config: Optional[List[str]] = None, 
-               add_dependency: Optional[List[str]] = None, add_env: Optional[List[str]] = None, 
-               description: Optional[str] = None):
-        """Main update command"""
+    def update(
+        self,
+        env_file: Optional[str] = None,
+        set_config: Optional[List[str]] = None,
+        add_dependency: Optional[List[str]] = None,
+        add_env: Optional[List[str]] = None,
+        description: Optional[str] = None,
+    ):
+        """
+        The main command to update the AMP configuration.
+
+        Args:
+            env_file (Optional[str]): Path to an environment file to load.
+            set_config (Optional[List[str]]): Key-value pairs to set in the config.
+            add_dependency (Optional[List[str]]): Dependencies to add.
+            add_env (Optional[List[str]]): Environment variables to add.
+            description (Optional[str]): A new description for the configuration.
+        """
         with console.status("[bold green]Starting GenX Trading Platform AMP Update..."):
             config = self.load_config()
-            
-            # Update configuration based on parameters
+
             if env_file:
                 self._load_env_vars(env_file)
-            
             if set_config:
                 for setting in set_config:
                     if "=" in setting:
                         k, v = setting.split("=", 1)
                         config[k] = v
-            
             if add_dependency:
                 config.setdefault("dependencies", []).extend(add_dependency)
-            
             if add_env:
                 for env_var in add_env:
                     if "=" in env_var:
                         k, v = env_var.split("=", 1)
                         config.setdefault("env_vars", {})[k] = v
-            
             if description:
                 config["description"] = description
-            
+
             self.save_config(config)
-        
         console.print("✅ [bold green]Main AMP update complete!")
         
-    def plugin_install(self, plugin_name: str, source: str = "genx-trading", 
-                      enable_service: Optional[List[str]] = None, description: str = ""):
-        """Install AMP plugin"""
-        with console.status(f"[bold blue]Installing AMP plugin: {plugin_name}"):
+    def plugin_install(
+        self,
+        plugin_name: str,
+        source: str = "genx-trading",
+        enable_service: Optional[List[str]] = None,
+        description: str = "",
+    ):
+        """
+        Installs an AMP plugin by adding it to the configuration.
+
+        Args:
+            plugin_name (str): The name of the plugin to install.
+            source (str): The source of the plugin.
+            enable_service (Optional[List[str]]): Services to enable with this plugin.
+            description (str): A description of the plugin.
+        """
+        with console.status(f"[bold blue]Installing AMP plugin: {plugin_name}..."):
             config = self.load_config()
             plugin_config = {
                 "name": plugin_name,
                 "source": source,
                 "enabled": True,
                 "services": enable_service or [],
-                "description": description
+                "description": description,
             }
-            
             config.setdefault("plugins", []).append(plugin_config)
             self.save_config(config)
-        
-        console.print(f"✅ [bold green]Plugin {plugin_name} installed successfully!")
+        console.print(f"✅ [bold green]Plugin '{plugin_name}' installed successfully!")
     
-    def config_set(self, api_provider: Optional[str] = None, enable_sentiment_analysis: Optional[bool] = None,
-                   enable_social_signals: Optional[bool] = None, enable_news_feeds: Optional[bool] = None,
-                   enable_websocket_streams: Optional[bool] = None):
-        """Set AMP configuration"""
+    def config_set(
+        self,
+        api_provider: Optional[str] = None,
+        enable_sentiment_analysis: Optional[bool] = None,
+        enable_social_signals: Optional[bool] = None,
+        enable_news_feeds: Optional[bool] = None,
+        enable_websocket_streams: Optional[bool] = None,
+    ):
+        """
+        Sets various high-level configuration options for AMP services.
+
+        Args:
+            api_provider (Optional[str]): The main API provider to use.
+            enable_sentiment_analysis (Optional[bool]): Toggles sentiment analysis.
+            enable_social_signals (Optional[bool]): Toggles social media signals.
+            enable_news_feeds (Optional[bool]): Toggles news feeds.
+            enable_websocket_streams (Optional[bool]): Toggles WebSocket streams.
+        """
         with console.status("[bold blue]Configuring services..."):
             config = self.load_config()
-            
+
             if api_provider:
                 config["api_provider"] = api_provider
-            
             if enable_sentiment_analysis is not None:
                 config["enable_sentiment_analysis"] = enable_sentiment_analysis
-            
             if enable_social_signals is not None:
                 config["enable_social_signals"] = enable_social_signals
-            
             if enable_news_feeds is not None:
                 config["enable_news_feeds"] = enable_news_feeds
-            
             if enable_websocket_streams is not None:
                 config["enable_websocket_streams"] = enable_websocket_streams
-            
+
             self.save_config(config)
-        
         console.print("🔧 [bold green]Service configuration complete!")
     
     def service_enable(self, service: List[str]):
-        """Enable services"""
+        """
+        Enables one or more services in the AMP configuration.
+
+        Args:
+            service (List[str]): A list of service names to enable.
+        """
         config = self.load_config()
-        config.setdefault("enabled_services", []).extend(service)
+        enabled_services = set(config.setdefault("enabled_services", []))
+        enabled_services.update(service)
+        config["enabled_services"] = sorted(list(enabled_services))
         self.save_config(config)
         console.print(f"✅ [bold green]Services enabled: {', '.join(service)}")
     
-    def verify(self, check_dependencies: bool = False, check_env_vars: bool = False,
-               check_services: bool = False, check_api_keys: bool = False):
-        """Verify installation"""
+    def verify(
+        self,
+        check_dependencies: bool = False,
+        check_env_vars: bool = False,
+        check_services: bool = False,
+        check_api_keys: bool = False,
+    ):
+        """
+        Verifies the installation and configuration of the AMP system.
+
+        Args:
+            check_dependencies (bool): If True, check for required Python packages.
+            check_env_vars (bool): If True, check for required environment variables.
+            check_services (bool): If True, check if enabled services exist.
+            check_api_keys (bool): If True, check for essential API keys.
+        """
         with console.status("[bold blue]Verifying installation..."):
             config = self.load_config()
-            
+
             if check_dependencies:
                 self._check_dependencies(config.get("dependencies", []))
-            
             if check_env_vars:
                 self._check_env_vars(config.get("env_vars", {}))
-            
             if check_services:
                 self._check_services(config.get("enabled_services", []))
-            
             if check_api_keys:
                 self._check_api_keys()
-        
+
         console.print("✅ [bold green]Installation verification complete!")
     
     def test(self, all_tests: bool = False):
-        """Run tests"""
+        """
+        Runs automated tests.
+
+        Args:
+            all_tests (bool): If True, runs both Python and Node.js tests.
+                              Otherwise, runs only Python tests.
+        """
         if all_tests:
             with console.status("[bold blue]Running all tests..."):
                 self._run_python_tests()
                 self._run_node_tests()
         else:
-            with console.status("[bold blue]Running specific tests..."):
+            with console.status("[bold blue]Running Python tests..."):
                 self._run_python_tests()
     
     def deploy(self):
-        """Deploy to production"""
+        """Deploys the application to production by running the job runner."""
         with console.status("[bold blue]Deploying to production..."):
             try:
                 import subprocess
-                subprocess.run([sys.executable, "amp_job_runner.py", "deploy"], check=True)
+
+                subprocess.run(
+                    [sys.executable, "amp_job_runner.py", "deploy"], check=True
+                )
             except subprocess.CalledProcessError:
                 console.print("❌ [bold red]Deployment failed!")
             except FileNotFoundError:
-                console.print("⚠️ [yellow]amp_job_runner.py not found")
+                console.print("⚠️ [yellow]amp_job_runner.py not found.")
     
     def _load_env_vars(self, env_file: str):
         """Load environment variables from file"""

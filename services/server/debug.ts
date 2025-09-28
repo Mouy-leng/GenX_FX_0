@@ -1,6 +1,12 @@
 
 import { Request, Response, NextFunction } from 'express';
 
+/**
+ * A middleware function for debugging that logs incoming requests and their duration.
+ * @param {Request} req - The Express request object.
+ * @param {Response} res - The Express response object.
+ * @param {NextFunction} next - The next middleware function.
+ */
 export function debugMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   
@@ -22,6 +28,13 @@ export function debugMiddleware(req: Request, res: Response, next: NextFunction)
   next();
 }
 
+/**
+ * A middleware function for logging errors.
+ * @param {Error} err - The error object.
+ * @param {Request} req - The Express request object.
+ * @param {Response} res - The Express response object.
+ * @param {NextFunction} next - The next middleware function.
+ */
 export function errorLogger(err: Error, req: Request, res: Response, next: NextFunction) {
   console.error('❌ Error occurred:');
   console.error('📍 Route:', req.method, req.url);
@@ -35,6 +48,10 @@ export function errorLogger(err: Error, req: Request, res: Response, next: NextF
   next(err);
 }
 
+/**
+ * Performs a health check of the service, returning status and details.
+ * @returns {Promise<{ status: string; details: any }>} A promise that resolves to the health check status.
+ */
 export async function healthCheck(): Promise<{ status: string; details: any }> {
   const details = {
     timestamp: new Date().toISOString(),

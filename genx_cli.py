@@ -36,7 +36,13 @@ app = typer.Typer(help="GenX FX CLI - Complete Trading System Management", rich_
 console = Console()
 
 class GenXCLI:
+    """
+    A class to handle the core logic of the GenX FX CLI.
+    """
     def __init__(self):
+        """
+        Initializes the GenXCLI class, setting up paths to important files and directories.
+        """
         self.project_root = Path.cwd()
         self.config_file = self.project_root / "amp_config.json"
         self.env_file = self.project_root / ".env"
@@ -50,14 +56,24 @@ class GenXCLI:
         self.logs_dir = self.project_root / "logs"
         
     def load_config(self) -> Dict:
-        """Load system configuration"""
+        """
+        Loads the system configuration from the amp_config.json file.
+
+        Returns:
+            Dict: The system configuration as a dictionary.
+        """
         if self.config_file.exists():
             with open(self.config_file, 'r') as f:
                 return json.load(f)
         return {}
     
     def load_env_template(self) -> Dict:
-        """Load environment template"""
+        """
+        Loads the environment variable template from the .env.example file.
+
+        Returns:
+            Dict: A dictionary of environment variables from the template.
+        """
         env_example = self.project_root / ".env.example"
         if env_example.exists():
             env_vars = {}
@@ -70,7 +86,13 @@ class GenXCLI:
         return {}
     
     def get_system_status(self) -> Dict:
-        """Get comprehensive system status"""
+        """
+        Gathers a comprehensive status of the system, including directories,
+        files, dependencies, and services.
+
+        Returns:
+            Dict: A dictionary containing the system status information.
+        """
         status = {
             'project_root': str(self.project_root),
             'directories': {},

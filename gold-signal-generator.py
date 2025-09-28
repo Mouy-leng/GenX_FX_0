@@ -35,9 +35,16 @@ logger = logging.getLogger(__name__)
 
 
 class GoldSignalGenerator:
-    """Gold trading signal generator with VPS integration"""
+    """
+    A specialized service for generating gold trading signals, with integration
+    for sending them to a VPS. It can use either AI-based or rule-based analysis.
+    """
 
     def __init__(self):
+        """
+        Initializes the GoldSignalGenerator, setting up configuration for VPS,
+        API, gold pairs, and signal generation.
+        """
         self.vps_url = "http://34.71.143.222:8080"
         self.local_api_url = "http://localhost:8080"
         self.gemini_service = None
@@ -69,8 +76,14 @@ class GoldSignalGenerator:
         else:
             logger.warning("⚠️ Gemini AI not available, using rule-based signals")
 
-    async def initialize(self):
-        """Initialize the signal generator"""
+    async def initialize(self) -> bool:
+        """
+        Initializes the signal generator, including the Gemini service and
+        connections to the VPS and local API.
+
+        Returns:
+            bool: True if initialization is successful, False otherwise.
+        """
         try:
             if self.gemini_service:
                 await self.gemini_service.initialize()
@@ -89,8 +102,13 @@ class GoldSignalGenerator:
             logger.error(f"❌ Failed to initialize: {e}")
             return False
 
-    async def test_vps_connection(self):
-        """Test connection to VPS"""
+    async def test_vps_connection(self) -> bool:
+        """
+        Tests the connection to the VPS.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         try:
             response = requests.get(f"{self.vps_url}/health", timeout=10)
             if response.status_code == 200:
@@ -103,8 +121,13 @@ class GoldSignalGenerator:
             logger.warning(f"⚠️ VPS connection failed: {e}")
             return False
 
-    async def test_local_api(self):
-        """Test local API connection"""
+    async def test_local_api(self) -> bool:
+        """
+        Tests the connection to the local API.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         try:
             response = requests.get(f"{self.local_api_url}/health", timeout=5)
             if response.status_code == 200:
@@ -120,7 +143,15 @@ class GoldSignalGenerator:
             return False
 
     def generate_rule_based_signal(self, pair: str) -> Dict[str, Any]:
-        """Generate signal using rule-based analysis"""
+        """
+        Generates a signal using rule-based analysis.
+
+        Args:
+            pair (str): The trading pair to generate a signal for.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the generated signal.
+        """
         current_time = datetime.now()
 
         # Simple rule-based logic
@@ -164,7 +195,16 @@ class GoldSignalGenerator:
         }
 
     async def generate_ai_signal(self, pair: str) -> Dict[str, Any]:
-        """Generate signal using AI analysis"""
+        """
+        Generates a signal using AI analysis from the Gemini service.
+
+        Args:
+            pair (str): The trading pair to generate a signal for.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the AI-generated signal,
+                           or a rule-based signal as a fallback.
+        """
         if not self.gemini_service:
             return self.generate_rule_based_signal(pair)
 
@@ -218,7 +258,13 @@ class GoldSignalGenerator:
             return self.generate_rule_based_signal(pair)
 
     async def generate_gold_signals(self) -> List[Dict[str, Any]]:
-        """Generate gold trading signals"""
+        """
+        Generates gold trading signals, respecting hourly limits and using a mix
+        of AI and rule-based methods.
+
+        Returns:
+            List[Dict[str, Any]]: A list of generated signals.
+        """
         signals = []
         current_time = datetime.now()
 
@@ -259,7 +305,15 @@ class GoldSignalGenerator:
         return signals
 
     async def send_to_vps(self, signals: List[Dict[str, Any]]) -> bool:
-        """Send signals to VPS"""
+        """
+        Sends generated signals to the VPS and local API, and saves them to a CSV file.
+
+        Args:
+            signals (List[Dict[str, Any]]): A list of signals to send.
+
+        Returns:
+            bool: True if the signals were sent successfully, False otherwise.
+        """
         if not signals:
             return True
 
@@ -330,7 +384,9 @@ class GoldSignalGenerator:
             return False
 
     async def run_signal_loop(self):
-        """Main signal generation loop"""
+        """
+        The main loop for continuously generating and sending trading signals.
+        """
         logger.info("🔄 Starting gold signal generation loop...")
 
         while self.running:
@@ -360,7 +416,9 @@ class GoldSignalGenerator:
                 await asyncio.sleep(10)
 
     async def start(self):
-        """Start the gold signal generator"""
+        """
+        Starts the gold signal generator and its main loop.
+        """
         logger.info("🚀 Starting GenX Gold Signal Generator...")
 
         if not await self.initialize():
@@ -385,7 +443,9 @@ class GoldSignalGenerator:
         await self.run_signal_loop()
 
     async def stop(self):
-        """Stop the signal generator"""
+        """
+        Stops the signal generator and shuts down its services.
+        """
         logger.info("🛑 Stopping Gold Signal Generator...")
         self.running = False
 
@@ -394,7 +454,9 @@ class GoldSignalGenerator:
 
 
 async def main():
-    """Main entry point"""
+    """
+    The main entry point for the gold signal generator service.
+    """
     generator = GoldSignalGenerator()
 
     try:

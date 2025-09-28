@@ -1,6 +1,16 @@
 
 import { testDatabaseConnections, seedTestData } from './test-endpoints.js';
 
+/**
+ * @file This file contains a function for running comprehensive tests on the server.
+ */
+import { testDatabaseConnections, seedTestData } from './test-endpoints.js';
+
+/**
+ * Runs a comprehensive set of tests on the server, including database connections,
+ * API endpoints, and WebSocket connections.
+ * @returns {Promise<boolean>} A promise that resolves to true if all tests pass, false otherwise.
+ */
 export async function runTests() {
   console.log('🧪 Starting comprehensive tests...\n');
   

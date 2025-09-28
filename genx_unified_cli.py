@@ -46,7 +46,15 @@ app = typer.Typer(
 console = Console()
 
 class GenXUnifiedCLI:
+    """
+    A unified CLI class that wraps all other CLI tools and deployment
+    functionality for the GenX FX trading platform.
+    """
     def __init__(self):
+        """
+        Initializes the GenXUnifiedCLI, setting up paths and defining
+        available CLI modules and deployment configurations.
+        """
         self.project_root = Path.cwd()
         self.config_file = self.project_root / "amp_config.json"
         self.env_file = self.project_root / ".env"
@@ -102,7 +110,9 @@ class GenXUnifiedCLI:
         }
 
     def display_banner(self):
-        """Display the GenX CLI banner"""
+        """
+        Displays the GenX Unified CLI banner.
+        """
         banner = """
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                          🚀 GenX Unified CLI v2.0                          ║
@@ -116,7 +126,12 @@ class GenXUnifiedCLI:
         console.print(Panel(banner, style="bold blue"))
 
     def check_prerequisites(self) -> bool:
-        """Check if all prerequisites are installed"""
+        """
+        Checks if all prerequisite tools (Python, Docker, Git, Node, npm) are installed.
+
+        Returns:
+            bool: True if all prerequisites are installed, False otherwise.
+        """
         prerequisites = {
             'python': 'python3 --version',
             'docker': 'docker --version', 
@@ -140,7 +155,12 @@ class GenXUnifiedCLI:
         return True
 
     def load_deployment_status(self) -> Dict[str, Any]:
-        """Load current deployment status"""
+        """
+        Loads the current deployment status from a JSON file.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the deployment status.
+        """
         status_file = self.logs_dir / "deployment_status.json"
         if status_file.exists():
             try:
@@ -151,14 +171,29 @@ class GenXUnifiedCLI:
         return {}
 
     def save_deployment_status(self, status: Dict[str, Any]):
-        """Save deployment status"""
+        """
+        Saves the deployment status to a JSON file.
+
+        Args:
+            status (Dict[str, Any]): The deployment status dictionary to save.
+        """
         self.logs_dir.mkdir(exist_ok=True)
         status_file = self.logs_dir / "deployment_status.json"
         with open(status_file, 'w') as f:
             json.dump(status, f, indent=2, default=str)
 
     def execute_cli_command(self, cli_name: str, command: str, args: List[str] = None) -> bool:
-        """Execute command from a specific CLI module"""
+        """
+        Executes a command from a specific CLI module.
+
+        Args:
+            cli_name (str): The name of the CLI module to use.
+            command (str): The command to execute.
+            args (List[str], optional): A list of additional arguments. Defaults to None.
+
+        Returns:
+            bool: True if the command executes successfully, False otherwise.
+        """
         if cli_name not in self.available_clis:
             console.print(f"❌ Unknown CLI: {cli_name}", style="red")
             return False
@@ -196,12 +231,17 @@ cli = GenXUnifiedCLI()
 
 @app.callback()
 def main():
-    """GenX Unified CLI - Complete Trading Platform Management"""
+    """
+    The main callback for the GenX Unified CLI, which displays the banner.
+    """
     cli.display_banner()
 
 @app.command()
 def status():
-    """Show comprehensive system status"""
+    """
+    Shows a comprehensive status of the system, including prerequisites,
+    deployment status, and available CLI modules.
+    """
     cli.display_banner()
     
     # System prerequisites
@@ -251,7 +291,10 @@ def setup(
     environment: str = typer.Argument("local", help="Environment to setup: local, aws-free, aws-full, exness-vps"),
     force: bool = typer.Option(False, "--force", "-f", help="Force setup even if already configured")
 ):
-    """Setup GenX FX platform for specified environment"""
+    """
+    Sets up the GenX FX platform for a specified environment, including
+    installing dependencies and initializing services.
+    """
     console.print(f"\n🚀 [bold]Setting up GenX FX for {environment} environment[/bold]")
     
     if not cli.check_prerequisites():
@@ -328,7 +371,9 @@ def deploy(
     auto_confirm: bool = typer.Option(False, "--yes", "-y", help="Auto-confirm deployment steps"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show deployment plan without executing")
 ):
-    """Deploy GenX FX platform to specified environment"""
+    """
+    Deploys the GenX FX platform to a specified environment.
+    """
     console.print(f"\n🚀 [bold]Deploying GenX FX to {environment}[/bold]")
     
     if environment not in cli.deployment_configs:
@@ -421,7 +466,10 @@ def deploy(
 
 @app.command()
 def cursor_collaborate():
-    """Initialize Cursor AI collaboration with Ali and Jules"""
+    """
+    Initializes Cursor AI collaboration with Ali and Jules, creating a
+    configuration file and displaying available features.
+    """
     console.print("\n🤖 [bold]Initializing Cursor AI Collaboration[/bold]")
     
     # Check if Cursor collaboration file exists
@@ -492,7 +540,10 @@ def execute_job(
     environment: str = typer.Option("aws-free", help="Target environment"),
     background: bool = typer.Option(False, "--background", "-b", help="Run job in background")
 ):
-    """Execute a specific job (Ali & Jules enhanced job runner)"""
+    """
+    Executes a specific job, such as deployment, setup, or testing,
+    with enhancements from Ali and Jules.
+    """
     console.print(f"\n⚡ [bold]Executing {job_name} job for {environment}[/bold]")
     
     # Job definitions (Ali & Jules contributions)
@@ -570,7 +621,10 @@ def execute_job(
 
 @app.command()
 def monitor():
-    """Monitor system status and deployments"""
+    """
+    Monitors the system status, including active deployments and simulated
+    system resources.
+    """
     console.print("\n📊 [bold]GenX FX System Monitor[/bold]")
     
     # Load deployment status
