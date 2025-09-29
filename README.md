@@ -9,6 +9,22 @@
 
 ---
 
+## 📚 Table of Contents
+- [🎯 Overview](#-overview)
+- [✨ Key Features](#-key-features)
+- [🚀 Getting Started](#-getting-started)
+  - [For Traders: Using a Pre-Built Expert Advisor](#for-traders-using-a-pre-built-expert-advisor)
+  - [For Developers: Full System Setup](#for-developers-full-system-setup)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🛠️ Development and Testing](#️-development-and-testing)
+  - [Running Tests](#running-tests)
+  - [Code Style and Linting](#code-style-and-linting)
+- [📚 Documentation](#-documentation)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+---
+
 ## 🎯 Overview
 
 GenX FX is a comprehensive, AI-powered trading system that combines machine learning, real-time market analysis, and automated execution capabilities. The platform is designed for both traders who want to use pre-built Expert Advisors (EAs) and for developers who want to build, test, and deploy their own automated strategies.
