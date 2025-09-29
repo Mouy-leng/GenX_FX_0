@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import cors from 'cors';
 
 // Mock the routes and vite modules
-vi.mock('../routes.js', () => ({
+vi.mock('../routes.ts', () => ({
   registerRoutes: vi.fn((app) => {
     app.get('/api/test', (req, res) => res.json({ message: 'test endpoint' }));
     app.post('/api/data', (req, res) => res.json({ received: req.body }));
@@ -14,7 +14,7 @@ vi.mock('../routes.js', () => ({
   })
 }));
 
-vi.mock('../vite.js', () => ({
+vi.mock('../vite.ts', () => ({
   setupVite: vi.fn(),
   serveStatic: vi.fn()
 }));
@@ -47,7 +47,7 @@ describe('GenX FX Server Comprehensive Tests', () => {
     });
 
     // Mock routes
-    const { registerRoutes } = await import('../routes.js');
+    const { registerRoutes } = await import('../routes.ts');
     registerRoutes(app);
 
     // Error handling middleware
@@ -241,74 +241,80 @@ describe('GenX FX Server Comprehensive Tests', () => {
   });
 
   describe('WebSocket Tests', () => {
-    it('should establish WebSocket connection and send welcome message', (done) => {
+    it('should establish WebSocket connection and send welcome message', async () => {
       const ws = new WebSocket(`ws://localhost:5001`);
       
-      ws.on('open', () => {
-        console.log('WebSocket connection opened');
-      });
-      
-      ws.on('message', (data) => {
-        const message = JSON.parse(data.toString());
+      await new Promise((resolve, reject) => {
+        ws.on('open', () => {
+          console.log('WebSocket connection opened');
+        });
         
-        if (message.type === 'welcome') {
-          expect(message.message).toBe('Connected to GenZ Trading Bot Pro');
-          expect(message.timestamp).toBeDefined();
-          ws.close();
-          done();
-        }
-      });
-      
-      ws.on('error', (error) => {
-        done(error);
+        ws.on('message', (data) => {
+          const message = JSON.parse(data.toString());
+
+          if (message.type === 'welcome') {
+            expect(message.message).toBe('Connected to GenZ Trading Bot Pro');
+            expect(message.timestamp).toBeDefined();
+            ws.close();
+            resolve(true);
+          }
+        });
+
+        ws.on('error', (error) => {
+          reject(error);
+        });
       });
     });
 
-    it('should echo back valid JSON messages', (done) => {
+    it('should echo back valid JSON messages', async () => {
       const ws = new WebSocket(`ws://localhost:5001`);
       const testMessage = { action: 'test', data: { value: 123 } };
       
-      let welcomeReceived = false;
-      
-      ws.on('message', (data) => {
-        const message = JSON.parse(data.toString());
+      await new Promise((resolve, reject) => {
+        let welcomeReceived = false;
         
-        if (message.type === 'welcome') {
-          welcomeReceived = true;
-          ws.send(JSON.stringify(testMessage));
-        } else if (message.type === 'echo' && welcomeReceived) {
-          expect(message.data).toEqual(testMessage);
-          expect(message.timestamp).toBeDefined();
-          ws.close();
-          done();
-        }
-      });
-      
-      ws.on('error', (error) => {
-        done(error);
+        ws.on('message', (data) => {
+          const message = JSON.parse(data.toString());
+
+          if (message.type === 'welcome') {
+            welcomeReceived = true;
+            ws.send(JSON.stringify(testMessage));
+          } else if (message.type === 'echo' && welcomeReceived) {
+            expect(message.data).toEqual(testMessage);
+            expect(message.timestamp).toBeDefined();
+            ws.close();
+            resolve(true);
+          }
+        });
+
+        ws.on('error', (error) => {
+          reject(error);
+        });
       });
     });
 
-    it('should handle invalid JSON messages gracefully', (done) => {
+    it('should handle invalid JSON messages gracefully', async () => {
       const ws = new WebSocket(`ws://localhost:5001`);
       
-      let welcomeReceived = false;
-      
-      ws.on('message', (data) => {
-        const message = JSON.parse(data.toString());
+      await new Promise((resolve, reject) => {
+        let welcomeReceived = false;
         
-        if (message.type === 'welcome') {
-          welcomeReceived = true;
-          ws.send('{ invalid json }');
-        } else if (message.type === 'error' && welcomeReceived) {
-          expect(message.message).toBe('Invalid JSON format');
-          ws.close();
-          done();
-        }
-      });
-      
-      ws.on('error', (error) => {
-        done(error);
+        ws.on('message', (data) => {
+          const message = JSON.parse(data.toString());
+
+          if (message.type === 'welcome') {
+            welcomeReceived = true;
+            ws.send('{ invalid json }');
+          } else if (message.type === 'error' && welcomeReceived) {
+            expect(message.message).toBe('Invalid JSON format');
+            ws.close();
+            resolve(true);
+          }
+        });
+
+        ws.on('error', (error) => {
+          reject(error);
+        });
       });
     });
   });
