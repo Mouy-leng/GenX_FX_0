@@ -1,25 +1,48 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3-slim
-
-EXPOSE 8080
-
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
-# Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+# Stage 1: Build the frontend
+FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app
-COPY . /app
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy client and shared source code
+COPY client/ ./client
+COPY shared/ ./shared
+COPY tsconfig.json ./
+
+# Build the client application
+RUN npm run build
+
+# Stage 2: Build the backend
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN python -m pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
+# Copy the built frontend from the builder stage
+COPY --from=frontend-builder /app/client/dist ./client/dist
+COPY --from=frontend-builder /app/node_modules ./node_modules
+
+# Create a non-root user
+RUN adduser -u 5678 --disabled-password --gecos "" appuser
 USER appuser
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8080} api.main:app"]
+# Copy the startup script and make it executable
+COPY start-prod.sh .
+RUN chmod +x start-prod.sh
+
+# Expose the port and run the application
+EXPOSE 8080
+CMD ["./start-prod.sh"]

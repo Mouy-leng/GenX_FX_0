@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+import json
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import os
@@ -157,6 +158,8 @@ async def get_users():
     except Exception as e:
         return {"error": str(e)}
 
+from fastapi.responses import JSONResponse
+
 @app.get("/mt5-info")
 async def get_mt5_info():
     """
@@ -166,6 +169,16 @@ async def get_mt5_info():
         dict: A dictionary with static MT5 login and server details.
     """
     return {"login": "279023502", "server": "Exness-MT5Trial8", "status": "configured"}
+
+@app.post("/api/v1/test-post")
+async def test_post(request: Request):
+    """
+    A test endpoint that accepts POST requests and echoes back the JSON body.
+    """
+    try:
+        return await request.json()
+    except json.JSONDecodeError:
+        return JSONResponse(content={"detail": "Invalid JSON"}, status_code=400)
 
 if __name__ == "__main__":
     import uvicorn

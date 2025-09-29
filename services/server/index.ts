@@ -11,6 +11,7 @@ import { setupVite, serveStatic } from './vite.js';
 import { registerRoutes } from './routes.js';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -45,6 +46,12 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// Proxy API requests to the Python backend
+app.use('/api', createProxyMiddleware({
+  target: 'http://localhost:8000',
+  changeOrigin: true,
+}));
 
 // Register API routes
 registerRoutes(app);
@@ -96,7 +103,7 @@ wss.on('connection', (ws, req) => {
 
 // Setup Vite in development or serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  serveStatic(app, join(__dirname, '..', 'dist', 'public'));
+  serveStatic(app, join(__dirname, '..', '..', 'client', 'dist'));
 } else {
   await setupVite(app, server);
 }

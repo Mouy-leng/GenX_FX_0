@@ -74,7 +74,10 @@ describe('GenX FX Server Comprehensive Tests', () => {
 
     server = createServer(app);
 
-    // Test WebSocket server
+    // The main application in `index.ts` creates its own WebSocket server.
+    // This test file, however, creates a separate, isolated server for testing purposes.
+    // To test WebSocket functionality, we must attach a WebSocket server to this
+    // test-specific server instance.
     const wss = new WebSocketServer({ server });
     wss.on('connection', (ws) => {
       ws.on('message', (data) => {
