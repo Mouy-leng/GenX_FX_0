@@ -831,6 +831,73 @@ class ExcelManager:
             logger.error(f"Error updating Excel positions: {e}")
             raise
 
+    def add_closed_trade(self, trade: ClosedTrade):
+        """
+        Appends a new closed trade to the 'Closed Trades' worksheet in the Excel file.
+
+        Args:
+            trade (ClosedTrade): The closed trade data object.
+
+        Raises:
+            Exception: If adding the trade to Excel fails.
+        """
+        try:
+            workbook = openpyxl.load_workbook(self.file_path)
+            worksheet = workbook["Closed Trades"]
+
+            # If the sheet is empty, add headers first
+            if worksheet.max_row == 1 and worksheet.cell(row=1, column=1).value is None:
+                headers = [
+                    "Ticket",
+                    "Symbol",
+                    "Type",
+                    "Lots",
+                    "Open Price",
+                    "Close Price",
+                    "Stop Loss",
+                    "Take Profit",
+                    "Open Time",
+                    "Close Time",
+                    "Duration (h)",
+                    "Realized P&L",
+                    "Commission",
+                    "Swap",
+                ]
+                for col_idx, header in enumerate(headers, 1):
+                    cell = worksheet.cell(row=1, column=col_idx)
+                    cell.value = header
+                    cell.font = Font(bold=True)
+                    cell.fill = PatternFill(
+                        start_color="33CC33", end_color="33CC33", fill_type="solid"
+                    )
+
+            # Append trade data
+            trade_data = [
+                trade.ticket,
+                trade.symbol,
+                trade.type,
+                trade.lots,
+                trade.open_price,
+                trade.close_price,
+                trade.stop_loss or "",
+                trade.take_profit or "",
+                trade.open_time.strftime("%Y-%m-%d %H:%M:%S"),
+                trade.close_time.strftime("%Y-%m-%d %H:%M:%S"),
+                round(trade.duration_hours, 2),
+                trade.realized_pnl,
+                trade.commission,
+                trade.swap,
+            ]
+
+            worksheet.append(trade_data)
+
+            workbook.save(self.file_path)
+            logger.info(f"Added closed trade to Excel: {trade.ticket}")
+
+        except Exception as e:
+            logger.error(f"Error adding closed trade to Excel: {e}")
+            raise
+
 
 class AssetManager:
     """
@@ -935,9 +1002,8 @@ class AssetManager:
         try:
             if self.use_google_sheets and self.sheets_manager:
                 await self.sheets_manager.add_closed_trade(trade)
-            # TODO: Implement trade logging for ExcelManager
-            # elif self.excel_manager:
-            #     self.excel_manager.add_closed_trade(trade)
+            elif self.excel_manager:
+                self.excel_manager.add_closed_trade(trade)
 
             logger.info(f"Trade logged: {trade.ticket}")
 
