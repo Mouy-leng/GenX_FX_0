@@ -37,9 +37,10 @@ def test_root_endpoint():
 
 def test_health_endpoint():
     """Test health endpoint"""
-    response = client.get("/health")
+    response = client.get("/api/v1/health")
     assert response.status_code == 200
     assert "status" in response.json()
+    assert "services" in response.json()
 
 @pytest.mark.asyncio
 async def test_ml_service():

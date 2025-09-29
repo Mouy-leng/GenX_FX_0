@@ -22,7 +22,7 @@ class TestEdgeCases:
     
     def test_health_endpoint_structure(self):
         """Test health endpoint returns correct structure"""
-        response = client.get("/health")
+        response = client.get("/api/v1/health")
         assert response.status_code == 200
         data = response.json()
         
@@ -30,6 +30,7 @@ class TestEdgeCases:
         assert "status" in data
         assert "timestamp" in data
         assert "services" in data
+        assert "database" in data["services"]
         assert "ml_service" in data["services"]
         assert "data_service" in data["services"]
         
@@ -174,7 +175,7 @@ class TestEdgeCases:
         
         results = []
         def make_request():
-            response = client.get("/health")
+            response = client.get("/api/v1/health")
             results.append(response.status_code)
         
         # Create multiple threads
@@ -244,7 +245,7 @@ class TestPerformanceEdgeCases:
         import time
         
         start_time = time.time()
-        response = client.get("/health")
+        response = client.get("/api/v1/health")
         end_time = time.time()
         
         response_time = end_time - start_time

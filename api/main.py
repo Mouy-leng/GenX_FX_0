@@ -32,56 +32,47 @@ async def root():
     return {
         "message": "GenX-FX Trading Platform API",
         "version": "1.0.0",
-        "status": "running",
+        "status": "active",
+        "docs": "/docs",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
     }
 
-@app.get("/health")
-async def health_check():
+@app.get("/api/v1/health")
+async def api_health_check():
     """
-    Performs a health check on the API and its database connection.
+    Provides a comprehensive health check for the v1 API services.
 
-    Attempts to connect to the SQLite database and execute a simple query.
+    Checks the database connection and returns the status of internal services.
 
     Returns:
-        dict: A dictionary indicating the health status. 'healthy' if the
-              database connection is successful, 'unhealthy' otherwise.
+        dict: A dictionary with the health status of the API.
     """
+    db_status = "connected"
+    db_error = None
     try:
         # Test database connection
         conn = sqlite3.connect("genxdb_fx.db")
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
         conn.close()
-
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "timestamp": datetime.now().isoformat(),
-        }
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat(),
-        }
+        db_status = "disconnected"
+        db_error = str(e)
 
-@app.get("/api/v1/health")
-async def api_health_check():
-    """
-    Provides a health check for the v1 API services.
-
-    Returns a hardcoded status indicating that the main services are active.
-
-    Returns:
-        dict: A dictionary with the health status of internal services.
-    """
-    return {
-        "status": "healthy",
-        "services": {"ml_service": "active", "data_service": "active"},
+    response = {
+        "status": "healthy" if db_status == "connected" else "unhealthy",
         "timestamp": datetime.now().isoformat(),
+        "services": {
+            "database": db_status,
+            "ml_service": "active",
+            "data_service": "active"
+        },
     }
+    if db_error:
+        response["error"] = {"database": db_error}
+
+    return response
 
 @app.get("/api/v1/predictions")
 async def get_predictions():
