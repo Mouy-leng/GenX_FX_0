@@ -12,11 +12,24 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 def check_file_exists(file_path: str) -> bool:
-    """Check if a file exists"""
+    """
+    Checks if a file exists at the given path.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        bool: True if the file exists, False otherwise.
+    """
     return Path(file_path).exists()
 
 def check_docker_installed() -> bool:
-    """Check if Docker is installed and running"""
+    """
+    Checks if Docker is installed and running.
+
+    Returns:
+        bool: True if Docker is installed, False otherwise.
+    """
     try:
         result = subprocess.run(['docker', '--version'], 
                               capture_output=True, text=True, timeout=10)
@@ -25,7 +38,12 @@ def check_docker_installed() -> bool:
         return False
 
 def check_docker_compose_installed() -> bool:
-    """Check if Docker Compose is installed"""
+    """
+    Checks if Docker Compose is installed.
+
+    Returns:
+        bool: True if Docker Compose is installed, False otherwise.
+    """
     try:
         result = subprocess.run(['docker-compose', '--version'], 
                               capture_output=True, text=True, timeout=10)
@@ -34,7 +52,15 @@ def check_docker_compose_installed() -> bool:
         return False
 
 def check_docker_image_exists(image_name: str) -> bool:
-    """Check if Docker image exists locally"""
+    """
+    Checks if a Docker image exists locally.
+
+    Args:
+        image_name (str): The name of the Docker image.
+
+    Returns:
+        bool: True if the image exists, False otherwise.
+    """
     try:
         result = subprocess.run(['docker', 'images', '-q', image_name], 
                               capture_output=True, text=True, timeout=10)
@@ -43,7 +69,12 @@ def check_docker_image_exists(image_name: str) -> bool:
         return False
 
 def get_git_status() -> Dict:
-    """Get current git status"""
+    """
+    Gets the current Git status, including branch, commit, and remote URL.
+
+    Returns:
+        Dict: A dictionary containing the Git status.
+    """
     try:
         # Get current branch
         branch_result = subprocess.run(['git', 'branch', '--show-current'], 
@@ -69,7 +100,10 @@ def get_git_status() -> Dict:
         return {"branch": "unknown", "commit": "unknown", "remote": "unknown"}
 
 def verify_setup():
-    """Verify the complete Docker setup"""
+    """
+    Verifies the complete Docker setup by checking for required tools,
+    configuration files, and Docker images.
+    """
     print("🐳 Docker Deployment Setup Verification")
     print("=" * 50)
     
@@ -136,8 +170,8 @@ def verify_setup():
                 print("\n🚀 NEXT STEPS:")
                 print("1. Configure GitHub Secrets:")
                 print("   - Go to: https://github.com/Mouy-leng/GenX_FX/settings/secrets/actions")
-                print("   - Add DOCKER_USERNAME: your-docker-hub-username")
-                print("   - Add DOCKER_PASSWORD: your-docker-hub-password")
+                print("   - Add DOCKER_USERNAME: lengkundee01@gmail.com")
+                print("   - Add DOCKER_PASSWORD: KML12345@#$01")
                 print("\n2. Push to trigger build:")
                 print("   git push origin cursor/check-docker-and-container-registration-status-5116")
                 print("\n3. Monitor build:")

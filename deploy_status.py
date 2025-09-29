@@ -8,8 +8,13 @@ import time
 import json
 from datetime import datetime
 
-def check_github_actions_status():
-    """Check GitHub Actions build status"""
+def check_github_actions_status() -> str:
+    """
+    Checks and displays the status of the GitHub Actions build.
+
+    Returns:
+        str: The URL to the GitHub Actions page for the repository.
+    """
     print("🚀 Checking GitHub Actions Build Status...")
     print("=" * 50)
     
@@ -31,8 +36,13 @@ def check_github_actions_status():
     
     return actions_url
 
-def check_docker_hub_status():
-    """Check Docker Hub image status"""
+def check_docker_hub_status() -> str:
+    """
+    Checks and displays the status of the Docker Hub image.
+
+    Returns:
+        str: The URL to the Docker Hub repository.
+    """
     print("\n🐳 Docker Hub Status:")
     print("=" * 30)
     
@@ -47,7 +57,9 @@ def check_docker_hub_status():
     return docker_hub_url
 
 def show_deployment_commands():
-    """Show deployment commands"""
+    """
+    Displays the necessary commands for deploying the application using Docker.
+    """
     print("\n🚀 Deployment Commands:")
     print("=" * 30)
     
@@ -67,7 +79,9 @@ def show_deployment_commands():
     print("   docker exec -it amp-trading-system amp status")
 
 def show_next_steps():
-    """Show next steps after build completes"""
+    """
+    Displays the next steps to take after the build and deployment are complete.
+    """
     print("\n📋 Next Steps After Build Completes:")
     print("=" * 40)
     
@@ -91,7 +105,10 @@ def show_next_steps():
     print("   - Logs: docker logs amp-trading-system")
 
 def main():
-    """Main deployment status checker"""
+    """
+    Main function for the deployment status checker.
+    It orchestrates the calls to other functions to display the full status.
+    """
     print("🐳 AMP System Docker Deployment Status")
     print("=" * 50)
     print(f"⏰ Check Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

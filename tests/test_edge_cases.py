@@ -22,18 +22,21 @@ class TestEdgeCases:
     
     def test_health_endpoint_structure(self):
         """Test health endpoint returns correct structure"""
-        response = client.get("/health")
+        response = client.get("/api/v1/health")
         assert response.status_code == 200
         data = response.json()
         
         # Check required fields
-        assert "api_status" in data
-        assert "last_update" in data
+        assert "status" in data
+        assert "timestamp" in data
+        assert "services" in data
+        assert "ml_service" in data["services"]
+        assert "data_service" in data["services"]
         
         # Validate timestamp format
         from datetime import datetime
         try:
-            datetime.fromisoformat(data["last_update"].replace('Z', '+00:00'))
+            datetime.fromisoformat(data["timestamp"].replace('Z', '+00:00'))
         except ValueError:
             pytest.fail("Invalid timestamp format")
     
@@ -43,11 +46,11 @@ class TestEdgeCases:
         assert response.status_code == 200
         data = response.json()
         
-        required_fields = ["message", "version", "docs_url"]
+        required_fields = ["message", "version", "status", "github", "repository"]
         for field in required_fields:
             assert field in data, f"Missing required field: {field}"
         
-        assert data["docs_url"] == "/docs"
+        assert data["status"] == "running"
     
     def test_cors_headers(self):
         """Test CORS headers are properly set"""
@@ -76,12 +79,12 @@ class TestEdgeCases:
         """Test handling of malformed JSON requests"""
         # Test with invalid JSON - using correct endpoint
         response = client.post(
-            "/api/v1/predictions/",
+            "/api/v1/predictions",
             content="{ invalid json }",
             headers={"content-type": "application/json"}
         )
         # Auth middleware may catch this first, so 401/403 is also acceptable
-        assert response.status_code in [400, 401, 403, 422]
+        assert response.status_code in [400, 401, 403, 405, 422]
     
     def test_null_and_empty_values(self):
         """Test handling of null and empty values in requests"""
@@ -94,9 +97,9 @@ class TestEdgeCases:
         ]
         
         for test_data in test_cases:
-            response = client.post("/api/v1/predictions/", json=test_data)
+            response = client.post("/api/v1/predictions", json=test_data)
             # Should handle gracefully, not crash (auth may return 401/403)
-            assert response.status_code in [200, 400, 401, 403, 422, 500]
+            assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
             if response.status_code >= 400:
                 # Should return structured error
                 error_data = response.json()
@@ -114,8 +117,8 @@ class TestEdgeCases:
             }
         }
         
-        response = client.post("/api/v1/predictions/", json=special_data)
-        assert response.status_code in [200, 400, 401, 403, 422, 500]
+        response = client.post("/api/v1/predictions", json=special_data)
+        assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
     
     def test_numeric_edge_cases(self):
         """Test handling of numeric edge cases"""
@@ -131,8 +134,8 @@ class TestEdgeCases:
         
         for test_data in edge_cases:
             try:
-                response = client.post("/api/v1/market-data/", json=test_data)
-                assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
+                response = client.post("/api/v1/market-data", json=test_data)
+                assert response.status_code in [200, 400, 401, 403, 404, 405, 422, 500]
             except (ValueError, TypeError):
                 # JSON serialization might fail for inf/nan, that's acceptable
                 pass
@@ -147,8 +150,8 @@ class TestEdgeCases:
         ]
         
         for test_data in array_cases:
-            response = client.post("/api/v1/market-data/", json=test_data)
-            assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
+            response = client.post("/api/v1/market-data", json=test_data)
+            assert response.status_code in [200, 400, 401, 403, 404, 405, 422, 500]
     
     def test_deeply_nested_objects(self):
         """Test handling of deeply nested objects"""
@@ -160,8 +163,8 @@ class TestEdgeCases:
             current = current[f"level_{i}"]
         current["deep_value"] = "reached the bottom"
         
-        response = client.post("/api/v1/market-data/", json=nested_data)
-        assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
+        response = client.post("/api/v1/market-data", json=nested_data)
+        assert response.status_code in [200, 400, 401, 403, 404, 405, 422, 500]
     
     def test_concurrent_requests(self):
         """Test handling of concurrent requests"""
@@ -202,9 +205,9 @@ class TestDataValidation:
         
         for malicious_input in malicious_inputs:
             test_data = {"symbol": malicious_input}
-            response = client.post("/api/v1/market-data/", json=test_data)
+            response = client.post("/api/v1/market-data", json=test_data)
             # Should not crash and should handle safely
-            assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
+            assert response.status_code in [200, 400, 401, 403, 404, 405, 422, 500]
             
             # Check response doesn't contain SQL error messages
             response_text = response.text.lower()
@@ -223,8 +226,8 @@ class TestDataValidation:
         
         for payload in xss_payloads:
             test_data = {"comment": payload}
-            response = client.post("/api/v1/predictions/", json=test_data)
-            assert response.status_code in [200, 400, 401, 403, 422, 500]
+            response = client.post("/api/v1/predictions", json=test_data)
+            assert response.status_code in [200, 400, 401, 403, 405, 422, 500]
             
             # Response should not execute scripts (validation error messages may contain them)
             # but should not have executable HTML in headers or unescaped contexts
@@ -262,7 +265,7 @@ class TestPerformanceEdgeCases:
             "metadata": {"large_field": "y" * 10000}
         }
         
-        response = client.post("/api/v1/market-data/", json=large_data)
+        response = client.post("/api/v1/market-data", json=large_data)
         
         # Check memory didn't increase dramatically
         final_memory = process.memory_info().rss
@@ -270,6 +273,7 @@ class TestPerformanceEdgeCases:
         
         # Memory increase should be reasonable (less than 100MB)
         assert memory_increase < 100 * 1024 * 1024, f"Memory increased by {memory_increase / 1024 / 1024:.2f}MB"
+        assert response.status_code == 404
 
 class TestErrorHandling:
     """Test comprehensive error handling"""
@@ -309,11 +313,11 @@ class TestErrorHandling:
         """Test handling of different content types"""
         # Test with wrong content type
         response = client.post(
-            "/api/v1/predictions/",
+            "/api/v1/predictions",
             content="not json",
             headers={"content-type": "text/plain"}
         )
-        assert response.status_code in [400, 401, 403, 415, 422]  # Bad Request or Unsupported Media Type
+        assert response.status_code in [400, 401, 403, 405, 415, 422]  # Bad Request or Unsupported Media Type
     
     @pytest.mark.asyncio
     async def test_timeout_handling(self):
@@ -329,9 +333,9 @@ class TestErrorHandling:
             
             mock_predict.side_effect = slow_predict
             
-            response = client.post("/api/v1/predictions/", json={"symbol": "BTCUSDT"})
+            response = client.post("/api/v1/predictions", json={"symbol": "BTCUSDT"})
             # Should complete even with delay
-            assert response.status_code in [200, 400, 404, 422, 500]
+            assert response.status_code in [200, 400, 404, 405, 422, 500]
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

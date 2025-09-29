@@ -22,40 +22,56 @@ data_service = DataService()
 async def create_prediction(
     request: PredictionRequest,
     background_tasks: BackgroundTasks,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """
-    Generate AI-powered market prediction for a given symbol
+    Generates an AI-powered market prediction for a given symbol.
+
+    This endpoint retrieves real-time market data, uses the machine learning
+    service to generate a prediction, and logs the prediction in a background task.
+
+    Args:
+        request (PredictionRequest): The request body containing the symbol and other
+                                     prediction parameters.
+        background_tasks (BackgroundTasks): FastAPI's background task runner.
+        current_user (dict): The authenticated user.
+
+    Returns:
+        PredictionResponse: An object containing the prediction details.
+
+    Raises:
+        HTTPException: If data for the symbol cannot be found or if the
+                       prediction process fails.
     """
     try:
         # Get real-time market data
         market_data = await data_service.get_realtime_data(request.symbol)
-        if not market_data:
-            raise HTTPException(status_code=404, detail=f"No data found for symbol {request.symbol}")
-        
+        if market_data is None or market_data.empty:
+            raise HTTPException(
+                status_code=404, detail=f"No data found for symbol {request.symbol}"
+            )
+
         # Generate prediction
         prediction_result = await ml_service.predict(
             symbol=request.symbol,
             market_data=market_data,
-            use_ensemble=request.use_ensemble
+            use_ensemble=request.use_ensemble,
         )
-        
+
         # Log prediction for future model training
         background_tasks.add_task(
-            ml_service.log_prediction,
-            request.symbol,
-            prediction_result
+            ml_service.log_prediction, request.symbol, prediction_result
         )
-        
+
         return PredictionResponse(
             symbol=request.symbol,
-            prediction=SignalType(prediction_result['signal']),
-            confidence=prediction_result['confidence'],
+            prediction=SignalType(prediction_result["signal"]),
+            confidence=prediction_result["confidence"],
             timestamp=datetime.now(),
-            features_used=prediction_result['features'],
-            model_version=prediction_result['model_version']
+            features_used=prediction_result["features"],
+            model_version=prediction_result["model_version"],
         )
-        
+
     except Exception as e:
         logger.error(f"Prediction error for {request.symbol}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
@@ -65,47 +81,68 @@ async def batch_predictions(
     symbols: str,
     timeframe: str = "1h",
     use_ensemble: bool = True,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """
-    Generate predictions for multiple symbols
+    Generates predictions for a batch of symbols concurrently.
+
+    Args:
+        symbols (str): A comma-separated string of symbols (e.g., "BTCUSDT,ETHUSDT").
+        timeframe (str): The timeframe for the predictions.
+        use_ensemble (bool): Whether to use the ensemble model.
+        current_user (dict): The authenticated user.
+
+    Returns:
+        dict: A dictionary containing lists of successful predictions and errors.
     """
     symbol_list = [s.strip().upper() for s in symbols.split(",")]
-    
-    tasks = []
-    for symbol in symbol_list:
-        task = create_prediction(
+
+    # This is a simplified approach. In a real app, you might want to manage
+    # background tasks more carefully when calling an endpoint from another.
+    # For this implementation, we create a new BackgroundTasks object for each.
+    tasks = [
+        create_prediction(
             PredictionRequest(
-                symbol=symbol,
-                timeframe=timeframe,
-                use_ensemble=use_ensemble
+                symbol=symbol, timeframe=timeframe, use_ensemble=use_ensemble
             ),
             BackgroundTasks(),
-            current_user
+            current_user,
         )
-        tasks.append(task)
-    
+        for symbol in symbol_list
+    ]
+
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     predictions = []
     errors = []
-    
+
     for i, result in enumerate(results):
         if isinstance(result, Exception):
-            errors.append({"symbol": symbol_list[i], "error": str(result)})
+            # Extract detail from HTTPException if possible
+            error_detail = getattr(result, "detail", str(result))
+            errors.append({"symbol": symbol_list[i], "error": error_detail})
         else:
             predictions.append(result)
-    
+
     return {
         "predictions": predictions,
         "errors": errors,
-        "total_processed": len(symbol_list)
+        "total_processed": len(symbol_list),
     }
 
 @router.get("/model/metrics", response_model=ModelMetrics)
 async def get_model_metrics(current_user: dict = Depends(get_current_user)):
     """
-    Get current model performance metrics
+    Retrieves the performance metrics of the current prediction model.
+
+    Args:
+        current_user (dict): The authenticated user.
+
+    Returns:
+        ModelMetrics: An object containing model performance metrics.
+
+    Raises:
+        HTTPException: If the metrics cannot be retrieved.
     """
     try:
         metrics = await ml_service.get_model_metrics()
@@ -118,10 +155,21 @@ async def get_model_metrics(current_user: dict = Depends(get_current_user)):
 async def retrain_model(
     background_tasks: BackgroundTasks,
     symbols: List[str] = ["BTCUSDT", "ETHUSDT"],
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """
-    Trigger model retraining with latest data
+    Triggers a background task to retrain the prediction model.
+
+    Args:
+        background_tasks (BackgroundTasks): FastAPI's background task runner.
+        symbols (List[str]): A list of symbols to use for retraining the model.
+        current_user (dict): The authenticated user.
+
+    Returns:
+        dict: A confirmation message that the retraining has started.
+
+    Raises:
+        HTTPException: If the retraining task fails to start.
     """
     try:
         background_tasks.add_task(ml_service.retrain_model, symbols)

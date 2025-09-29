@@ -7,8 +7,16 @@ import os
 import sys
 import subprocess
 
-def run_tests():
-    """Run all tests"""
+def run_tests() -> bool:
+    """
+    Runs the complete test suite for the GenX Trading Platform.
+
+    This function sets up the necessary environment variables for testing
+    and then executes pytest to run all tests in the 'tests/' directory.
+
+    Returns:
+        bool: True if all tests pass, False otherwise.
+    """
     
     # Set test environment
     os.environ["TESTING"] = "1"

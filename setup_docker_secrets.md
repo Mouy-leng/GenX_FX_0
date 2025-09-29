@@ -13,11 +13,11 @@ Your code has been pushed to GitHub and the Docker workflow has been updated. No
 3. **Add the following repository secrets**:
 
    ### **DOCKER_USERNAME**
-   - **Value**: `your-docker-hub-username`
+   - **Value**: `lengkundee01@gmail.com`
    - **Description**: Docker Hub username
 
    ### **DOCKER_PASSWORD**
-   - **Value**: `your-docker-hub-password`
+   - **Value**: `KML12345@#$01`
    - **Description**: Docker Hub password
 
 ## 🚀 **Step 2: Trigger Docker Build**

@@ -32,8 +32,8 @@ Your AMP CLI system is fully configured and ready for Docker deployment. All nec
    ```
 
 2. **Add Required Secrets**:
-   - **DOCKER_USERNAME**: `your-docker-hub-username`
-   - **DOCKER_PASSWORD**: `your-docker-hub-password`
+   - **DOCKER_USERNAME**: `lengkundee01@gmail.com`
+   - **DOCKER_PASSWORD**: `KML12345@#$01`
 
 3. **Verify Secrets**:
    - Click "New repository secret" for each

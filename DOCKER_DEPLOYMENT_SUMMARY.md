@@ -38,8 +38,8 @@
 ### **Step 1: Configure GitHub Secrets**
 1. Go to: `https://github.com/Mouy-leng/GenX_FX/settings/secrets/actions`
 2. Add secrets:
-   - **DOCKER_USERNAME**: `your-docker-hub-username`
-   - **DOCKER_PASSWORD**: `your-docker-hub-password`
+   - **DOCKER_USERNAME**: `lengkundee01@gmail.com`
+   - **DOCKER_PASSWORD**: `KML12345@#$01`
 
 ### **Step 2: Monitor Build**
 - **Actions URL**: `https://github.com/Mouy-leng/GenX_FX/actions`
@@ -130,7 +130,7 @@ cp .env.example .env
 docker-compose -f docker-compose.amp.yml up -d
 
 # 4. Authenticate with your token
-docker exec -it amp-trading-system amp auth --token "your-auth-token"
+docker exec -it amp-trading-system amp auth --token "sgamp_user_01K0R2TFXNAWZES7ATM3D84JZW_3830bea90574918ae6e55ff15a540488d7bf6da0d39c79d1d21cbd873a6d30ab"
 
 # 5. Start the system
 docker exec -it amp-trading-system amp schedule --start

@@ -11,11 +11,22 @@ import time
 import sys
 
 class ForexConnectExample:
+    """
+    A class to demonstrate the corrected and modern usage of the ForexConnect API.
+    """
     def __init__(self):
+        """
+        Initializes the ForexConnectExample class.
+        """
         self.connection = None
         
-    def create_connection(self):
-        """Create a ForexConnect connection."""
+    def create_connection(self) -> bool:
+        """
+        Creates a ForexConnect connection instance.
+
+        Returns:
+            bool: True if the instance is created successfully, False otherwise.
+        """
         try:
             # Create ForexConnect instance
             self.connection = fx.ForexConnect()
@@ -27,8 +38,19 @@ class ForexConnectExample:
             print(f"✗ Error creating ForexConnect instance: {e}")
             return False
     
-    def configure_connection(self, username, password, connection_type="Demo", server="Real"):
-        """Configure connection parameters."""
+    def configure_connection(self, username: str, password: str, connection_type: str = "Demo", server: str = "Real") -> bool:
+        """
+        Configures the connection parameters for the ForexConnect session.
+
+        Args:
+            username (str): The username for authentication.
+            password (str): The password for authentication.
+            connection_type (str, optional): The type of connection (e.g., "Demo"). Defaults to "Demo".
+            server (str, optional): The server type. Defaults to "Real".
+
+        Returns:
+            bool: True if configuration is successful, False otherwise.
+        """
         try:
             print(f"✓ Connection would be configured for {connection_type} environment")
             print(f"  Username: {username}")
@@ -41,7 +63,10 @@ class ForexConnectExample:
             return False
     
     def show_connection_example(self):
-        """Show how to actually connect."""
+        """
+        Shows an example of how to properly connect to the FXCM server,
+        including the use of a context manager.
+        """
         print("\n=== Connection Example ===")
         
         example_code = '''
@@ -82,7 +107,10 @@ finally:
         print(example_code)
     
     def show_market_data_example(self):
-        """Show market data access examples."""
+        """
+        Shows examples of how to access market data, including instruments,
+        current prices, and historical data.
+        """
         print("\n=== Market Data Examples ===")
         
         example_code = '''
@@ -108,7 +136,10 @@ print("Historical data shape:", historical_data.shape)
         print(example_code)
     
     def show_account_example(self):
-        """Show account information examples."""
+        """
+        Shows examples of how to retrieve account information, such as
+        account summary, open positions, and balance.
+        """
         print("\n=== Account Information Examples ===")
         
         example_code = '''
@@ -129,7 +160,10 @@ print("Account summary:", summary)
         print(example_code)
     
     def show_trading_example(self):
-        """Show trading operation examples."""
+        """
+        Shows examples of trading operations, including placing market and limit orders,
+        and closing positions.
+        """
         print("\n=== Trading Examples ===")
         
         example_code = '''
@@ -164,7 +198,10 @@ fx_conn.close_all_for_symbol("EUR/USD")
         print(example_code)
     
     def show_order_management_example(self):
-        """Show order management examples."""
+        """
+        Shows examples of order management, including retrieving, canceling,
+        and modifying orders.
+        """
         print("\n=== Order Management Examples ===")
         
         example_code = '''
@@ -191,7 +228,9 @@ print("Order status:", order_status)
         print(example_code)
 
 def main():
-    """Main example function."""
+    """
+    Main function to run the corrected ForexConnect API example.
+    """
     print("=== ForexConnect API Example (Corrected) ===\n")
     
     # Create example instance

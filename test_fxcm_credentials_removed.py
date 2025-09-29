@@ -16,12 +16,24 @@ FXCM_CONNECTION_TYPE = os.getenv('FXCM_CONNECTION_TYPE', 'Demo')
 FXCM_URL = os.getenv('FXCM_URL', 'http://fxcorporate.com/Hosts.jsp')
 
 class FXCMConnectionTest:
+    """
+    A class to test the connection to the FXCM ForexConnect API.
+    """
     def __init__(self):
+        """
+        Initializes the FXCMConnectionTest class.
+        """
         self.forex_connect = None
         self.session = None
         
-    def test_connection(self):
-        """Test connection to FXCM using ForexConnect API."""
+    def test_connection(self) -> bool:
+        """
+        Tests the connection to FXCM using the ForexConnect API and credentials
+        from environment variables.
+
+        Returns:
+            bool: True if the connection and basic operations are successful, False otherwise.
+        """
         try:
             print("=== FXCM Connection Test ===")
             print(f"Username: {FXCM_USERNAME}")
@@ -78,7 +90,10 @@ class FXCMConnectionTest:
         return True
     
     def test_basic_operations(self):
-        """Test basic API operations."""
+        """
+        Tests basic API operations, such as retrieving tables for offers,
+        accounts, trades, orders, and summary.
+        """
         try:
             print("\n--- Testing Basic Operations ---")
             
@@ -121,8 +136,13 @@ class FXCMConnectionTest:
         except Exception as e:
             print(f"✗ Basic operations test failed: {e}")
 
-def main():
-    """Main test function."""
+def main() -> bool:
+    """
+    The main function to run the FXCM connection test.
+
+    Returns:
+        bool: True if the test is successful, False otherwise.
+    """
     print("Starting FXCM ForexConnect API test...")
     print("This will test connection and basic data retrieval.")
     print()

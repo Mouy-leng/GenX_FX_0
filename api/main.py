@@ -1,33 +1,12 @@
-"""
-FastAPI application for the GenX Trading Platform
-"""
-
-import logging
-from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
-
-# Import schemas and services
-from .models.schemas import (
-    SystemStatus, TradeSignal, OrderRequest, OrderResponse, PortfolioStatus,
-    PredictionResponse, MarketData
-)
-from .services.trading_service import TradingService
-from .services.ml_service import MLService
-from .services.data_service import DataService
-from .utils.auth import get_current_user
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# --- FastAPI App Initialization ---
-
+import sqlite3
+import os
+from datetime import datetime
 app = FastAPI(
-    title="GenX Trading Platform API",
-    description="A modern, high-performance API for AI-powered trading.",
-    version="2.0.0"
+    title="GenX-FX Trading Platform API",
+    description="Trading platform with ML-powered predictions",
+    version="1.0.0"
 )
 
 # Add CORS middleware
@@ -39,119 +18,155 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Service Instantiation ---
-
-trading_service = TradingService()
-ml_service = MLService()
-data_service = DataService()
-
-# --- API Endpoints ---
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup"""
-    logger.info("Initializing API services...")
-    await trading_service.initialize()
-    await ml_service.initialize()
-    await data_service.initialize()
-    logger.info("API services initialized.")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Shutdown services gracefully"""
-    logger.info("Shutting down API services...")
-    await ml_service.shutdown()
-    logger.info("API services shut down.")
-
-
-# --- System Endpoints ---
-
-@app.get("/", tags=["System"])
+@app.get("/")
 async def root():
-    """Root endpoint with basic API information."""
+    """
+    Root endpoint for the API.
+
+    Provides basic information about the API, including its name, version,
+    status, and repository URL.
+
+    Returns:
+        dict: A dictionary containing API information.
+    """
     return {
-        "message": "Welcome to the GenX Trading Platform API",
-        "version": app.version,
-        "docs_url": "/docs"
+        "message": "GenX-FX Trading Platform API",
+        "version": "1.0.0",
+        "status": "running",
+        "github": "Mouy-leng",
+        "repository": "https://github.com/Mouy-leng/GenX_FX.git",
     }
 
-@app.get("/health", response_model=SystemStatus, tags=["System"])
+@app.get("/health")
 async def health_check():
-    """Provides a detailed health check of the API and its services."""
-    return SystemStatus(
-        api_status="healthy",
-        database_status="connected",  # This would be checked by a data service
-        model_status=await ml_service.health_check(),
-        trading_enabled=True, # This would come from config
-        last_update=datetime.now(),
-        active_strategies=["strategy1", "strategy2"],
-    )
+    """
+    Performs a health check on the API and its database connection.
 
+    Attempts to connect to the SQLite database and execute a simple query.
 
-# --- Trading Endpoints ---
+    Returns:
+        dict: A dictionary indicating the health status. 'healthy' if the
+              database connection is successful, 'unhealthy' otherwise.
+    """
+    try:
+        # Test database connection
+        conn = sqlite3.connect("genxdb_fx.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        conn.close()
 
-@app.get("/trading/signals", response_model=List[TradeSignal], tags=["Trading"])
-async def get_trading_signals(symbol: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """Get active trading signals."""
-    return await trading_service.get_active_signals(symbol)
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat(),
+        }
 
-@app.post("/trading/orders", response_model=OrderResponse, tags=["Trading"])
-async def place_order(order_request: OrderRequest, current_user: dict = Depends(get_current_user)):
-    """Place a new trading order."""
-    return await trading_service.place_order(order_request)
+@app.get("/api/v1/health")
+async def api_health_check():
+    """
+    Provides a health check for the v1 API services.
 
-@app.get("/trading/orders/{order_id}", response_model=OrderResponse, tags=["Trading"])
-async def get_order(order_id: str, current_user: dict = Depends(get_current_user)):
-    """Get details of a specific order."""
-    order = await trading_service.get_order(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    return order
+    Returns a hardcoded status indicating that the main services are active.
 
-@app.delete("/trading/orders/{order_id}", tags=["Trading"])
-async def cancel_order(order_id: str, current_user: dict = Depends(get_current_user)):
-    """Cancel an existing order."""
-    success = await trading_service.cancel_order(order_id)
-    if not success:
-        raise HTTPException(status_code=400, detail="Failed to cancel order")
-    return {"message": "Order cancelled successfully"}
+    Returns:
+        dict: A dictionary with the health status of internal services.
+    """
+    return {
+        "status": "healthy",
+        "services": {"ml_service": "active", "data_service": "active"},
+        "timestamp": datetime.now().isoformat(),
+    }
 
-@app.get("/trading/portfolio", response_model=PortfolioStatus, tags=["Trading"])
-async def get_portfolio(current_user: dict = Depends(get_current_user)):
-    """Get the current portfolio status."""
-    return await trading_service.get_portfolio_status()
+@app.get("/api/v1/predictions")
+async def get_predictions():
+    """
+    Endpoint to get trading predictions.
 
+    Currently returns a placeholder response.
 
-# --- Machine Learning Endpoints ---
+    Returns:
+        dict: A dictionary containing an empty list of predictions.
+    """
+    return {
+        "predictions": [],
+        "status": "ready",
+        "timestamp": datetime.now().isoformat(),
+    }
 
-@app.post("/ml/predict/{symbol}", response_model=PredictionResponse, tags=["Machine Learning"])
-async def get_prediction(symbol: str, current_user: dict = Depends(get_current_user)):
-    """Get a prediction for a given symbol."""
-    # In a real app, you'd pass real market data
-    market_data = await data_service.get_realtime_data(symbol)
-    if market_data is None:
-        raise HTTPException(status_code=404, detail="Market data not found for symbol")
-        
-    prediction = await ml_service.predict(symbol, market_data)
-    return PredictionResponse(**prediction)
+@app.get("/trading-pairs")
+async def get_trading_pairs():
+    """
+    Retrieves a list of active trading pairs from the database.
 
-@app.get("/ml/metrics", tags=["Machine Learning"])
-async def get_ml_metrics(current_user: dict = Depends(get_current_user)):
-    """Get performance metrics for the ML models."""
-    return await ml_service.get_model_metrics()
+    Connects to the SQLite database and fetches all pairs marked as active.
 
+    Returns:
+        dict: A dictionary containing a list of trading pairs or an error message.
+    """
+    try:
+        conn = sqlite3.connect("genxdb_fx.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT symbol, base_currency, quote_currency FROM trading_pairs WHERE is_active = 1"
+        )
+        pairs = cursor.fetchall()
+        conn.close()
 
-# --- Data Endpoints ---
+        return {
+            "trading_pairs": [
+                {
+                    "symbol": pair[0],
+                    "base_currency": pair[1],
+                    "quote_currency": pair[2],
+                }
+                for pair in pairs
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
-@app.get("/data/market/{symbol}", response_model=MarketData, tags=["Data"])
-async def get_market_data(symbol: str, current_user: dict = Depends(get_current_user)):
-    """Get market data for a given symbol."""
-    data = await data_service.get_market_data(symbol)
-    if not data:
-        raise HTTPException(status_code=404, detail="Market data not found")
-    return data
+@app.get("/users")
+async def get_users():
+    """
+    Retrieves a list of users from the database.
 
-# --- Main execution ---
+    Connects to the SQLite database and fetches user information.
+
+    Returns:
+        dict: A dictionary containing a list of users or an error message.
+    """
+    try:
+        conn = sqlite3.connect("genxdb_fx.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT username, email, is_active FROM users")
+        users = cursor.fetchall()
+        conn.close()
+
+        return {
+            "users": [
+                {"username": user[0], "email": user[1], "is_active": bool(user[2])}
+                for user in users
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/mt5-info")
+async def get_mt5_info():
+    """
+    Provides hardcoded information about the MT5 connection.
+
+    Returns:
+        dict: A dictionary with static MT5 login and server details.
+    """
+    return {"login": "279023502", "server": "Exness-MT5Trial8", "status": "configured"}
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)

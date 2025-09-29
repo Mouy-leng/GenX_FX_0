@@ -15,7 +15,6 @@ import json
 import os
 from pathlib import Path
 
-from core.config import config
 from core.ai_models.ensemble_predictor import EnsemblePredictor
 from core.data_sources.fxcm_provider import FXCMDataProvider
 from core.risk_management.position_sizer import PositionSizer
@@ -40,7 +39,29 @@ class SignalStrength(Enum):
 
 @dataclass
 class TradingSignal:
-    """Trading signal structure optimized for MT4/5 EA consumption"""
+    """
+    Represents a fully formed trading signal, optimized for MT4/5 EA consumption.
+
+    Attributes:
+        timestamp (datetime): The time the signal was generated.
+        symbol (str): The trading symbol.
+        signal_type (SignalType): The type of signal (e.g., BUY, SELL).
+        strength (SignalStrength): The calculated strength of the signal.
+        entry_price (float): The recommended entry price.
+        stop_loss (float): The recommended stop-loss price.
+        take_profit (float): The recommended take-profit price.
+        confidence (float): The confidence score from the AI model.
+        risk_reward_ratio (float): The calculated risk/reward ratio.
+        timeframe (str): The primary timeframe the signal was based on.
+        model_predictions (Dict[str, float]): Scores from individual models.
+        technical_confluence (int): A score for technical indicator agreement.
+        fundamental_score (float): A score representing fundamental analysis.
+        market_condition (str): The perceived market condition (e.g., "UPTREND").
+        position_size_pct (float): The recommended position size as a percentage.
+        max_risk_pct (float): The maximum risk for this trade as a percentage.
+        expiry_time (datetime): The time at which the signal should be considered expired.
+    """
+
     timestamp: datetime
     symbol: str
     signal_type: SignalType
@@ -58,45 +79,70 @@ class TradingSignal:
     position_size_pct: float
     max_risk_pct: float
     expiry_time: datetime
-    
+
     def to_mt4_format(self) -> Dict[str, Any]:
-        """Convert signal to MT4/5 EA readable format"""
+        """
+        Converts the signal to a dictionary format suitable for an MT4/5 EA.
+
+        Returns:
+            Dict[str, Any]: A dictionary with formatted signal data.
+        """
         return {
-            'Magic': hash(f"{self.symbol}_{self.timestamp.isoformat()}") % 2147483647,
-            'Symbol': self.symbol,
-            'Signal': self.signal_type.value,
-            'Strength': self.strength.value,
-            'EntryPrice': round(self.entry_price, 5),
-            'StopLoss': round(self.stop_loss, 5),
-            'TakeProfit': round(self.take_profit, 5),
-            'Confidence': round(self.confidence, 4),
-            'RiskReward': round(self.risk_reward_ratio, 2),
-            'PositionSize': round(self.position_size_pct, 4),
-            'MaxRisk': round(self.max_risk_pct, 4),
-            'Timeframe': self.timeframe,
-            'Timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'ExpiryTime': self.expiry_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'MarketCondition': self.market_condition,
-            'TechnicalConfluence': self.technical_confluence,
-            'FundamentalScore': round(self.fundamental_score, 4)
+            "Magic": hash(f"{self.symbol}_{self.timestamp.isoformat()}")
+            % 2147483647,
+            "Symbol": self.symbol,
+            "Signal": self.signal_type.value,
+            "Strength": self.strength.value,
+            "EntryPrice": round(self.entry_price, 5),
+            "StopLoss": round(self.stop_loss, 5),
+            "TakeProfit": round(self.take_profit, 5),
+            "Confidence": round(self.confidence, 4),
+            "RiskReward": round(self.risk_reward_ratio, 2),
+            "PositionSize": round(self.position_size_pct, 4),
+            "MaxRisk": round(self.max_risk_pct, 4),
+            "Timeframe": self.timeframe,
+            "Timestamp": self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            "ExpiryTime": self.expiry_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "MarketCondition": self.market_condition,
+            "TechnicalConfluence": self.technical_confluence,
+            "FundamentalScore": round(self.fundamental_score, 4),
         }
 
 class TradingEngine:
     """
-    Advanced Trading Engine for generating signals to MT4/5 EAs
-    Focuses on reliability, flexibility, and performance
+    The core trading engine responsible for orchestrating the signal generation process.
+
+    This engine integrates data providers, AI predictors, risk management, and
+    signal validation to produce high-quality trading signals for consumption
+    by EAs.
+
+    Attributes:
+        config (Dict): The configuration for the engine and its components.
+        is_running (bool): A flag indicating if the engine's main loop is active.
+        data_provider (FXCMDataProvider): The data source provider.
+        ensemble_predictor (EnsemblePredictor): The AI prediction model.
+        position_sizer (PositionSizer): The risk and position sizing manager.
+        signal_validator (MultiTimeframeValidator): The signal validation utility.
+        spreadsheet_manager (SpreadsheetManager): The manager for signal output.
     """
-    
-    def __init__(self):
+
+    def __init__(self, config_path: str = "config/trading_config.json"):
+        """
+        Initializes the TradingEngine.
+
+        Args:
+            config_path (str): The path to the main trading configuration file.
+        """
+        self.config = self._load_config(config_path)
         self.is_running = False
-        self.last_signals = {}
+        self.last_signals: Dict[str, datetime] = {}
         
         # Initialize core components
-        self.data_provider = FXCMDataProvider(config.get('fxcm'))
-        self.ensemble_predictor = EnsemblePredictor(config.get('ai_models'))
-        self.position_sizer = PositionSizer(config.get('risk_management'))
-        self.signal_validator = MultiTimeframeValidator(config.get('validation'))
-        self.spreadsheet_manager = SpreadsheetManager(config.get('spreadsheet'))
+        self.data_provider = FXCMDataProvider(self.config['fxcm'])
+        self.ensemble_predictor = EnsemblePredictor(self.config['ai_models'])
+        self.position_sizer = PositionSizer(self.config['risk_management'])
+        self.signal_validator = MultiTimeframeValidator(self.config['validation'])
+        self.spreadsheet_manager = SpreadsheetManager(self.config['spreadsheet'])
         self.technical_indicators = TechnicalIndicators()
         
         # Performance tracking
@@ -105,125 +151,186 @@ class TradingEngine:
         
         logger.info("Trading Engine initialized successfully")
     
+    def _load_config(self, config_path: str) -> Dict:
+        """
+        Loads the trading configuration from a JSON file.
+
+        Args:
+            config_path (str): The path to the configuration file.
+
+        Returns:
+            Dict: The loaded configuration dictionary.
+        """
+        try:
+            with open(config_path, "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            logger.warning(f"Config file {config_path} not found, using defaults.")
+            return self._get_default_config()
+
+    def _get_default_config(self) -> Dict:
+        """Provides a default configuration if the config file is not found."""
+        return {
+            "symbols": [
+                "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD",
+            ],
+            "timeframes": ["M15", "H1", "H4", "D1"],
+            "primary_timeframe": "H1",
+            "signal_generation_interval": 300,  # 5 minutes
+            "max_concurrent_signals": 3,
+            "min_confidence_threshold": 0.65,
+            "risk_management": {
+                "max_risk_per_trade": 0.02,
+                "max_total_risk": 0.06,
+                "position_sizing_method": "fixed_fractional",
+                "stop_loss_method": "atr_based",
+                "take_profit_ratio": 2.0,
+            },
+            "ai_models": {
+                "ensemble_size": 5,
+                "retrain_interval_hours": 24,
+                "lookback_periods": 100,
+                "feature_engineering": True,
+                "cross_validation_folds": 5,
+            },
+            "validation": {
+                "timeframe_confluence_required": 2,
+                "technical_confluence_threshold": 3,
+                "fundamental_weight": 0.3,
+                "sentiment_weight": 0.2,
+            },
+            "fxcm": {"environment": "demo", "refresh_interval": 60},
+            "spreadsheet": {
+                "update_interval": 30,
+                "max_signals": 50,
+                "backup_enabled": True,
+            },
+        }
+
     async def start(self):
-        """Start the trading engine"""
+        """
+        Starts the trading engine and its components.
+
+        This method initializes all services and begins the main trading loop.
+        """
         if self.is_running:
-            logger.warning("Trading engine is already running")
+            logger.warning("Trading engine is already running.")
             return
-        
+
         self.is_running = True
         logger.info("Starting Trading Engine...")
-        
+
         try:
-            # Initialize connections
+            # Initialize connections and services
             await self.data_provider.connect()
             await self.ensemble_predictor.initialize()
             await self.spreadsheet_manager.initialize()
-            
+
             # Start main trading loop
             await self._run_trading_loop()
-            
+
         except Exception as e:
-            logger.error(f"Error starting trading engine: {e}")
+            logger.error(f"Fatal error during engine startup: {e}")
             await self.stop()
     
     async def stop(self):
-        """Stop the trading engine gracefully"""
+        """Stops the trading engine gracefully."""
+        if not self.is_running:
+            return
         logger.info("Stopping Trading Engine...")
         self.is_running = False
-        
+
         try:
             await self.data_provider.disconnect()
             await self.spreadsheet_manager.save_final_state()
-            logger.info("Trading Engine stopped successfully")
+            logger.info("Trading Engine stopped successfully.")
         except Exception as e:
-            logger.error(f"Error stopping trading engine: {e}")
+            logger.error(f"Error during trading engine shutdown: {e}")
     
     async def _run_trading_loop(self):
-        """Main trading loop"""
-        logger.info("Trading loop started")
-        
+        """The main trading loop that periodically generates and processes signals."""
+        logger.info("Trading loop started.")
         while self.is_running:
             try:
                 start_time = datetime.now()
-                
-                # Generate signals for all symbols
+
                 signals = await self._generate_signals()
-                
-                # Process and validate signals
                 validated_signals = await self._validate_signals(signals)
-                
-                # Update spreadsheet with new signals
+
                 if validated_signals:
                     await self.spreadsheet_manager.update_signals(validated_signals)
-                    logger.info(f"Generated {len(validated_signals)} validated signals")
-                
-                # Update performance metrics
+                    logger.info(
+                        f"Generated and exported {len(validated_signals)} validated signals."
+                    )
+
                 await self._update_performance_metrics()
-                
-                # Calculate next execution time
+
+                # Wait for the next cycle
                 execution_time = (datetime.now() - start_time).total_seconds()
-                sleep_time = max(0, config.get('trading.signal_generation_interval') - execution_time)
-                
+                sleep_time = max(
+                    0, self.config["signal_generation_interval"] - execution_time
+                )
                 if sleep_time > 0:
                     await asyncio.sleep(sleep_time)
-                
+
             except Exception as e:
-                logger.error(f"Error in trading loop: {e}")
-                await asyncio.sleep(60)  # Wait 1 minute before retry
+                logger.error(f"Error in trading loop: {e}", exc_info=True)
+                await asyncio.sleep(60)  # Wait before retrying on error
     
     async def _generate_signals(self) -> List[TradingSignal]:
-        """Generate trading signals for all symbols"""
-        signals = []
-        
-        for symbol in config.get('trading.symbols'):
-            try:
-                # Get market data for all required timeframes
-                market_data = await self._get_multi_timeframe_data(symbol)
-                
-                if not self._is_data_valid(market_data):
-                    continue
-                
-                # Generate AI prediction
-                prediction = await self.ensemble_predictor.predict(
-                    symbol=symbol,
-                    data=market_data[config.get('trading.primary_timeframe')],
-                    multi_timeframe_data=market_data
-                )
-                
-                # Check if prediction meets confidence threshold
-                if prediction['confidence'] < config.get('trading.min_confidence_threshold'):
-                    continue
-                
-                # Determine market condition
-                market_condition = self._analyze_market_condition(market_data)
-                
-                # Generate signal if conditions are favorable
-                signal = await self._create_trading_signal(
-                    symbol=symbol,
-                    prediction=prediction,
-                    market_data=market_data,
-                    market_condition=market_condition
-                )
-                
-                if signal:
-                    signals.append(signal)
-                    
-            except Exception as e:
-                logger.error(f"Error generating signal for {symbol}: {e}")
-        
-        return signals
+        """
+        Generates trading signals for all configured symbols.
+
+        Returns:
+            List[TradingSignal]: A list of generated TradingSignal objects.
+        """
+        tasks = [
+            self._process_symbol_for_signal(symbol)
+            for symbol in self.config["symbols"]
+        ]
+        results = await asyncio.gather(*tasks)
+        return [signal for signal in results if signal is not None]
+
+    async def _process_symbol_for_signal(
+        self, symbol: str
+    ) -> Optional[TradingSignal]:
+        """Processes a single symbol to generate a trading signal."""
+        try:
+            market_data = await self._get_multi_timeframe_data(symbol)
+            if not self._is_data_valid(market_data):
+                return None
+
+            prediction = await self.ensemble_predictor.predict(
+                symbol=symbol,
+                data=market_data[self.config["primary_timeframe"]],
+                multi_timeframe_data=market_data,
+            )
+
+            if prediction["confidence"] < self.config["min_confidence_threshold"]:
+                return None
+
+            market_condition = self._analyze_market_condition(market_data)
+
+            return await self._create_trading_signal(
+                symbol=symbol,
+                prediction=prediction,
+                market_data=market_data,
+                market_condition=market_condition,
+            )
+        except Exception as e:
+            logger.error(f"Error generating signal for {symbol}: {e}")
+            return None
     
     async def _get_multi_timeframe_data(self, symbol: str) -> Dict[str, pd.DataFrame]:
         """Get market data for multiple timeframes"""
         data = {}
         
-        for timeframe in config.get('trading.timeframes'):
+        for timeframe in self.config['timeframes']:
             try:
                 df = await self.data_provider.get_historical_data(
                     symbol=symbol,
                     timeframe=timeframe,
-                    periods=config.get('ai_models.lookback_periods')
+                    periods=self.config['ai_models']['lookback_periods']
                 )
                 
                 # Add technical indicators
@@ -240,7 +347,7 @@ class TradingEngine:
         if not market_data:
             return False
         
-        primary_data = market_data.get(config.get('trading.primary_timeframe'))
+        primary_data = market_data.get(self.config['primary_timeframe'])
         if primary_data is None or len(primary_data) < 50:
             return False
         
@@ -253,7 +360,7 @@ class TradingEngine:
     
     def _analyze_market_condition(self, market_data: Dict[str, pd.DataFrame]) -> str:
         """Analyze overall market condition"""
-        primary_data = market_data[config.get('trading.primary_timeframe')]
+        primary_data = market_data[self.config['primary_timeframe']]
         
         # Calculate volatility
         volatility = primary_data['close'].rolling(20).std().iloc[-1]
@@ -284,7 +391,7 @@ class TradingEngine:
     ) -> Optional[TradingSignal]:
         """Create a validated trading signal"""
         
-        primary_data = market_data[config.get('trading.primary_timeframe')]
+        primary_data = market_data[self.config['primary_timeframe']]
         current_price = primary_data['close'].iloc[-1]
         
         # Determine signal type based on prediction
@@ -322,7 +429,7 @@ class TradingEngine:
             account_balance=100000,  # This should come from broker
             risk_amount=entry_price - stop_loss if signal_type == SignalType.BUY else stop_loss - entry_price,
             entry_price=entry_price,
-            max_risk_pct=config.get('risk_management.max_risk_per_trade')
+            max_risk_pct=self.config['risk_management']['max_risk_per_trade']
         )
         
         # Determine signal strength
@@ -341,19 +448,19 @@ class TradingEngine:
             take_profit=take_profit,
             confidence=prediction['confidence'],
             risk_reward_ratio=risk_reward_ratio,
-            timeframe=config.get('trading.primary_timeframe'),
+            timeframe=self.config['primary_timeframe'],
             model_predictions=prediction.get('model_scores', {}),
             technical_confluence=technical_confluence,
             fundamental_score=prediction.get('fundamental_score', 0.5),
             market_condition=market_condition,
             position_size_pct=position_size_pct,
-            max_risk_pct=config.get('risk_management.max_risk_per_trade'),
+            max_risk_pct=self.config['risk_management']['max_risk_per_trade'],
             expiry_time=datetime.now() + timedelta(hours=4)  # 4-hour expiry
         )
     
     def _get_signal_type(self, direction: float, confidence: float) -> SignalType:
         """Determine signal type from prediction"""
-        if confidence < config.get('trading.min_confidence_threshold'):
+        if confidence < self.config['min_confidence_threshold']:
             return SignalType.HOLD
         
         if direction > 0.6:
@@ -460,7 +567,7 @@ class TradingEngine:
                 logger.error(f"Error validating signal for {signal.symbol}: {e}")
         
         # Limit concurrent signals
-        max_signals = config.get('trading.max_concurrent_signals')
+        max_signals = self.config['max_concurrent_signals']
         if len(validated_signals) > max_signals:
             # Sort by strength and confidence, take the best ones
             validated_signals.sort(
@@ -488,7 +595,7 @@ class TradingEngine:
     async def force_signal_generation(self, symbols: List[str] = None) -> List[TradingSignal]:
         """Force signal generation for testing purposes"""
         if symbols is None:
-            symbols = config.get('trading.symbols')
+            symbols = self.config['symbols']
         
         logger.info(f"Force generating signals for: {symbols}")
         
@@ -501,7 +608,7 @@ class TradingEngine:
                 
                 prediction = await self.ensemble_predictor.predict(
                     symbol=symbol,
-                    data=market_data[config.get('trading.primary_timeframe')],
+                    data=market_data[self.config['primary_timeframe']],
                     multi_timeframe_data=market_data
                 )
                 

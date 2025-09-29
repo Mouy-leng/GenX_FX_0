@@ -2,36 +2,67 @@ import numpy as np
 import pandas as pd
 
 class MovingAverage:
-    """Moving average indicators"""
-    
-    def __init__(self):
-        pass
-    
-    def sma(self, prices, period):
-        """Calculate Simple Moving Average"""
-        if isinstance(prices, pd.Series):
-            return prices.rolling(window=period).mean()
-        else:
-            return np.convolve(prices, np.ones(period)/period, mode='valid')
-    
-    def ema(self, prices, period):
-        """Calculate Exponential Moving Average"""
-        if isinstance(prices, pd.Series):
-            return prices.ewm(span=period).mean()
-        else:
-            alpha = 2.0 / (period + 1.0)
-            ema = np.zeros_like(prices)
-            ema[0] = prices[0]
-            for i in range(1, len(prices)):
-                ema[i] = alpha * prices[i] + (1 - alpha) * ema[i-1]
-            return ema
+    """A utility class for calculating different types of moving averages."""
 
-def calculate_sma(prices, period):
-    """Legacy function for backward compatibility"""
+    def __init__(self):
+        """Initializes the MovingAverage calculator."""
+        pass
+
+    def sma(self, prices: pd.Series, period: int) -> pd.Series:
+        """
+        Calculates the Simple Moving Average (SMA).
+
+        Args:
+            prices (pd.Series): A pandas Series of prices.
+            period (int): The moving average period.
+
+        Returns:
+            pd.Series: A pandas Series containing the SMA values.
+        """
+        if not isinstance(prices, pd.Series):
+            prices = pd.Series(prices)
+        return prices.rolling(window=period).mean()
+
+    def ema(self, prices: pd.Series, period: int) -> pd.Series:
+        """
+        Calculates the Exponential Moving Average (EMA).
+
+        Args:
+            prices (pd.Series): A pandas Series of prices.
+            period (int): The moving average period (span).
+
+        Returns:
+            pd.Series: A pandas Series containing the EMA values.
+        """
+        if not isinstance(prices, pd.Series):
+            prices = pd.Series(prices)
+        return prices.ewm(span=period, adjust=False).mean()
+
+def calculate_sma(prices: pd.Series, period: int) -> pd.Series:
+    """
+    A convenience function to calculate the Simple Moving Average (SMA).
+
+    Args:
+        prices (pd.Series): A pandas Series of prices.
+        period (int): The moving average period.
+
+    Returns:
+        pd.Series: A pandas Series containing the SMA values.
+    """
     ma = MovingAverage()
     return ma.sma(prices, period)
 
-def calculate_ema(prices, period):
-    """Legacy function for backward compatibility"""
+
+def calculate_ema(prices: pd.Series, period: int) -> pd.Series:
+    """
+    A convenience function to calculate the Exponential Moving Average (EMA).
+
+    Args:
+        prices (pd.Series): A pandas Series of prices.
+        period (int): The moving average period (span).
+
+    Returns:
+        pd.Series: A pandas Series containing the EMA values.
+    """
     ma = MovingAverage()
     return ma.ema(prices, period)

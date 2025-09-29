@@ -15,7 +15,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def create_database_schema():
-    """Create the database schema for the trading platform"""
+    """
+    Creates the database schema for the trading platform, including all necessary
+    tables and initial data.
+    """
     
     db_path = "genxdb_fx.db"
     logger.info(f"Creating database: {db_path}")
@@ -42,7 +45,12 @@ def create_database_schema():
         sys.exit(1)
 
 def create_tables(cursor):
-    """Create all required tables"""
+    """
+    Creates all the required tables in the database.
+
+    Args:
+        cursor: The database cursor object.
+    """
     
     # SQL statements to create tables
     tables_sql = [
@@ -166,7 +174,13 @@ def create_tables(cursor):
             logger.warning(f"⚠️  Table creation warning (might already exist): {e}")
 
 def insert_initial_data(cursor):
-    """Insert initial data into the database"""
+    """
+    Inserts initial data into the database, such as a default user and
+    a list of trading pairs.
+
+    Args:
+        cursor: The database cursor object.
+    """
     
     initial_data_sql = [
         """

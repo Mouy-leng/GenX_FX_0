@@ -9,7 +9,14 @@ import os
 from datetime import datetime
 
 class GoldEAFinalTest:
+    """
+    A class to test the logic of the Gold Master Expert Advisor (EA),
+    focusing on risk calculation and signal processing.
+    """
     def __init__(self):
+        """
+        Initializes the test class with EA parameters.
+        """
         self.base_risk = 1.0
         self.max_risk_per_trade = 5.0
         self.min_confidence = 75.0
@@ -26,8 +33,17 @@ class GoldEAFinalTest:
             "XAUCHF": False   # Disabled in test
         }
         
-    def calculate_confidence_risk(self, confidence):
-        """Calculate risk multiplier based on confidence - exact EA logic"""
+    def calculate_confidence_risk(self, confidence: float) -> tuple:
+        """
+        Calculates the risk multiplier based on the signal's confidence level,
+        replicating the EA's logic.
+
+        Args:
+            confidence (float): The confidence level of the signal.
+
+        Returns:
+            tuple: A tuple containing the calculated risk percentage and the multiplier used.
+        """
         if confidence >= self.very_high_confidence:
             multiplier = self.max_confidence_multiplier  # 90%+ = 4x
         elif confidence >= self.high_confidence:
@@ -45,8 +61,13 @@ class GoldEAFinalTest:
             
         return calculated_risk, multiplier
     
-    def test_with_realistic_signals(self):
-        """Test with realistic gold signals"""
+    def test_with_realistic_signals(self) -> list:
+        """
+        Tests the EA logic with a set of realistic gold signals from a CSV file.
+
+        Returns:
+            list: A list of dictionaries, where each dictionary represents a trade that would be executed.
+        """
         print("🥇 Gold Master EA - Realistic Signal Test")
         print("=" * 55)
         
@@ -107,8 +128,13 @@ class GoldEAFinalTest:
         
         return results
     
-    def analyze_results(self, results):
-        """Analyze test results"""
+    def analyze_results(self, results: list):
+        """
+        Analyzes the results of the signal processing test.
+
+        Args:
+            results (list): A list of trade results from the test.
+        """
         if not results:
             print("\n❌ No trades executed in test")
             return
@@ -141,7 +167,9 @@ class GoldEAFinalTest:
                   f"(${result['risk_amount']:4.0f})")
     
     def test_edge_cases(self):
-        """Test edge cases and safety limits"""
+        """
+        Tests edge cases and safety limits for the risk calculation logic.
+        """
         print(f"\n🧪 Edge Case Testing")
         print("=" * 25)
         
@@ -161,6 +189,9 @@ class GoldEAFinalTest:
                 print(f"{name:>18} ({confidence:5.1f}%): ✅ {risk:4.1f}% risk (×{mult:.1f})")
 
 def main():
+    """
+    The main function to run the Gold Master EA test suite.
+    """
     tester = GoldEAFinalTest()
     
     # Test 1: Realistic signals

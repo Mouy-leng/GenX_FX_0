@@ -9,7 +9,13 @@ import os
 from datetime import datetime
 
 class GoldEASimulator:
+    """
+    A class to simulate and test the logic of the Gold Master Expert Advisor (EA).
+    """
     def __init__(self):
+        """
+        Initializes the simulator with the EA's parameters.
+        """
         self.base_risk = 1.0
         self.max_risk_per_trade = 5.0
         self.min_confidence = 75.0
@@ -27,14 +33,40 @@ class GoldEASimulator:
             "XAUCHF": False
         }
         
-    def is_gold_pair(self, symbol):
+    def is_gold_pair(self, symbol: str) -> bool:
+        """
+        Checks if a given symbol is a gold pair.
+
+        Args:
+            symbol (str): The symbol to check.
+
+        Returns:
+            bool: True if the symbol is a gold pair, False otherwise.
+        """
         return symbol.startswith("XAU")
     
-    def is_pair_enabled(self, symbol):
+    def is_pair_enabled(self, symbol: str) -> bool:
+        """
+        Checks if a given trading pair is enabled in the EA's settings.
+
+        Args:
+            symbol (str): The symbol to check.
+
+        Returns:
+            bool: True if the pair is enabled, False otherwise.
+        """
         return self.enabled_pairs.get(symbol, False)
     
-    def calculate_confidence_risk(self, confidence):
-        """Calculate risk multiplier based on confidence"""
+    def calculate_confidence_risk(self, confidence: float) -> tuple:
+        """
+        Calculates the risk multiplier based on the signal's confidence level.
+
+        Args:
+            confidence (float): The confidence level of the signal (as a decimal).
+
+        Returns:
+            tuple: A tuple containing the calculated risk percentage and the multiplier used.
+        """
         confidence = float(confidence) * 100  # Convert decimal to percentage
         
         if confidence >= self.very_high_confidence:
@@ -54,8 +86,16 @@ class GoldEASimulator:
             
         return calculated_risk, multiplier
     
-    def process_signals(self, csv_file):
-        """Process signals like the EA would"""
+    def process_signals(self, csv_file: str) -> list:
+        """
+        Processes trading signals from a CSV file, simulating the EA's decision-making process.
+
+        Args:
+            csv_file (str): The path to the CSV file containing the signals.
+
+        Returns:
+            list: A list of dictionaries, where each dictionary represents a signal that would be processed.
+        """
         results = []
         
         print("🥇 Gold Master EA Simulation Test")
@@ -125,7 +165,9 @@ class GoldEASimulator:
         return results
     
     def test_risk_scaling(self):
-        """Test confidence-based risk scaling"""
+        """
+        Tests the confidence-based risk scaling logic.
+        """
         print("🎯 Risk Scaling Test")
         print("=" * 30)
         
@@ -138,6 +180,9 @@ class GoldEASimulator:
         print()
 
 def main():
+    """
+    The main function to run the Gold EA simulation and tests.
+    """
     simulator = GoldEASimulator()
     
     # Test 1: Risk scaling logic

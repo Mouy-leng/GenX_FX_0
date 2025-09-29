@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react'
 
+/**
+ * The main application component.
+ * It fetches and displays the health status of the Node.js server and the Python API.
+ * @returns {JSX.Element} The rendered application component.
+ */
 function App() {
   const [health, setHealth] = useState<any>(null)
   const [apiHealth, setApiHealth] = useState<any>(null)
 
   useEffect(() => {
+    const API = 'http://localhost:8081'
+
     // Test Node.js server health
-    fetch('/health')
+    fetch(`${API}/health`)
       .then(res => res.json())
       .then(data => setHealth(data))
       .catch(err => console.error('Node.js server error:', err))
 
     // Test Python API health  
-    fetch('/api/v1/health')
+    fetch(`${API}/api/v1/health`)
       .then(res => res.json())
       .then(data => setApiHealth(data))
       .catch(err => console.error('Python API error:', err))

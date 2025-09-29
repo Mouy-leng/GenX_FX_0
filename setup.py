@@ -49,4 +49,4 @@ setup(
     package_data={
         "": ["*.json", "*.yaml", "*.yml"],
     },
-) 
+)

@@ -9,32 +9,55 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 import logging
+import shutil
+import subprocess
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
+
 class AMPJobRunner:
+    """
+    A job runner for the AMP system that executes trading pipeline tasks.
+
+    This class loads the configuration, initializes necessary services, and runs
+    a sequence of tasks for data collection, prediction, and reporting.
+
+    Attributes:
+        project_root (Path): The root directory of the project.
+        config_file (Path): The path to the AMP configuration file.
+        config (Dict): The loaded configuration.
+    """
+
     def __init__(self):
+        """Initializes the AMPJobRunner."""
         self.project_root = Path.cwd()
         self.config_file = self.project_root / "amp_config.json"
         self.config = self.load_config()
-        
+
     def load_config(self) -> Dict:
-        """Load AMP configuration"""
+        """
+        Loads the AMP configuration from 'amp_config.json'.
+
+        Returns:
+            Dict: The loaded configuration, or an empty dict if not found.
+        """
         if self.config_file.exists():
-            with open(self.config_file, 'r') as f:
+            with open(self.config_file, "r") as f:
                 return json.load(f)
         return {}
-    
+
     async def run_next_job(self):
-        """Execute the next job with all configured services"""
+        """
+        Executes the next job, which involves initializing services, running
+        the trading pipeline, and generating reports.
+        """
         print("🚀 AMP Job Runner - Starting Next Job")
         print("=" * 50)
         
@@ -50,77 +73,57 @@ class AMPJobRunner:
         print("✅ Next job completed successfully!")
     
     async def initialize_services(self) -> Dict:
-        """Initialize all configured services"""
+        """
+        Initializes all services enabled in the configuration.
+
+        Returns:
+            Dict: A dictionary of initialized service instances.
+        """
         print("🔧 Initializing Services...")
-        
-        services = {}
-        
-        # Initialize Gemini AI Service
-        if "gemini_service" in self.config.get("enabled_services", []):
-            try:
-                from api.services.gemini_service import GeminiService
-                services["gemini"] = GeminiService()
-                await services["gemini"].initialize()
-                print("  ✅ Gemini AI Service initialized")
-            except Exception as e:
-                print(f"  ❌ Gemini AI Service failed: {e}")
-        
-        # Initialize Reddit Service
-        if "reddit_service" in self.config.get("enabled_services", []):
-            try:
-                from api.services.reddit_service import RedditService
-                services["reddit"] = RedditService()
-                await services["reddit"].initialize()
-                print("  ✅ Reddit Service initialized")
-            except Exception as e:
-                print(f"  ❌ Reddit Service failed: {e}")
-        
-        # Initialize News Service
-        if "news_service" in self.config.get("enabled_services", []):
-            try:
-                from api.services.news_service import NewsService
-                services["news"] = NewsService()
-                await services["news"].initialize()
-                print("  ✅ News Service initialized")
-            except Exception as e:
-                print(f"  ❌ News Service failed: {e}")
-        
-        # Initialize WebSocket Service
-        if "websocket_service" in self.config.get("enabled_services", []):
-            try:
-                from api.services.websocket_service import WebSocketService
-                services["websocket"] = WebSocketService()
-                await services["websocket"].initialize()
-                print("  ✅ WebSocket Service initialized")
-            except Exception as e:
-                print(f"  ❌ WebSocket Service failed: {e}")
-        
+        services: Dict[str, Any] = {}
+        service_configs = {
+            "gemini_service": "api.services.gemini_service.GeminiService",
+            "reddit_service": "api.services.reddit_service.RedditService",
+            "news_service": "api.services.news_service.NewsService",
+            "websocket_service": "api.services.websocket_service.WebSocketService",
+        }
+
+        for service_name in self.config.get("enabled_services", []):
+            if service_name in service_configs:
+                try:
+                    module_path, class_name = service_configs[service_name].rsplit(
+                        ".", 1
+                    )
+                    module = __import__(module_path, fromlist=[class_name])
+                    service_class = getattr(module, class_name)
+                    instance = service_class()
+                    await instance.initialize()
+                    services[service_name.replace("_service", "")] = instance
+                    print(f"  ✅ {class_name} initialized")
+                except Exception as e:
+                    print(f"  ❌ {service_name} failed to initialize: {e}")
         return services
     
     async def run_trading_pipeline(self, services: Dict):
-        """Run the complete trading pipeline"""
+        """
+        Runs the full trading pipeline from data collection to trade execution.
+
+        Args:
+            services (Dict): A dictionary of initialized service instances.
+        """
         print("\n📈 Running Trading Pipeline...")
-        
-        # Step 1: Collect market data
         print("  1️⃣ Collecting market data...")
         market_data = await self.collect_market_data(services)
-        
-        # Step 2: Gather news and sentiment
         print("  2️⃣ Gathering news and sentiment...")
         sentiment_data = await self.gather_sentiment_data(services)
-        
-        # Step 3: Generate AI predictions
         print("  3️⃣ Generating AI predictions...")
-        predictions = await self.generate_predictions(services, market_data, sentiment_data)
-        
-        # Step 4: Generate trading signals
+        predictions = await self.generate_predictions(
+            services, market_data, sentiment_data
+        )
         print("  4️⃣ Generating trading signals...")
         signals = await self.generate_trading_signals(services, predictions)
-        
-        # Step 5: Execute trades (if enabled)
         print("  5️⃣ Executing trades...")
         await self.execute_trades(services, signals)
-        
         print("  ✅ Trading pipeline completed!")
     
     async def collect_market_data(self, services: Dict) -> Dict:
@@ -254,6 +257,37 @@ class AMPJobRunner:
         print(f"  📄 Report saved: {report_file}")
         print(f"  🎯 Next job scheduled for execution")
     
+    async def run_deploy_job(self):
+        """Execute deployment job"""
+        print("🚀 Starting Deployment Job")
+        print("=" * 50)
+
+        # Step 1: Verify system requirements
+        print("1️⃣ Verifying system requirements...")
+        if not shutil.which("docker-compose"):
+            raise RuntimeError("docker-compose not found. Please install Docker.")
+        print("  ✅ Docker found")
+
+        # Step 2: Pull latest images
+        print("2️⃣ Pulling latest Docker images...")
+        subprocess.run(["docker-compose", "-f", "docker-compose.production.yml", "pull"], check=True)
+
+        # Step 3: Build services if needed
+        print("3️⃣ Building services...")
+        subprocess.run(["docker-compose", "-f", "docker-compose.production.yml", "build"], check=True)
+
+        # Step 4: Deploy
+        print("4️⃣ Deploying to production...")
+        subprocess.run(["docker-compose", "-f", "docker-compose.production.yml", "up", "-d"], check=True)
+
+        # Step 5: Verify deployment
+        print("5️⃣ Verifying deployment...")
+        await asyncio.sleep(10)  # Wait for services to start
+        health_check = subprocess.run(["docker-compose", "-f", "docker-compose.production.yml", "ps"], capture_output=True, text=True)
+        print(health_check.stdout)
+
+        print("✅ Deployment job completed successfully!")
+
     def show_status(self):
         """Show current AMP status"""
         print("🔍 AMP Status Report")
@@ -292,14 +326,17 @@ async def main():
             runner.show_status()
         elif command == "run":
             await runner.run_next_job()
+        elif command == "deploy":
+            await runner.run_deploy_job()
         else:
-            print("Usage: python amp_job_runner.py [status|run]")
+            print("Usage: python amp_job_runner.py [status|run|deploy]")
     else:
         print("🚀 AMP Job Runner")
         print("Available commands:")
         print("  status - Show AMP status")
         print("  run    - Execute next job")
-        print("\nExample: python amp_job_runner.py run")
+        print("  deploy - Execute deployment job")
+        print("\nExample: python amp_job_runner.py deploy")
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,8 +1,22 @@
 import { Resource, InsertResource, ResourceFilters } from "@shared/schema";
 import { nanoid } from "nanoid";
 
+/**
+ * @file This file defines the storage interface and an in-memory implementation for it.
+ */
+import { Resource, InsertResource, ResourceFilters } from "@shared/schema";
+import { nanoid } from "nanoid";
+
+/**
+ * The interface for storage operations.
+ */
 export interface IStorage {
   // Resource operations
+  /**
+   * Gets a paginated and filtered list of resources.
+   * @param {ResourceFilters} filters - The filters to apply.
+   * @returns {Promise<object>} A promise that resolves to the paginated resources.
+   */
   getResources(filters: ResourceFilters): Promise<{
     resources: Resource[];
     totalCount: number;
@@ -11,13 +25,41 @@ export interface IStorage {
     hasNextPage: boolean;
     hasPrevPage: boolean;
   }>;
+  /**
+   * Gets a resource by its ID.
+   * @param {string} id - The ID of the resource.
+   * @returns {Promise<Resource|null>} A promise that resolves to the resource or null if not found.
+   */
   getResourceById(id: string): Promise<Resource | null>;
+  /**
+   * Creates a new resource.
+   * @param {InsertResource} resource - The resource to create.
+   * @returns {Promise<Resource>} A promise that resolves to the created resource.
+   */
   createResource(resource: InsertResource): Promise<Resource>;
+  /**
+   * Updates a resource.
+   * @param {string} id - The ID of the resource to update.
+   * @param {Partial<InsertResource>} resource - The data to update the resource with.
+   * @returns {Promise<Resource|null>} A promise that resolves to the updated resource or null if not found.
+   */
   updateResource(id: string, resource: Partial<InsertResource>): Promise<Resource | null>;
+  /**
+   * Deletes a resource.
+   * @param {string} id - The ID of the resource to delete.
+   * @returns {Promise<boolean>} A promise that resolves to true if the resource was deleted, false otherwise.
+   */
   deleteResource(id: string): Promise<boolean>;
+  /**
+   * Gets a list of featured resources.
+   * @returns {Promise<Resource[]>} A promise that resolves to a list of featured resources.
+   */
   getFeaturedResources(): Promise<Resource[]>;
 }
 
+/**
+ * An in-memory storage implementation.
+ */
 export class MemStorage implements IStorage {
   private resources: Resource[] = [
     {
@@ -94,6 +136,11 @@ export class MemStorage implements IStorage {
     },
   ];
 
+  /**
+   * Gets a paginated and filtered list of resources from the in-memory storage.
+   * @param {ResourceFilters} filters - The filters to apply.
+   * @returns {Promise<object>} A promise that resolves to the paginated resources.
+   */
   async getResources(filters: ResourceFilters) {
     let filteredResources = [...this.resources];
 
@@ -149,10 +196,20 @@ export class MemStorage implements IStorage {
     };
   }
 
+  /**
+   * Gets a resource by its ID from the in-memory storage.
+   * @param {string} id - The ID of the resource.
+   * @returns {Promise<Resource|null>} A promise that resolves to the resource or null if not found.
+   */
   async getResourceById(id: string): Promise<Resource | null> {
     return this.resources.find(resource => resource.id === id) || null;
   }
 
+  /**
+   * Creates a new resource in the in-memory storage.
+   * @param {InsertResource} resource - The resource to create.
+   * @returns {Promise<Resource>} A promise that resolves to the created resource.
+   */
   async createResource(resource: InsertResource): Promise<Resource> {
     const newResource: Resource = {
       id: nanoid(),
@@ -163,6 +220,12 @@ export class MemStorage implements IStorage {
     return newResource;
   }
 
+  /**
+   * Updates a resource in the in-memory storage.
+   * @param {string} id - The ID of the resource to update.
+   * @param {Partial<InsertResource>} updateData - The data to update the resource with.
+   * @returns {Promise<Resource|null>} A promise that resolves to the updated resource or null if not found.
+   */
   async updateResource(id: string, updateData: Partial<InsertResource>): Promise<Resource | null> {
     const index = this.resources.findIndex(resource => resource.id === id);
     if (index === -1) return null;
@@ -171,6 +234,11 @@ export class MemStorage implements IStorage {
     return this.resources[index];
   }
 
+  /**
+   * Deletes a resource from the in-memory storage.
+   * @param {string} id - The ID of the resource to delete.
+   * @returns {Promise<boolean>} A promise that resolves to true if the resource was deleted, false otherwise.
+   */
   async deleteResource(id: string): Promise<boolean> {
     const index = this.resources.findIndex(resource => resource.id === id);
     if (index === -1) return false;
@@ -179,6 +247,10 @@ export class MemStorage implements IStorage {
     return true;
   }
 
+  /**
+   * Gets a list of featured resources from the in-memory storage.
+   * @returns {Promise<Resource[]>} A promise that resolves to a list of featured resources.
+   */
   async getFeaturedResources(): Promise<Resource[]> {
     return this.resources.filter(resource => resource.featured);
   }
