@@ -10,6 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
+from typing import Optional, Dict, Any
 
 def check_aws_cli() -> bool:
     """

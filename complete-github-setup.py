@@ -6,6 +6,7 @@ Complete GitHub Setup - Final step to ensure all secrets and variables are set
 import requests
 import base64
 from nacl import encoding, public
+import os
 
 # Configuration
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
