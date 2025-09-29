@@ -32,7 +32,8 @@ async def root():
     return {
         "message": "GenX-FX Trading Platform API",
         "version": "1.0.0",
-        "status": "running",
+        "status": "active",
+        "docs": "/docs",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
     }
@@ -40,47 +41,33 @@ async def root():
 @app.get("/health")
 async def health_check():
     """
-    Performs a health check on the API and its database connection.
+    Performs a comprehensive health check on the API and its services.
 
-    Attempts to connect to the SQLite database and execute a simple query.
+    This endpoint checks the database connection and reports the status of
+    critical internal services.
 
     Returns:
-        dict: A dictionary indicating the health status. 'healthy' if the
-              database connection is successful, 'unhealthy' otherwise.
+        dict: A dictionary indicating the overall health status.
     """
+    db_status = "unconnected"
     try:
         # Test database connection
         conn = sqlite3.connect("genxdb_fx.db")
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
         conn.close()
-
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "timestamp": datetime.now().isoformat(),
-        }
+        db_status = "connected"
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat(),
-        }
+        db_status = f"unhealthy: {str(e)}"
 
-@app.get("/api/v1/health")
-async def api_health_check():
-    """
-    Provides a health check for the v1 API services.
-
-    Returns a hardcoded status indicating that the main services are active.
-
-    Returns:
-        dict: A dictionary with the health status of internal services.
-    """
     return {
-        "status": "healthy",
-        "services": {"ml_service": "active", "data_service": "active"},
+        "status": "healthy" if db_status == "connected" else "unhealthy",
         "timestamp": datetime.now().isoformat(),
+        "services": {
+            "database": db_status,
+            "ml_service": "active",  # Placeholder status
+            "data_service": "active",  # Placeholder status
+        },
     }
 
 @app.get("/api/v1/predictions")
@@ -98,6 +85,25 @@ async def get_predictions():
         "status": "ready",
         "timestamp": datetime.now().isoformat(),
     }
+
+@app.post("/api/v1/predictions/")
+async def create_prediction(data: dict):
+    """
+    Endpoint to create a trading prediction.
+    """
+    return {"status": "prediction received", "data": data}
+
+@app.post("/api/v1/market-data/")
+async def post_market_data(data: dict):
+    """
+    Endpoint to post market data.
+    """
+    symbol = data.get("symbol")
+    # Basic check for characters often used in SQL injection
+    if isinstance(symbol, str) and any(char in symbol for char in ["'", ";", "-"]):
+        return {"status": "suspicious input received", "symbol": "REDACTED"}
+
+    return {"status": "market data received", "data": data}
 
 @app.get("/trading-pairs")
 async def get_trading_pairs():

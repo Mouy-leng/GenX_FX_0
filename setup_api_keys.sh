@@ -64,7 +64,7 @@ REDIS_URL=redis://localhost:6379
 # ========================================
 # SECURITY & AUTHENTICATION
 # ========================================
-SECRET_KEY=your-super-secret-key-change-this-in-production
+SECRET_KEY=<generate-a-secure-secret-key-and-place-here>
 JWT_SECRET_KEY=your-jwt-secret-key-here
 CRYPTION_KEY=your-encryption-key-here
 ALGORITHM=HS256

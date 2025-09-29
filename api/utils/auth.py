@@ -1,13 +1,6 @@
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-try:
-    from jose import JWTError, jwt
-except Exception:  # jose not installed in minimal/runtime builds
-    JWTError = Exception
-    class _DummyJWT:
-        def decode(self, *args, **kwargs):
-            return {}
-    jwt = _DummyJWT()
+from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
 import logging
@@ -16,21 +9,20 @@ import os
 from ..config import settings
 
 logger = logging.getLogger(__name__)
-security = HTTPBearer(auto_error=False)
+security = HTTPBearer(auto_error=True)
+
 
 def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
     """
     FastAPI dependency to get the current user from a JWT token.
 
     This function is used in path operations to protect endpoints. It extracts
     the bearer token, decodes it, and returns the user's information.
-    In a testing environment (if `os.getenv("TESTING")` is set), it returns a
-    mock user.
 
     Args:
-        credentials (Optional[HTTPAuthorizationCredentials]): The bearer token
+        credentials (HTTPAuthorizationCredentials): The bearer token
             credentials automatically extracted from the 'Authorization' header.
 
     Returns:
@@ -38,14 +30,8 @@ def get_current_user(
               and token expiration time.
 
     Raises:
-        HTTPException: If the token is invalid, credentials are not provided
-                       (outside of testing), or the token cannot be decoded.
+        HTTPException: If the token is invalid or cannot be decoded.
     """
-
-    # For testing or if no credentials provided, return a mock user or handle as needed
-    if os.getenv("TESTING") or not credentials:
-        return {"username": "testuser", "exp": None}
-
     try:
         payload = jwt.decode(
             credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
