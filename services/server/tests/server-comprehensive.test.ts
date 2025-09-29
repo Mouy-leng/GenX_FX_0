@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import request from 'supertest';
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
@@ -22,6 +22,7 @@ vi.mock('../vite.ts', () => ({
 describe('GenX FX Server Comprehensive Tests', () => {
   let app: express.Application;
   let server: any;
+  let wss: WebSocketServer;
   let baseURL: string;
 
   beforeAll(async () => {
@@ -52,14 +53,15 @@ describe('GenX FX Server Comprehensive Tests', () => {
 
     // Error handling middleware
     app.use((err: any, req: any, res: any, next: any) => {
-      res.status(500).json({
-        error: 'Internal server error',
+      const statusCode = err.statusCode || 500;
+      res.status(statusCode).json({
+        error: err.name || 'Internal server error',
         message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
       });
     });
 
     // 404 handler
-    app.use('*', (req, res) => {
+    app.use((req, res, next) => {
       res.status(404).json({
         error: 'Not found',
         path: req.originalUrl
@@ -67,12 +69,30 @@ describe('GenX FX Server Comprehensive Tests', () => {
     });
 
     server = createServer(app);
+
+    // WebSocket setup
+    wss = new WebSocketServer({ server });
+    wss.on('connection', (ws, req) => {
+      ws.on('message', (data) => {
+        try {
+          const message = JSON.parse(data.toString());
+          ws.send(JSON.stringify({ type: 'echo', data: message, timestamp: new Date().toISOString() }));
+        } catch (error) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid JSON format' }));
+        }
+      });
+      ws.send(JSON.stringify({ type: 'welcome', message: 'Connected to GenZ Trading Bot Pro', timestamp: new Date().toISOString() }));
+    });
+
     const port = 5001; // Use different port for tests
     server.listen(port);
     baseURL = `http://localhost:${port}`;
   });
 
   afterAll(async () => {
+    if (wss) {
+      wss.close();
+    }
     if (server) {
       server.close();
     }
@@ -148,7 +168,7 @@ describe('GenX FX Server Comprehensive Tests', () => {
       const response = await request(app).get('/api/error');
       
       expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty('error', 'Internal server error');
+      expect(response.body).toHaveProperty('error', 'Error');
       expect(response.body).toHaveProperty('message');
     });
 
