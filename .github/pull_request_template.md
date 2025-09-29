@@ -1,66 +1,58 @@
-## 📝 Description
-A clear and concise description of what this pull request does.
-
-## 🔄 Type of Change
-- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
-- [ ] ✨ New feature (non-breaking change which adds functionality)
-- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] 📚 Documentation update
-- [ ] 🔧 Refactoring (no functional changes)
-- [ ] 🧪 Test updates
-- [ ] 🚀 Performance improvements
-- [ ] 🔒 Security improvements
-
-## 🎯 Related Issues
-Closes #(issue number)
-Related to #(issue number)
-
-## 🧪 Testing
-- [ ] I have tested this change locally
-- [ ] I have added/updated tests for this change
-- [ ] All tests pass locally
-- [ ] I have tested the Docker build process
-- [ ] I have verified the deployment process (if applicable)
-
-## 📋 Checklist
-- [ ] My code follows the project's style guidelines
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
-
-## 🔒 Security Considerations
-- [ ] I have reviewed this change for security implications
-- [ ] I have not introduced any new security vulnerabilities
-- [ ] I have not exposed any sensitive information (API keys, passwords, etc.)
-- [ ] I have validated all user inputs and outputs
-
-## 📊 Performance Impact
-- [ ] No performance impact
-- [ ] Minor performance improvement
-- [ ] Minor performance degradation (explain below)
-- [ ] Major performance impact (explain below)
-
-**Performance Details**: [If applicable, describe any performance implications]
-
-## 🚀 Deployment Notes
-- [ ] No deployment changes required
-- [ ] Database migrations required
-- [ ] Environment variables need to be updated
-- [ ] Docker images need to be rebuilt
-- [ ] Other deployment considerations (explain below)
-
-**Deployment Details**: [If applicable, describe any deployment considerations]
-
-## 📸 Screenshots
-If applicable, add screenshots to help explain your changes.
-
-## 🔍 Additional Context
-Add any other context about the pull request here.
+---
+name: Pull Request
+about: Propose a change to the GenX FX project
+title: 'feat: '
+labels: ''
+assignees: ''
 
 ---
 
-**Thank you for contributing to docker_jules_orchestrator!** 🎉
+## 📝 Description
+
+<!-- Please include a summary of the change and which issue is fixed. -->
+<!-- Also include relevant motivation and context. -->
+<!-- List any dependencies that are required for this change. -->
+
+Fixes # (issue)
+
+## ✅ Checklist
+
+- [ ] I have tested my changes locally and they are working as expected.
+- [ ] I have added or updated relevant tests to cover my changes.
+- [ ] All new and existing tests passed.
+- [ ] I have updated the documentation to reflect my changes.
+- [ ] I have followed the code style guidelines of this project.
+- [ ] I have performed a self-review of my own code.
+
+## 🧪 Test Environment
+
+- **OS:** [e.g., Ubuntu 22.04, Windows 11]
+- **Node.js version:** [e.g., 18.12.0]
+- **Python version:** [e.g., 3.10.6]
+- **Browsers:** [e.g., Chrome 108, Firefox 107]
+
+## 📸 Screenshots (if applicable)
+
+<!-- If your changes affect the UI, please add screenshots to show the before and after. -->
+
+## 📚 Additional Notes
+
+<!-- Any other information that is important to this PR, such as deployment considerations. -->
+
+---
+
+### 📉 Test Failure Logs (if applicable)
+
+<!--
+If this PR fixes a failing test, please paste the relevant logs below.
+This helps reviewers understand the exact error that was resolved.
+-->
+
+<details>
+<summary>Click to expand test logs</summary>
+
+```
+<Paste Test Failure Logs Here>
+```
+
+</details>

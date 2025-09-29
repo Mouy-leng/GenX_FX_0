@@ -1,0 +1,33 @@
+name: Stabilized CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+
+    - name: Run stabilized Vitest tests
+      run: npm test -- --run
+      # Using the '--run' flag in Vitest executes tests in a single worker thread.
+      # This can help stabilize flaky tests that might arise from parallel execution,
+      # especially when tests interact with a shared database or server.
+      # For older versions of vitest, you might use '--threads false'
+
+    - name: Run Python tests
+      # Assuming Python is set up in a previous step
+      run: python run_tests.py
