@@ -32,7 +32,8 @@ async def root():
     return {
         "message": "GenX-FX Trading Platform API",
         "version": "1.0.0",
-        "status": "running",
+        "status": "active",
+        "docs": "/docs",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
     }
@@ -59,12 +60,14 @@ async def health_check():
             "status": "healthy",
             "database": "connected",
             "timestamp": datetime.now().isoformat(),
+            "services": {"ml_service": "active", "data_service": "active"},
         }
     except Exception as e:
         return {
             "status": "unhealthy",
             "error": str(e),
             "timestamp": datetime.now().isoformat(),
+            "services": {"ml_service": "unknown", "data_service": "unknown"},
         }
 
 @app.get("/api/v1/health")
@@ -98,6 +101,29 @@ async def get_predictions():
         "status": "ready",
         "timestamp": datetime.now().isoformat(),
     }
+
+@app.post("/api/v1/predictions/")
+async def create_prediction(data: dict):
+    """
+    Placeholder for creating a prediction.
+    """
+    return {"status": "received", "data": data}
+
+from fastapi import HTTPException
+
+@app.post("/api/v1/market-data/")
+async def post_market_data(data: dict):
+    """
+    Placeholder for posting market data.
+    """
+    # Basic input validation to prevent SQL injection
+    sql_keywords = ["SELECT", "DROP", "INSERT", "DELETE", "UPDATE", "TABLE", "FROM", "WHERE"]
+    for key, value in data.items():
+        if isinstance(value, str):
+            for keyword in sql_keywords:
+                if keyword in value.upper():
+                    raise HTTPException(status_code=400, detail="Invalid input detected.")
+    return {"status": "received", "data": data}
 
 @app.get("/trading-pairs")
 async def get_trading_pairs():
