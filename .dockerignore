@@ -1,98 +1,46 @@
-# Python cache and bytecode
-**/__pycache__
-**/*.pyc
-**/*.pyo
-**/*.pyd
-**/.Python
-**/.pytest_cache
-**/.coverage
+# Git
+.git
+.gitignore
 
-# Virtual environments
-**/.venv
-**/venv
-**/env
-**/.env
+# Docker
+.dockerignore
+Dockerfile
+Dockerfile.*
 
-# IDE and editor files
-**/.vscode
-**/.vs
-**/.idea
-**/.project
-**/.classpath
-**/.settings
-**/.toolstarget
-**/*.*proj.user
+# IDEs and editors
+.idea
+.vscode
+*.swp
+*.swo
 
-# Git and version control
-**/.git
-**/.gitignore
-**/.gitattributes
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
 
-# Docker files (except the one being used)
-**/Dockerfile*
-!Dockerfile.exness
-**/docker-compose*
-**/compose*
-**/.dockerignore
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
 
-# Node.js (if any)
-**/node_modules
-**/npm-debug.log
-**/package-lock.json
+# Build artifacts
+build/
+dist/
+*.egg-info/
 
-# Build artifacts and logs
-**/bin
-**/obj
-**/dist
-**/build
-**/logs
-**/*.log
+# Logs
+logs/
+*.log
 
-# Test files and data (exclude from production)
-**/tests
-**/test_*
-**/pytest.ini
-**/.pytest_cache
+# Local environment files
+.env
+.env.*
 
-# Documentation and markdown
-LICENSE
-README.md
-**/*.md
-!DEPLOYMENT_SUMMARY.md
-
-# Development scripts
-**/setup*.sh
-**/deploy*.sh
-**/test*.sh
-**/verify*.sh
-**/sync*.sh
-**/monitor.sh
-
-# Charts and visualization outputs
-**/charts
-
-# Secrets and config files (use env vars instead)
-**/secrets.dev.yaml
-**/values.dev.yaml
-**/*.key
-**/*.pem
-**/*.crt
-
-# Temporary files
-**/.tmp
-**/tmp
-**/*.tmp
-**/*.temp
-**/.DS_Store
-**/Thumbs.db
-
-# Database files
-**/*.db
-**/*.sqlite
-**/*.sqlite3
-
-# Large data files
-**/data/*.csv
-**/data/*.xlsx
-**/signal_output
-**/logs
+# OS-specific
+.DS_Store
+Thumbs.db

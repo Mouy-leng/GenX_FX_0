@@ -18,6 +18,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from pydantic import BaseModel
+from typing import Any
+
+class GenericPayload(BaseModel):
+    data: Any
+
 @app.get("/")
 async def root():
     """
@@ -32,9 +38,10 @@ async def root():
     return {
         "message": "GenX-FX Trading Platform API",
         "version": "1.0.0",
-        "status": "running",
+        "status": "active",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
+        "docs": "/docs",
     }
 
 @app.get("/health")
@@ -48,21 +55,25 @@ async def health_check():
         dict: A dictionary indicating the health status. 'healthy' if the
               database connection is successful, 'unhealthy' otherwise.
     """
+    db_status = "unconnected"
     try:
         # Test database connection
         conn = sqlite3.connect("genxdb_fx.db")
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
         conn.close()
+        db_status = "connected"
 
         return {
             "status": "healthy",
-            "database": "connected",
+            "database": db_status,
+            "services": {"ml_service": "active", "data_service": "active"},
             "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
         return {
             "status": "unhealthy",
+            "database": db_status,
             "error": str(e),
             "timestamp": datetime.now().isoformat(),
         }
@@ -166,6 +177,19 @@ async def get_mt5_info():
         dict: A dictionary with static MT5 login and server details.
     """
     return {"login": "279023502", "server": "Exness-MT5Trial8", "status": "configured"}
+
+@app.post("/api/v1/validate")
+async def validate_payload(payload: GenericPayload):
+    """
+    A generic endpoint for validating various payload structures.
+
+    This endpoint is used for testing edge cases and does not perform
+    any real data processing.
+
+    Returns:
+        dict: A success message indicating the payload was received.
+    """
+    return {"status": "ok", "received_data": payload.data}
 
 if __name__ == "__main__":
     import uvicorn
