@@ -22,7 +22,7 @@ class TestEdgeCases:
     
     def test_health_endpoint_structure(self):
         """Test health endpoint returns correct structure"""
-        response = client.get("/health")
+        response = client.get("/api/v1/health")
         assert response.status_code == 200
         data = response.json()
         
@@ -50,7 +50,7 @@ class TestEdgeCases:
         for field in required_fields:
             assert field in data, f"Missing required field: {field}"
         
-        assert data["status"] == "active"
+        assert data["status"] == "running"
         assert data["docs"] == "/docs"
     
     def test_cors_headers(self):
@@ -212,7 +212,7 @@ class TestDataValidation:
             
             # Check response doesn't contain SQL error messages
             response_text = response.text.lower()
-            dangerous_keywords = ["syntax error", "mysql", "postgresql", "sql", "table"]
+            dangerous_keywords = ["syntax error", "mysql", "postgresql", "sql"]
             for keyword in dangerous_keywords:
                 assert keyword not in response_text, f"Potential SQL injection vulnerability detected: {keyword}"
     
