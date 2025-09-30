@@ -1,0 +1,50 @@
+# This is an example action mapping file for the JULES integration.
+# To use this, rename this file to `action_mapping.yaml` and customize it.
+#
+# The dispatcher reads this file to determine which shell commands to run
+# based on triggers from your Markdown notes. It supports three types of triggers:
+# 1. checkbox_actions: Triggered when a task is checked off.
+# 2. tag_actions: Triggered when a specific #tag is found in a note.
+# 3. secure_actions: Triggered for notes marked as secure.
+
+# --- Checkbox-based Actions ---
+# Triggered when a task is marked as complete, e.g., `- [x] Build the project`.
+# The keyword must be an exact match to the task description.
+checkbox_actions:
+  # Build Commands
+  "Build the project": "npm run build"
+  "Run production build": "npm run build"
+
+  # Testing Commands
+  "Run all tests": "npm test && python run_tests.py"
+  "Run frontend tests": "npm test"
+  "Run backend tests": "python run_tests.py"
+
+  # Other Utility Commands
+  "Lint the codebase": "npm run lint"
+  "Check system status": "python genx_cli.py status"
+  "Initialize system": "python genx_cli.py init"
+
+# --- Tag-based Actions ---
+# Triggered when a tag (e.g., `#deploy-staging`) is found in a note.
+# The action for a tag is triggered once per file to avoid re-running.
+# The keyword is the tag itself, without the '#'.
+tag_actions:
+  # Deployment Commands
+  "deploy-staging": "echo 'Simulating deployment to staging...' && ./deploy/gcp-vm-setup.sh --staging"
+  "deploy-production": "echo 'WARNING: Production deployment initiated.' && ./deploy/gcp-vm-setup.sh --production"
+
+  # AI Model Commands
+  "train-ai-model": "python train_ai_system.py --model=EnsemblePredictor"
+  "generate-signals": "python gold-signal-generator.py"
+
+  # Documentation
+  "generate-docs": "echo 'Generating project documentation...'"
+
+# --- Secure Journal Actions ---
+# Triggered when a note is marked as secure, either via frontmatter (`secure: true`)
+# or a tag (`#secure-journal`).
+secure_actions:
+  # This action encrypts the note content and saves it to the secure storage.
+  # The `encrypt_note.sh` script handles the GPG encryption.
+  "encrypt_and_store": "bash jules_integration/encrypt_note.sh"
