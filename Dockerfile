@@ -1,25 +1,45 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3-slim
+# Use a slim Debian base image
+FROM debian:bullseye-slim
 
-EXPOSE 8080
-
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
-# Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
-
+# Set the working directory
 WORKDIR /app
-COPY . /app
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8080} api.main:app"]
+# Install base dependencies, including Node.js (for firebase-tools) and gnupg (for gh)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    openssl \
+    msmtp \
+    davfs2 \
+    gnupg \
+    ca-certificates \
+    npm && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install the GitHub CLI (gh)
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+    apt-get update && \
+    apt-get install -y gh && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install firebase-tools globally using npm
+RUN npm install -g firebase-tools
+
+# Copy the orchestration script into the container
+COPY jules.sh .
+
+# Make the script executable
+RUN chmod +x jules.sh
+
+# Set the entrypoint to the script
+ENTRYPOINT ["/bin/bash", "/app/jules.sh"]
+
+# Default command is to show usage
+CMD ["help"]
