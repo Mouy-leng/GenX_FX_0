@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import os
 from datetime import datetime
+from typing import Any, Dict
+
 app = FastAPI(
     title="GenX-FX Trading Platform API",
     description="Trading platform with ML-powered predictions",
@@ -35,6 +37,9 @@ async def root():
         "status": "running",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
+        "docs": "/docs",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc",
     }
 
 @app.get("/health")
@@ -166,6 +171,27 @@ async def get_mt5_info():
         dict: A dictionary with static MT5 login and server details.
     """
     return {"login": "279023502", "server": "Exness-MT5Trial8", "status": "configured"}
+
+@app.post("/api/v1/predictions/")
+async def post_predictions(data: Dict[str, Any]):
+    """
+    Accepts prediction data. Placeholder for edge case testing.
+    """
+    return {"status": "received", "data": data}
+
+@app.post("/api/v1/market-data/")
+async def post_market_data(data: Dict[str, Any]):
+    """
+    Accepts market data. Placeholder for edge case testing.
+    """
+    return {"status": "received", "data": data}
+
+@app.post("/api/v1/predictions/predict")
+async def post_predict(data: Dict[str, Any]):
+    """
+    Accepts data for prediction. Placeholder for edge case testing.
+    """
+    return {"status": "received", "data": data}
 
 if __name__ == "__main__":
     import uvicorn
