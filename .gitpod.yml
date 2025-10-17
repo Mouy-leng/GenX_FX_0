@@ -85,6 +85,24 @@ tasks:
     command: |
       echo "✅ GitLab CLI installed!"
 
+  - name: Install amp CLI
+    init: |
+      echo "Installing amp CLI..."
+      npm install -g @sourcegraph/amp
+    command: |
+      echo "amp CLI installed!"
+
+  - name: Run MCP Server
+    command: |
+      if [ -z "$GITHUB_PAT" ]; then
+        echo "⚠️ GITHUB_PAT is not set. The MCP server will not be started."
+        echo "Please set the GITHUB_PAT environment variable in your Gitpod project settings."
+      else
+        echo "🚀 Starting MCP server..."
+        sudo docker run -d --rm -e GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PAT ghcr.io/github/github-mcp-server
+        echo "✅ MCP server is running in the background."
+      fi
+
   - name: Run Backend Server
     command: |
       uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
