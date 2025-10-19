@@ -99,12 +99,14 @@ async def get_predictions():
         "timestamp": datetime.now().isoformat(),
     }
 
+from fastapi import FastAPI, Query
 @app.get("/trading-pairs")
-async def get_trading_pairs():
+async def get_trading_pairs(symbol: str | None = Query(default=None)):
     """
     Retrieves a list of active trading pairs from the database.
 
     Connects to the SQLite database and fetches all pairs marked as active.
+    If a symbol is provided, it filters for that symbol.
 
     Returns:
         dict: A dictionary containing a list of trading pairs or an error message.
@@ -112,9 +114,16 @@ async def get_trading_pairs():
     try:
         conn = sqlite3.connect("genxdb_fx.db")
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT symbol, base_currency, quote_currency FROM trading_pairs WHERE is_active = 1"
-        )
+
+        if symbol:
+            cursor.execute(
+                "SELECT symbol, base_currency, quote_currency FROM trading_pairs WHERE is_active = 1 AND symbol = ?", (symbol,)
+            )
+        else:
+            cursor.execute(
+                "SELECT symbol, base_currency, quote_currency FROM trading_pairs WHERE is_active = 1"
+            )
+
         pairs = cursor.fetchall()
         conn.close()
 
