@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { StatusCard } from '../components/StatusCard'
+import { API_CONFIG } from '../config'
 
 interface HealthData {
   status: string
@@ -17,7 +18,7 @@ export function Home() {
   const [apiHealth, setApiHealth] = useState<HealthData | null>(null)
 
   useEffect(() => {
-    const API = 'http://localhost:8081'
+    const API = API_CONFIG.NODE_API_URL
 
     // Test Node.js server health
     fetch(`${API}/health`)

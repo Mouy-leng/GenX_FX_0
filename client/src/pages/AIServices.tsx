@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { StatusCard } from '../components/StatusCard'
 import { ConfigPanel, ConfigItem } from '../components/ConfigPanel'
+import { API_CONFIG } from '../config'
 
 interface ServiceHealth {
   status: string
@@ -22,7 +23,7 @@ export function AIServices() {
   })
 
   useEffect(() => {
-    const API_BASE = 'http://localhost:8000'
+    const API_BASE = API_CONFIG.PYTHON_API_URL
 
     // Fetch API health
     const fetchHealth = () => {

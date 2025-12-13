@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { StatusCard } from '../components/StatusCard'
 import { ConfigPanel, ConfigItem } from '../components/ConfigPanel'
+import { API_CONFIG } from '../config'
 
 interface Pattern {
   id: string
@@ -30,7 +31,7 @@ export function PatternRecognition() {
   const [isActive, setIsActive] = useState(false)
 
   useEffect(() => {
-    const API_BASE = 'http://localhost:8000'
+    const API_BASE = API_CONFIG.PYTHON_API_URL
 
     // Fetch patterns
     const fetchPatterns = () => {
