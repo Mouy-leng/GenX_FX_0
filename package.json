@@ -30,7 +30,7 @@
     "cors": "^2.8.5",
     "drizzle-orm": "^0.44.5",
     "embla-carousel-react": "^8.0.0",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "firebase-tools": "^14.12.1",
     "lucide-react": "^0.400.0",
     "react": "^18.2.0",
