@@ -126,7 +126,7 @@ def check_npm_packages():
     key_packages = [
         'react',
         'vite',
-        'fastapi',
+        'express',
         '@tanstack/react-query',
         'tailwindcss'
     ]
@@ -163,19 +163,30 @@ def check_env_file():
     else:
         print_success(".env file exists")
         
-        # Check for required variables
+        # Check for required variables (just check if they're defined, not if they have values)
         required_vars = ['GEMINI_API_KEY', 'LOG_LEVEL', 'PORT']
         with open(env_file) as f:
             content = f.read()
         
         missing_vars = []
         for var in required_vars:
-            if var not in content or f"{var}=" in content and not content.split(f"{var}=")[1].split('\n')[0].strip():
+            if var not in content:
                 missing_vars.append(var)
         
         if missing_vars:
-            print_warning(f"Missing or empty variables: {', '.join(missing_vars)}")
+            print_warning(f"Missing variables: {', '.join(missing_vars)}")
             return False
+        
+        # Check if key variables have values (warn but don't fail)
+        empty_vars = []
+        for var in ['GEMINI_API_KEY']:
+            if f"{var}=" in content:
+                value = content.split(f"{var}=")[1].split('\n')[0].strip()
+                if not value or value == "":
+                    empty_vars.append(var)
+        
+        if empty_vars:
+            print_info(f"Note: Configure these variables before running: {', '.join(empty_vars)}")
         
         return True
 
