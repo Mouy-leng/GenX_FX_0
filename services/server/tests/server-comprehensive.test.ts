@@ -22,7 +22,6 @@ vi.mock('../vite.js', () => ({
 describe('GenX FX Server Comprehensive Tests', () => {
   let app: express.Application;
   let server: any;
-  let wss: WebSocketServer;
   let baseURL: string;
 
   beforeAll(async () => {
@@ -51,19 +50,14 @@ describe('GenX FX Server Comprehensive Tests', () => {
     const { registerRoutes } = await import('../routes.js');
     registerRoutes(app);
 
-    // Specific error handler for json parsing errors
+    // Error handling middleware
     app.use((err: any, req: any, res: any, next: any) => {
+      if (err instanceof SyntaxError && 'body' in err) {
+        return res.status(400).json({ error: 'Malformed JSON' });
+      }
       if (err.type === 'entity.too.large') {
-        return res.status(413).json({ error: 'Payload Too Large' });
+        return res.status(413).json({ error: 'Payload too large' });
       }
-      if (err instanceof SyntaxError && 'status' in err && err.status === 400) {
-        return res.status(400).json({ error: 'Bad Request' });
-      }
-      next(err);
-    });
-
-    // Generic error handling middleware
-    app.use((err: any, req: any, res: any, next: any) => {
       res.status(500).json({
         error: 'Internal server error',
         message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
@@ -80,39 +74,36 @@ describe('GenX FX Server Comprehensive Tests', () => {
 
     server = createServer(app);
     const port = 5001; // Use different port for tests
-    server.listen(port);
-    baseURL = `http://localhost:${port}`;
 
-    wss = new WebSocketServer({ server });
+    const wss = new WebSocketServer({ server });
     wss.on('connection', (ws) => {
-      ws.send(JSON.stringify({
-        type: 'welcome',
-        message: 'Connected to GenZ Trading Bot Pro',
-        timestamp: new Date().toISOString()
-      }));
-
-      ws.on('message', (message) => {
+      ws.on('message', (data) => {
         try {
-          const parsedMessage = JSON.parse(message.toString());
+          const message = JSON.parse(data.toString());
           ws.send(JSON.stringify({
             type: 'echo',
-            data: parsedMessage,
+            data: message,
             timestamp: new Date().toISOString()
           }));
-        } catch (e) {
+        } catch (error) {
           ws.send(JSON.stringify({
             type: 'error',
             message: 'Invalid JSON format'
           }));
         }
       });
+      ws.send(JSON.stringify({
+        type: 'welcome',
+        message: 'Connected to GenZ Trading Bot Pro',
+        timestamp: new Date().toISOString()
+      }));
     });
+
+    server.listen(port);
+    baseURL = `http://localhost:${port}`;
   });
 
   afterAll(async () => {
-    if (wss) {
-      wss.close();
-    }
     if (server) {
       server.close();
     }
@@ -295,17 +286,15 @@ describe('GenX FX Server Comprehensive Tests', () => {
         });
         ws.on('error', reject);
       });
-    }, 1000);
+    });
 
     it('should echo back valid JSON messages', async () => {
+      const testMessage = { action: 'test', data: { value: 123 } };
       await new Promise<void>((resolve, reject) => {
         const ws = new WebSocket(`ws://localhost:5001`);
-        const testMessage = { action: 'test', data: { value: 123 } };
         let welcomeReceived = false;
-        
         ws.on('message', (data) => {
           const message = JSON.parse(data.toString());
-
           if (message.type === 'welcome') {
             welcomeReceived = true;
             ws.send(JSON.stringify(testMessage));
@@ -318,16 +307,14 @@ describe('GenX FX Server Comprehensive Tests', () => {
         });
         ws.on('error', reject);
       });
-    }, 1000);
+    });
 
     it('should handle invalid JSON messages gracefully', async () => {
       await new Promise<void>((resolve, reject) => {
         const ws = new WebSocket(`ws://localhost:5001`);
         let welcomeReceived = false;
-        
         ws.on('message', (data) => {
           const message = JSON.parse(data.toString());
-
           if (message.type === 'welcome') {
             welcomeReceived = true;
             ws.send('{ invalid json }');
@@ -339,6 +326,6 @@ describe('GenX FX Server Comprehensive Tests', () => {
         });
         ws.on('error', reject);
       });
-    }, 1000);
+    });
   });
 });
