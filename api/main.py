@@ -35,6 +35,7 @@ async def root():
         "status": "running",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
+        "docs": "/docs"
     }
 
 @app.get("/health")
@@ -166,6 +167,24 @@ async def get_mt5_info():
         dict: A dictionary with static MT5 login and server details.
     """
     return {"login": "279023502", "server": "Exness-MT5Trial8", "status": "configured"}
+
+@app.post("/api/v1/data")
+async def handle_data(data: dict):
+    """
+    Handles incoming data POST requests.
+
+    This endpoint is designed to gracefully handle various data formats
+    and return a consistent success response. It's used for testing
+    edge cases and data validation.
+
+    Args:
+        data (dict): The incoming data payload.
+
+    Returns:
+        dict: A success message.
+    """
+    # In a real application, you would process the data here
+    return {"status": "success", "data_received": data}
 
 if __name__ == "__main__":
     import uvicorn
