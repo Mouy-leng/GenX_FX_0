@@ -32,7 +32,7 @@ async def root():
     return {
         "message": "GenX-FX Trading Platform API",
         "version": "1.0.0",
-        "status": "active",
+        "status": "running",
         "github": "Mouy-leng",
         "repository": "https://github.com/Mouy-leng/GenX_FX.git",
         "docs": "/docs"
@@ -59,7 +59,6 @@ async def health_check():
         return {
             "status": "healthy",
             "database": "connected",
-            "services": {"ml_service": "active", "data_service": "active"},
             "timestamp": datetime.now().isoformat(),
         }
     except Exception as e:
